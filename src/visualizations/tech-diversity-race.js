@@ -29,18 +29,29 @@ function TechDiversityRace() {
       return;
     }
 
-    // Create a select DOM element.
-    // this.select = // ???
+    this.selectLabel = document.createElement('label');
+    this.selectLabel.textContent = 'Company';
+    document.getElementById('chart-controls').appendChild(this.selectLabel);
 
-    // Set select position.
-    // ???
+    // Create a select DOM element.
+    this.select = createSelect();
+    this.select.parent(this.selectLabel);
 
     // Fill the options with all company names.
-    // ???
+    for (var i = 1; i < this.data.columns.length; i++) {
+      this.select.option(this.data.columns[i]);
+    }
   };
 
-    this.destroy = function() {
-    this.select.remove();
+  this.destroy = function() {
+    if (this.select) {
+      this.select.remove();
+      this.select = null;
+    }
+    if (this.selectLabel) {
+      this.selectLabel.remove();
+      this.selectLabel = null;
+    }
   };
 
   // Create a new pie chart object.
@@ -52,10 +63,14 @@ function TechDiversityRace() {
       return;
     }
 
+    if (!this.select) {
+      this.setup();
+      return;
+    }
+
     // Get the value of the company we're interested in from the
     // select item.
-    // Use a temporary hard-code example for now.
-    var companyName = 'Facebook';
+    var companyName = this.select.value();
 
     // Get the column of raw data for companyName.
     var col = this.data.getColumn(companyName);
@@ -69,10 +84,7 @@ function TechDiversityRace() {
     // Colour to use for each category.
     var colours = ['blue', 'red', 'green', 'pink', 'purple', 'yellow'];
 
-    // Make a title.
-    var title = 'Employee diversity at ' + companyName;
-
     // Draw the pie chart!
-    this.pie.draw(col, labels, colours, title);
+    this.pie.draw(col, labels, colours);
   };
 }

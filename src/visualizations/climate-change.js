@@ -60,6 +60,11 @@ function ClimateChange() {
   };
 
   this.setup = function() {
+    if (!this.loaded) {
+      console.log('Data not yet loaded');
+      return;
+    }
+
     // Font defaults.
     textSize(16);
     textAlign('center', 'center');
@@ -79,29 +84,63 @@ function ClimateChange() {
     // started so that we can animate the plot.
     this.frameCount = 0;
 
+    var controls = document.getElementById('chart-controls');
+    this.startLabel = document.createElement('label');
+    this.startLabel.textContent = 'Start';
+    controls.appendChild(this.startLabel);
+
     // Create sliders to control start and end years. Default to
     // visualise full range.
     this.startSlider = createSlider(this.minYear,
                                     this.maxYear - 1,
                                     this.minYear,
                                     1);
-    this.startSlider.position(400, 10);
+    this.startSlider.parent(this.startLabel);
+    this.startValue = document.createElement('span');
+    this.startValue.className = 'control-value';
+    this.startLabel.appendChild(this.startValue);
+
+    this.endLabel = document.createElement('label');
+    this.endLabel.textContent = 'End';
+    controls.appendChild(this.endLabel);
 
     this.endSlider = createSlider(this.minYear + 1,
                                   this.maxYear,
                                   this.maxYear,
                                   1);
-    this.endSlider.position(600, 10);
+    this.endSlider.parent(this.endLabel);
+    this.endValue = document.createElement('span');
+    this.endValue.className = 'control-value';
+    this.endLabel.appendChild(this.endValue);
   };
 
   this.destroy = function() {
-    this.startSlider.remove();
-    this.endSlider.remove();
+    if (this.startSlider) {
+      this.startSlider.remove();
+      this.startSlider = null;
+    }
+    if (this.endSlider) {
+      this.endSlider.remove();
+      this.endSlider = null;
+    }
+    if (this.startLabel) {
+      this.startLabel.remove();
+      this.startLabel = null;
+    }
+    if (this.endLabel) {
+      this.endLabel.remove();
+      this.endLabel = null;
+    }
   };
 
   this.draw = function() {
     if (!this.loaded) {
       console.log('Data not yet loaded');
+      return;
+    }
+
+    if (!this.startSlider || !this.endSlider) {
+      this.setup();
       return;
     }
 
@@ -111,6 +150,8 @@ function ClimateChange() {
     }
     this.startYear = this.startSlider.value();
     this.endYear = this.endSlider.value();
+    this.startValue.textContent = this.startYear;
+    this.endValue.textContent = this.endYear;
 
     // Draw all y-axis tick labels.
     drawYAxisTickLabels(this.minTemperature,
@@ -162,8 +203,11 @@ function ClimateChange() {
         // Draw background gradient to represent colour temperature of
         // the current year.
         noStroke();
-        // fill( ??? );
-        // rect( ??? );
+        fill(this.mapTemperatureToColour(current.temperature));
+        rect(this.mapYearToWidth(previous.year),
+             this.layout.topMargin,
+             segmentWidth,
+             this.layout.plotHeight());
 
         // Draw line segment connecting previous year to current
         // year temperature.
@@ -212,10 +256,6 @@ function ClimateChange() {
     // stop the main p5 draw loop when all years have been drawn.
     this.frameCount++;
 
-    // Stop animation when all years have been drawn.
-    if (this.frameCount >= numYears) {
-      //noLoop();
-    }
   };
 
   this.mapYearToWidth = function(value) {

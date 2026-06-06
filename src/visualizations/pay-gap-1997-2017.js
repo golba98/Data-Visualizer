@@ -7,9 +7,6 @@ function PayGapTimeSeries() {
   // characters.
   this.id = 'pay-gap-timeseries';
 
-  // Title to display above the plot.
-  this.title = 'Gender Pay Gap: Average difference between male and female pay.';
-
     // Names for each axis.
   this.xAxisLabel = 'year';
   this.yAxisLabel = '%';
@@ -85,9 +82,6 @@ function PayGapTimeSeries() {
       return;
     }
 
-    // Draw the title above the plot.
-    this.drawTitle();
-
     // Draw all y-axis labels.
     drawYAxisTickLabels(this.minPayGap,
                         this.maxPayGap,
@@ -115,15 +109,18 @@ function PayGapTimeSeries() {
       // Create an object to store data for the current year.
       var current = {
         // Convert strings to numbers.
-        // 'year': ???,
-        // 'payGap': ???
+        year: this.data.getNum(i, 'year'),
+        payGap: this.data.getNum(i, 'pay_gap')
       };
 
       if (previous != null) {
         // Draw line segment connecting previous year to current
         // year pay gap.
         stroke(0);
-        // line( ??? );
+        line(this.mapYearToWidth(previous.year),
+             this.mapPayGapToHeight(previous.payGap),
+             this.mapYearToWidth(current.year),
+             this.mapPayGapToHeight(current.payGap));
 
         // The number of x-axis labels to skip so that only
         // numXTickLabels are drawn.
@@ -143,16 +140,6 @@ function PayGapTimeSeries() {
     }
   };
 
-  this.drawTitle = function() {
-    fill(0);
-    noStroke();
-    textAlign('center', 'center');
-
-    text(this.title,
-         (this.layout.plotWidth() / 2) + this.layout.leftMargin,
-         this.layout.topMargin - (this.layout.marginSize / 2));
-  };
-
   this.mapYearToWidth = function(value) {
     return map(value,
                this.startYear,
@@ -162,6 +149,10 @@ function PayGapTimeSeries() {
   };
 
   this.mapPayGapToHeight = function(value) {
-    // ???
+    return map(value,
+               this.minPayGap,
+               this.maxPayGap,
+               this.layout.bottomMargin,
+               this.layout.topMargin);
   };
 }

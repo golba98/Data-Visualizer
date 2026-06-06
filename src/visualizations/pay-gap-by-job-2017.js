@@ -45,7 +45,6 @@ function PayGapByJob2017() {
     this.addAxes();
 
     // Get data from the table object.
-    var jobs = this.data.getColumn('job_subtype');
     var propFemale = this.data.getColumn('proportion_female');
     var payGap = this.data.getColumn('pay_gap');
     var numJobs = this.data.getColumn('num_jobs');
@@ -78,13 +77,10 @@ function PayGapByJob2017() {
     strokeWeight(1);
 
     for (i = 0; i < this.data.getRowCount(); i++) {
-      // Draw an ellipse for each point.
-      // x = propFemale
-      // y = payGap
-      // size = numJobs
-      ellipse(
-        /// ???
-      );
+      var x = map(propFemale[i], propFemaleMin, propFemaleMax, this.pad, width - this.pad);
+      var y = map(payGap[i], payGapMin, payGapMax, height - this.pad, this.pad);
+      var size = map(numJobs[i], numJobsMin, numJobsMax, this.dotSizeMin, this.dotSizeMax);
+      ellipse(x, y, size, size);
     }
   };
 
