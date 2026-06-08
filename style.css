@@ -153,7 +153,7 @@ button {
   display: grid;
   grid-template-columns: repeat(3, minmax(220px, 1fr));
   gap: 0.75rem;
-  max-width: 700;
+  max-width: 1050;
 }
 
 .dataset-card {
@@ -279,6 +279,12 @@ button {
 
 .info-panel p:last-child {
   margin-bottom: 0;
+}
+
+@media (max-width: 1100px) {
+  .card-grid {
+    grid-template-columns: repeat(2, minmax(220px, 1fr));
+  }
 }
 
 /* Responsive */
