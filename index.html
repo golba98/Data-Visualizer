@@ -1,35 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Data Visualisation Dashboard</title>
 
-    <!-- Libraries -->
     <script src="lib/p5.min.js"></script>
 
     <link rel="stylesheet" href="style.css">
 
-    <!-- Utilities: shared data processing and drawing helpers -->
     <script src="src/helper-functions.js"></script>
 
-    <!-- Components: reusable chart types -->
     <script src="src/pie-chart.js"></script>
 
-    <!-- Gallery: manages the visualisation menu and lifecycle -->
     <script src="src/gallery.js"></script>
 
-    <!-- Visualisations: one file per dataset/chart -->
+
     <script src="src/visualizations/tech-diversity-race.js"></script>
     <script src="src/visualizations/tech-diversity-gender.js"></script>
     <script src="src/visualizations/pay-gap-by-job-2017.js"></script>
     <script src="src/visualizations/pay-gap-1997-2017.js"></script>
     <script src="src/visualizations/climate-change.js"></script>
 
-    <!-- Entry point: p5.js setup() and draw() -->
     <script src="src/sketch.js"></script>
   </head>
+
   <body>
     <div id="app" class="app-shell">
       <aside class="sidebar" aria-label="Dataset navigation">

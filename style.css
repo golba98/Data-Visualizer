@@ -73,15 +73,9 @@ button {
   font-size: 1.35rem;
 }
 
-.page-header p,
 .section-heading p,
-.info-panel p,
-.dataset-card p {
+.info-panel p {
   color: var(--muted-text);
-}
-
-.page-header p {
-  margin: 0;
 }
 
 /* Navigation */
@@ -274,7 +268,6 @@ button {
 .info-panel h3 {
   margin: 0 0 0.2rem;
   font-size: 0.82rem;
-  letter-spacing: 0;
   text-transform: uppercase;
 }
 
