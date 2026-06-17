@@ -1,7 +1,7 @@
 :root {
   --sidebar-width: 220px;
-  --border-color: #222222;
-  --muted-text: #444444;
+  --border-color: #30353f;
+  --muted-text: #9ca3af;
   --panel-padding: 0.75rem;
 }
 
@@ -18,8 +18,8 @@ body {
 }
 
 body {
-  background: white;
-  color: black;
+  background: #0f1115;
+  color: #e5e7eb;
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   font-size: 16px;
   line-height: 1.5;
@@ -121,7 +121,7 @@ button {
 
 .menu-button.selected {
   border-color: black;
-  background: #f2f2f2;
+  background: #1a1f27;
   font-weight: 600;
 }
 
