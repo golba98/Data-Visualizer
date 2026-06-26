@@ -39,7 +39,7 @@ function refreshVisualLayout(vis) {
     }
   }
 
-  if (vis.id == 'tech-diversity-gender') {
+  if (vis.id == 'sa-sex-age-2022') {
     vis.layout.rightMargin = width - 12;
     vis.layout.bottomMargin = height;
     vis.midX = (vis.layout.plotWidth() / 2) + vis.layout.leftMargin;
@@ -63,10 +63,10 @@ function setup() {
   gallery = new Gallery();
 
   // Add the visualisation objects here.
-  gallery.addVisual(new TechDiversityRace());
-  gallery.addVisual(new TechDiversityGender());
-  gallery.addVisual(new PayGapByJob2017());
-  gallery.addVisual(new PayGapTimeSeries());
+  gallery.addVisual(new SAPopulationGroupCensus());
+  gallery.addVisual(new SAPopulationSexAge2022());
+  gallery.addVisual(new SAAgeSexBubble2022());
+  gallery.addVisual(new SAYouthUnemployment());
   gallery.addVisual(new ClimateChange());
   gallery.buildOverviewCards();
   gallery.showOverview();

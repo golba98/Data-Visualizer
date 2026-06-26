@@ -1,7 +1,6 @@
 function ClimateChange() {
 
-  // Name for the visualisation to appear in the menu bar.
-  this.name = 'Climate Change';
+  this.name = 'Global temperature anomaly';
 
   // Each visualisation must have a unique ID with no special
   // characters.
@@ -9,7 +8,7 @@ function ClimateChange() {
 
   // Names for each axis.
   this.xAxisLabel = 'year';
-  this.yAxisLabel = '℃';
+  this.yAxisLabel = '°C';
 
   var marginSize = 35;
 
@@ -51,7 +50,7 @@ function ClimateChange() {
   this.preload = function() {
     var self = this;
     this.data = loadTable(
-      './data/surface-temperature/surface-temperature.csv', 'csv', 'header',
+      './data/climate/global_temperature_anomaly_1880_2025.csv', 'csv', 'header',
       // Callback function to set the value
       // this.loaded to true.
       function(table) {
@@ -74,11 +73,11 @@ function ClimateChange() {
     this.maxYear = this.data.getNum(this.data.getRowCount() - 1, 'year');
 
     // Find min and max temperature for mapping to canvas height.
-    this.minTemperature = min(this.data.getColumn('temperature'));
-    this.maxTemperature = max(this.data.getColumn('temperature'));
+    this.minTemperature = min(this.data.getColumn('temperature_anomaly_c'));
+    this.maxTemperature = max(this.data.getColumn('temperature_anomaly_c'));
 
     // Find mean temperature to plot average marker.
-    this.meanTemperature = mean(this.data.getColumn('temperature'));
+    this.meanTemperature = mean(this.data.getColumn('temperature_anomaly_c'));
 
     // Count the number of frames drawn since the visualisation
     // started so that we can animate the plot.
@@ -193,7 +192,7 @@ function ClimateChange() {
       var current = {
         // Convert strings to numbers.
         'year': this.data.getNum(i, 'year'),
-        'temperature': this.data.getNum(i, 'temperature')
+        'temperature': this.data.getNum(i, 'temperature_anomaly_c')
       };
 
       if (previous != null

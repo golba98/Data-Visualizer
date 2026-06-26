@@ -11,17 +11,17 @@ function Gallery() {
       items: [{ id: 'overview', name: 'Overview' }]
     },
     {
-      title: 'Tech Diversity',
+      title: 'South Africa Census',
       items: [
-        { id: 'tech-diversity-race', name: 'Race' },
-        { id: 'tech-diversity-gender', name: 'Gender' }
+        { id: 'sa-population-group-census', name: 'Population group' },
+        { id: 'sa-sex-age-2022', name: 'Sex and age' },
+        { id: 'sa-age-sex-bubble-2022', name: 'Age group size' }
       ]
     },
     {
-      title: 'Pay Gap',
+      title: 'Employment',
       items: [
-        { id: 'pay-gap-by-job-2017', name: 'By job: 2017' },
-        { id: 'pay-gap-timeseries', name: '1997-2017' }
+        { id: 'sa-youth-unemployment', name: 'Youth unemployment' }
       ]
     },
     {
@@ -31,35 +31,40 @@ function Gallery() {
   ];
 
   this.metadata = {
-    'tech-diversity-race': {
-      title: 'Racial diversity by company',
-      shows: 'Proportional racial composition for the selected technology company.',
-      finding: 'Representation varies substantially by company, so comparison is useful.',
-      source: 'Tech diversity race dataset, 2018.'
+    'sa-population-group-census': {
+      title: 'South African population group distribution by census year',
+      shows: 'Population group percentages for the selected census year.',
+      finding: 'The pie chart shows how each population group contributes to the total population in that year.',
+      source: 'Statistics South Africa census population group data, 1996-2022.',
+      chartSource: 'Source: Stats SA Census 2022'
     },
-    'tech-diversity-gender': {
-      title: 'Gender representation by company',
-      shows: 'Female and male employee proportions across technology companies.',
-      finding: 'Several companies show a visible imbalance between female and male employees.',
-      source: 'Tech diversity gender dataset, 2018.'
+    'sa-sex-age-2022': {
+      title: 'South African population by sex and age group, Census 2022',
+      shows: 'Female and male percentages for each age group in Census 2022.',
+      finding: 'The 50% line makes it easy to compare age groups where one sex is slightly larger.',
+      source: 'Statistics South Africa Census 2022 sex by age data.',
+      chartSource: 'Source: Stats SA Census 2022'
     },
-    'pay-gap-by-job-2017': {
-      title: 'Gender composition and hourly pay gap, 2017',
-      shows: 'Occupation categories by proportion of female employees and hourly pay gap.',
-      finding: 'Occupations differ in both gender composition and pay gap, with larger categories shown as larger points.',
-      source: 'Occupation hourly pay by gender dataset, 2017.'
+    'sa-age-sex-bubble-2022': {
+      title: 'Age group size and female share, Census 2022',
+      shows: 'Each bubble is one age group. The x-axis is age midpoint, the y-axis is female percentage, and the bubble size is total population.',
+      finding: 'The chart shows both the size of age groups and how the female share changes at older ages.',
+      source: 'Statistics South Africa Census 2022 age and sex data.',
+      chartSource: 'Source: Stats SA Census 2022'
     },
-    'pay-gap-timeseries': {
-      title: 'Gender pay gap trend, 1997-2017',
-      shows: 'Long-term trend in the reported gender hourly pay gap.',
-      finding: 'The pay gap changes over time and should be read as a trend, not a single-year result.',
-      source: 'Gender pay gap time-series dataset, 1997-2017.'
+    'sa-youth-unemployment': {
+      title: 'South African youth unemployment trend, 1991-2025',
+      shows: 'Annual youth unemployment rate as a percentage.',
+      finding: 'The line chart makes the long-term pattern easier to see than reading the table year by year.',
+      source: 'World Bank / ILO South African youth unemployment data, 1991-2025.',
+      chartSource: 'Source: World Bank / ILO'
     },
     'climate-change': {
-      title: 'Surface temperature change over time',
-      shows: 'Long-term surface temperature change across years.',
-      finding: 'The chart shows the direction and scale of long-term temperature change.',
-      source: 'Surface temperature dataset.'
+      title: 'Global surface temperature anomaly, 1880-2025',
+      shows: 'Global annual surface temperature anomaly in degrees Celsius.',
+      finding: 'The slider can focus on shorter periods while the full range shows the long-term warming pattern.',
+      source: 'NASA GISTEMP v4 global temperature anomaly data, 1880-2025.',
+      chartSource: 'Source: NASA GISTEMP v4'
     }
   };
 
@@ -177,6 +182,7 @@ function Gallery() {
     document.getElementById('info-shows').textContent = metadata.shows;
     document.getElementById('info-finding').textContent = metadata.finding;
     document.getElementById('info-source').textContent = metadata.source;
+    document.getElementById('chart-source').textContent = metadata.chartSource;
     this.updateSelectedMenu(vis.id);
   };
 
