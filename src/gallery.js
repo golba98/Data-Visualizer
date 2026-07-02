@@ -25,6 +25,12 @@ function Gallery() {
       ]
     },
     {
+      title: 'Health',
+      items: [
+        { id: 'sa-life-expectancy', name: 'Life expectancy' }
+      ]
+    },
+    {
       title: 'Climate',
       items: [{ id: 'climate-change', name: 'Climate Change' }]
     }
@@ -58,6 +64,13 @@ function Gallery() {
       finding: 'The line chart makes the long-term pattern easier to see than reading the table year by year.',
       source: 'World Bank / ILO South African youth unemployment data, 1991-2025.',
       chartSource: 'Source: World Bank / ILO'
+    },
+    'sa-life-expectancy': {
+      title: 'South African life expectancy at birth by sex, 1960-2024',
+      shows: 'Female, male, and total life expectancy at birth in years across the full time range.',
+      finding: 'The 2000s dip and later recovery stand out clearly, and the end labels make it easy to compare the latest values.',
+      source: 'World Bank life expectancy at birth indicators for South Africa, updated July 1, 2026, with data through 2024.',
+      chartSource: 'Source: World Bank'
     },
     'climate-change': {
       title: 'Global surface temperature anomaly, 1880-2025',

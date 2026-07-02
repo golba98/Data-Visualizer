@@ -67,6 +67,7 @@ function setup() {
   gallery.addVisual(new SAPopulationSexAge2022());
   gallery.addVisual(new SAAgeSexBubble2022());
   gallery.addVisual(new SAYouthUnemployment());
+  gallery.addVisual(new SALifeExpectancy());
   gallery.addVisual(new ClimateChange());
   gallery.buildOverviewCards();
   gallery.showOverview();
