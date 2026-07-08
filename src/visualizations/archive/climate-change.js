@@ -52,7 +52,7 @@ function ClimateChange() {
   this.preload = function() {
     var self = this;
     this.data = loadTable(
-      './data/climate/global_temperature_anomaly_1880_2025.csv', 'csv', 'header',
+      './data/archive/global_temperature_anomaly_1880_2025.csv', 'csv', 'header',
       // Callback function to set the value
       // this.loaded to true.
       function(table) {

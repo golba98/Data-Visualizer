@@ -1,0 +1,4 @@
+group,population_share_percent,definition,display_order,data_status
+Top 10 percent,10,"Highest-income or highest-wealth decile depending on the chart comparison",1,derived grouping
+Middle 40 percent,40,"Population between the bottom 50 percent and top 10 percent",2,derived grouping
+Bottom 50 percent,50,"Lower half of the adult population distribution",3,derived grouping

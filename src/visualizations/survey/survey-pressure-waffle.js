@@ -20,12 +20,11 @@ function SurveyPressureWaffle() {
   this.preload = function() {
     var self = this;
 
-    this.table = loadTable('data/south-africa/survey_pressure_cleaned.csv', 'csv', 'header', function(table) {
+    this.table = loadTable('data/survey/za_survey_demo.csv', 'csv', 'header', function(table) {
       self.table = table;
       self.loaded = true;
-      console.log('Survey pressure CSV loaded:', table.getRowCount(), 'rows');
     }, function(error) {
-      console.error('Could not load survey_pressure_cleaned.csv for survey pressure waffle', error);
+      console.error('Could not load za_survey_demo.csv for survey pressure waffle', error);
       self.table = null;
       self.loaded = false;
     });
@@ -33,7 +32,6 @@ function SurveyPressureWaffle() {
 
   this.setup = function() {
     if (!this.loaded) {
-      console.log('Survey pressure data not yet loaded');
       return;
     }
 
@@ -113,13 +111,13 @@ function SurveyPressureWaffle() {
     textAlign(LEFT, TOP);
     textSize(16);
     textStyle(BOLD);
-    text('Main cost pressure', 24, 18);
+    text('What people worry about most (demo)', 24, 18);
 
     textStyle(NORMAL);
     fill(90);
     textSize(12);
-    var subtitle = 'Pressure answers from 41 survey rows, shown as 100 boxes.';
-    text(subtitle, 24, 42);
+    var subtitle = 'Each square is a made-up respondent — the mix will change once real answers replace these.';
+    text(subtitle, 24, 42, width - 48, 34);
   };
 
   this.drawLegend = function() {

@@ -15,7 +15,7 @@ function SurveyPressureIndex() {
     var self = this;
 
     this.table = loadTable(
-      'data/south-africa/survey_pressure_cleaned.csv',
+      'data/survey/za_survey_demo.csv',
       'csv',
       'header',
       function(table) {
@@ -154,12 +154,12 @@ function SurveyPressureIndex() {
     textAlign(LEFT, TOP);
     textStyle(BOLD);
     textSize(17);
-    text('Monthly pressure index', 24, 18);
+    text('How pressured are people feeling? (demo)', 24, 18);
 
     textStyle(NORMAL);
     textSize(12);
     fill(90);
-    text('An overall score built from 41 survey responses (food, transport, worry, income).',
+    text("Built from made-up survey answers while I wait on the real thing.",
          24,
          44,
          width - 48,

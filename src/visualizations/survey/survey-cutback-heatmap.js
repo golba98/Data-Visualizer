@@ -6,7 +6,16 @@ function SurveyCutbackHeatmap() {
   this.id = 'survey-cutback-heatmap';
   this.table = null;
   this.loaded = false;
-  this.cutbacks = ['Meat', 'Eating out', 'Data', 'Transport', 'Subscriptions'];   // heatmap rows
+  this.cutbacks = [
+    'Meat',
+    'Eating out',
+    'Data',
+    'Transport',
+    'Subscriptions',
+    'Social life',
+    'Clothing',
+    'Electricity'
+  ];   // heatmap rows
   this.statuses = ['Student', 'Employed', 'Unemployed', 'Studying and working'];   // heatmap columns
   this.counts = {};
   this.maxCount = 0;   // highest single cell count, used to scale colour intensity
@@ -17,7 +26,7 @@ function SurveyCutbackHeatmap() {
     var self = this;
 
     this.table = loadTable(
-      'data/south-africa/survey_responses.csv',
+      'data/survey/za_survey_demo.csv',
       'csv',
       'header',
       function(table) {
@@ -25,7 +34,7 @@ function SurveyCutbackHeatmap() {
         self.loaded = true;
       },
       function(error) {
-        console.error('Could not load survey cutback data', error);
+        console.error('Could not load survey demo cutback data', error);
       });
   };
 
@@ -92,7 +101,7 @@ function SurveyCutbackHeatmap() {
     fill(0);
     noStroke();
     textAlign(CENTER, CENTER);
-    text('Loading cutback data...', width / 2, height / 2);
+    text('Loading demo cutback data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -101,12 +110,12 @@ function SurveyCutbackHeatmap() {
     textAlign(LEFT, TOP);
     textStyle(BOLD);
     textSize(17);
-    text('Cutback heatmap', 24, 18);
+    text('What people say they cut back on (demo)', 24, 18);
 
     textStyle(NORMAL);
     textSize(12);
     fill(90);
-    text('Darker cells show more people in that group cutting back on that item.',
+    text('Made-up answers for now — darker cells just mean more fake rows picked that item.',
          24,
          44,
          width - 48,

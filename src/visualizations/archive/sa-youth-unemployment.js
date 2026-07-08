@@ -38,7 +38,7 @@ function SAYouthUnemployment() {
   this.preload = function() {
     var self = this;
     this.data = loadTable(
-      './data/south-africa/sa_youth_unemployment_1991_2025.csv',
+      './data/archive/sa_youth_unemployment_1991_2025.csv',
       'csv',
       'header',
       function(table) {

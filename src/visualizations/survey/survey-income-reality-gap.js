@@ -15,7 +15,7 @@ function SurveyIncomeRealityGap() {
     var self = this;
 
     this.table = loadTable(
-      'data/south-africa/survey_pressure_cleaned.csv',
+      'data/survey/za_survey_demo.csv',
       'csv',
       'header',
       function(table) {
@@ -23,7 +23,7 @@ function SurveyIncomeRealityGap() {
         self.loaded = true;
       },
       function(error) {
-        console.error('Could not load income reality gap data', error);
+        console.error('Could not load demo income reality gap data', error);
       });
   };
 
@@ -92,7 +92,7 @@ function SurveyIncomeRealityGap() {
     fill(31, 41, 55);
     noStroke();
     textAlign(CENTER, CENTER);
-    text('Loading income gap data...', width / 2, height / 2);
+    text('Loading demo income gap data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -101,12 +101,12 @@ function SurveyIncomeRealityGap() {
     textAlign(LEFT, TOP);
     textStyle(BOLD);
     textSize(17);
-    text('Income reality gap', 24, 18);
+    text('Does income keep up with the worry? (demo)', 24, 18);
 
     textStyle(NORMAL);
     textSize(12);
     fill(90);
-    text('The line joins average work worry to average income-keeps-up rating for each group.',
+    text("Placeholder numbers — the line joins average work-worry to average income-keeps-up rating per group.",
          24,
          44,
          width - 48,
@@ -117,7 +117,7 @@ function SurveyIncomeRealityGap() {
     // width < 680 => narrow / mobile layout (tighter left margin).
     var left = width < 680 ? 122 : 172;
     var right = width - 54;
-    var top = 100;
+    var top = 124;
 
     stroke(200);
     strokeWeight(1);
@@ -139,13 +139,13 @@ function SurveyIncomeRealityGap() {
 
     fill(60);
     textAlign(LEFT, TOP);
-    text('Rating scale: 1 low, 5 high', left, top - 48);
+    text('Rating scale: 1 low, 5 high', left, top - 40);
   };
 
   this.drawGapRows = function() {
     var left = width < 680 ? 122 : 172;
     var right = width - 54;
-    var startY = 132;
+    var startY = 156;
     var rowGap = min(54, (height - startY - 40) / this.rows.length);
 
     for (var i = 0; i < this.rows.length; i++) {

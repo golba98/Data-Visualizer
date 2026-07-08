@@ -1,0 +1,5 @@
+population_group,period,mean_real_monthly_earnings_rand,source_name,source_url,data_status,limitations
+Black African,2011-2015,6899,Statistics South Africa How unequal is South Africa,https://www.statssa.gov.za/?p=12930,real cleaned,"Mean real monthly earnings describe labour-market earnings for the source period and do not measure total wealth or household assets."
+Coloured,2011-2015,9339,Statistics South Africa How unequal is South Africa,https://www.statssa.gov.za/?p=12930,real cleaned,"Mean real monthly earnings describe labour-market earnings for the source period and do not measure total wealth or household assets."
+Indian/Asian,2011-2015,14235,Statistics South Africa How unequal is South Africa,https://www.statssa.gov.za/?p=12930,real cleaned,"Mean real monthly earnings describe labour-market earnings for the source period and do not measure total wealth or household assets."
+White,2011-2015,24646,Statistics South Africa How unequal is South Africa,https://www.statssa.gov.za/?p=12930,real cleaned,"Mean real monthly earnings describe labour-market earnings for the source period and do not measure total wealth or household assets."
