@@ -1,0 +1,42 @@
+id,age,status,pressure,cost_increased,work_worry,income_keeps_up,transport_cost,food_cost
+1,18-21,Student,Food,Yes,5,1,R0-R300,R3000+
+2,18-21,Student,Data,Yes,2,4,R0-R300,R501-R1000
+3,18-21,Student,Tuition,Yes,3,3,R301-R600,R501-R1000
+4,31+,Employed,Electricity,Yes,4,2,R1500+,R2001-R3000
+5,22-25,Student,Food,Yes,5,1,R601-R1000,R1001-R2000
+6,31+,Studying and working,Transport,Not sure,2,1,R301-R600,R501-R1000
+7,26-30,Employed,Transport,No,3,3,R601-R1000,R1001-R2000
+8,18-21,Student,Tuition,Yes,4,2,R301-R600,R501-R1000
+9,22-25,Studying and working,Debt,Yes,5,1,R1500+,R2001-R3000
+10,22-25,Unemployed,Food,Yes,4,2,R0-R300,R3000+
+11,26-30,Student,Transport,Yes,3,1,R1001-R1500,R2001-R3000
+12,31+,Employed,Transport,Not sure,4,2,R601-R1000,R1001-R2000
+13,18-21,Student,Tuition,No,5,1,R301-R600,R501-R1000
+14,22-25,Student,Rent,Yes,2,3,R301-R600,R1001-R2000
+15,26-30,Employed,Rent,Yes,3,2,R0-R300,R3000+
+16,26-30,Student,Transport,Yes,4,1,R1001-R1500,R2001-R3000
+17,18-21,Studying and working,Rent,Yes,5,1,R601-R1000,R1001-R2000
+18,22-25,Unemployed,Debt,Not sure,4,2,R1001-R1500,R1001-R2000
+19,22-25,Student,Rent,No,3,3,R301-R600,R1001-R2000
+20,26-30,Studying and working,Food,Yes,4,2,R0-R300,R3000+
+21,26-30,Student,Transport,Yes,5,1,R1001-R1500,R2001-R3000
+22,18-21,Student,Data,Yes,2,4,R0-R300,R501-R1000
+23,26-30,Employed,Debt,Yes,3,3,R1001-R1500,R1001-R2000
+24,22-25,Student,Rent,Not sure,4,2,R301-R600,R1001-R2000
+25,26-30,Studying and working,Food,No,5,1,R0-R300,R3000+
+26,22-25,Employed,Food,Yes,2,1,R301-R600,R501-R1000
+27,18-21,Student,Data,Yes,3,3,R0-R300,R501-R1000
+28,22-25,Studying and working,Data,Yes,4,2,R1001-R1500,R1001-R2000
+29,18-21,Unemployed,Rent,Yes,5,1,R1500+,R2001-R3000
+30,22-25,Student,Food,Not sure,2,2,R601-R1000,R1001-R2000
+31,26-30,Employed,Food,No,3,1,R301-R600,R501-R1000
+32,18-21,Student,Data,Yes,4,2,R0-R300,R501-R1000
+33,22-25,Studying and working,Data,Yes,5,1,R1001-R1500,R1001-R2000
+34,22-25,Employed,Electricity,Yes,2,3,R1500+,R2001-R3000
+35,22-25,Student,Food,Yes,3,2,R601-R1000,R1001-R2000
+36,31+,Studying and working,Transport,Not sure,4,1,R301-R600,R501-R1000
+37,18-21,Unemployed,Data,No,5,1,R601-R1000,R1001-R2000
+38,18-21,Student,Tuition,Yes,2,4,R301-R600,R501-R1000
+39,22-25,Studying and working,Debt,Yes,3,3,R1500+,R2001-R3000
+40,22-25,Student,Food,Yes,4,2,R601-R1000,R1001-R2000
+41,26-30,Student,Transport,Yes,5,1,R1001-R1500,R2001-R3000

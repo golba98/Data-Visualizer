@@ -64,12 +64,13 @@ function drawAxisLabels(xLabel, yLabel, layout) {
   noStroke();
   textAlign('center', 'center');
 
-  // Draw x-axis label.
+  // Draw x-axis label, centred below the plot. The 1.5 * marginSize
+  // offset drops it clear of the tick labels.
   text(xLabel,
        (layout.plotWidth() / 2) + layout.leftMargin,
        layout.bottomMargin + (layout.marginSize * 1.5));
 
-  // Draw y-axis label.
+  // Draw y-axis label, rotated 90 degrees and centred to the left of the plot.
   push();
   translate(layout.leftMargin - (layout.marginSize * 1.5),
             layout.bottomMargin / 2);

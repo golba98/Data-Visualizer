@@ -1,10 +1,14 @@
 function SAPopulationGroupCensus() {
 
+  // ---- State ----
+
   this.name = 'Population group by census year';
   this.id = 'sa-population-group-census';
 
   this.loaded = false;
-  this.years = ['1996', '2001', '2011', '2022'];
+  this.years = ['1996', '2001', '2011', '2022'];   // census years available in the CSV
+
+  // ---- Lifecycle ----
 
   this.preload = function() {
     var self = this;
@@ -46,7 +50,11 @@ function SAPopulationGroupCensus() {
     }
   };
 
+  // Pie chart used to render the selected year. sketch.js re-centres and
+  // rescales it via refreshVisualLayout on every resize.
   this.pie = new PieChart(width / 2, height / 2, width * 0.4);
+
+  // ---- Drawing ----
 
   this.draw = function() {
     if (!this.loaded) {
@@ -63,7 +71,7 @@ function SAPopulationGroupCensus() {
     var values = stringsToNumbers(this.data.getColumn(selectedYear));
     var labels = this.data.getColumn('population_group');
     var legendLabels = [];
-    var colours = ['#4e79a7', '#f28e2b', '#59a14f', '#e15759', '#b07aa1'];
+    var colours = SATheme.categorical;   // SA flag colours, one per population group
 
     for (var i = 0; i < labels.length; i++) {
       legendLabels.push(labels[i] + ' (' + values[i].toFixed(1) + '%)');

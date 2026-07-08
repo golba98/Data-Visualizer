@@ -1,14 +1,18 @@
 function SAAgeSexBubble2022() {
 
+  // ---- State ----
+
   this.name = 'Age group size and female share';
   this.id = 'sa-age-sex-bubble-2022';
 
   this.loaded = false;
-  this.pad = 58;
-  this.dotSizeMin = 12;
-  this.dotSizeMax = 42;
-  this.yMin = 45;
-  this.yMax = 75;
+  this.pad = 58;          // padding between the plot area and the canvas edge
+  this.dotSizeMin = 12;   // bubble diameter for the smallest age group
+  this.dotSizeMax = 42;   // bubble diameter for the largest age group
+  this.yMin = 45;         // female-% axis range (minimum)
+  this.yMax = 75;         // female-% axis range (maximum)
+
+  // ---- Lifecycle ----
 
   this.preload = function() {
     var self = this;
@@ -25,6 +29,8 @@ function SAAgeSexBubble2022() {
 
   this.destroy = function() {
   };
+
+  // ---- Drawing ----
 
   this.draw = function() {
     if (!this.loaded) {
@@ -43,7 +49,7 @@ function SAAgeSexBubble2022() {
     var totalMin = min(totals);
     var totalMax = max(totals);
 
-    fill(80, 150, 220, 140);
+    fill(SATheme.withAlpha(SATheme.blueRGB, 140));
     stroke(0);
     strokeWeight(1);
 
@@ -60,16 +66,19 @@ function SAAgeSexBubble2022() {
 
       ellipse(x, y, size, size);
 
+      // Label every other bubble (plus the 85+ group) to avoid crowding.
       if (i % 2 == 0 || ageGroup == '85+') {
         fill(0);
         noStroke();
         textAlign('center', 'bottom');
         text(ageGroup, x, y - (size / 2) - 3);
-        fill(80, 150, 220, 140);
+        fill(SATheme.withAlpha(SATheme.blueRGB, 140));
         stroke(0);
       }
     }
   };
+
+  // ---- Axes & annotations ----
 
   this.addAxes = function() {
     stroke(200);

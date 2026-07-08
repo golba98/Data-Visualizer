@@ -1,12 +1,14 @@
 function SALifeExpectancy() {
 
+  // ---- State ----
+
   this.name = 'Life expectancy by sex';
   this.id = 'sa-life-expectancy';
 
   this.xAxisLabel = 'year';
   this.yAxisLabel = 'years';
 
-  var marginSize = 35;
+  var marginSize = 35;   // base spacing used to derive the plot margins below
 
   this.layout = {
     marginSize: marginSize,
@@ -30,11 +32,15 @@ function SALifeExpectancy() {
   };
 
   this.loaded = false;
+
+  // One line colour per data series.
   this.seriesColours = {
-    'Female': '#d1495b',
-    'Male': '#2e86ab',
-    'Total': '#3f8f52'
+    'Female': SATheme.red,
+    'Male': SATheme.blue,
+    'Total': SATheme.green
   };
+
+  // ---- Lifecycle ----
 
   this.preload = function() {
     var self = this;
@@ -71,10 +77,12 @@ function SALifeExpectancy() {
       this.series.push({
         label: label,
         values: values,
-        colour: this.seriesColours[label] || '#444444'
+        colour: this.seriesColours[label] || SATheme.black
       });
     }
 
+    // Add ~8% headroom above and below the data so the lines don't touch the
+    // axes, then round the y-axis bounds to one decimal place.
     var minValue = min(allValues);
     var maxValue = max(allValues);
     var padding = max(1, (maxValue - minValue) * 0.08);
@@ -85,6 +93,8 @@ function SALifeExpectancy() {
 
   this.destroy = function() {
   };
+
+  // ---- Drawing ----
 
   this.draw = function() {
     if (!this.loaded) {
@@ -157,6 +167,7 @@ function SALifeExpectancy() {
     }
   };
 
+  // Draw an end-of-line label (series name + dot) at the series' final value.
   this.drawSeriesLabel = function(series, finalValue) {
     var labelX = this.layout.rightMargin - 4;
     var labelY = this.mapLifeToHeight(finalValue);
@@ -187,6 +198,8 @@ function SALifeExpectancy() {
          this.layout.leftMargin,
          this.layout.topMargin + 6);
   };
+
+  // ---- Mapping helpers ----
 
   this.mapYearToWidth = function(value) {
     return map(value,

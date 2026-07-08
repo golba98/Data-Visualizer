@@ -1,12 +1,14 @@
 function SAYouthUnemployment() {
 
+  // ---- State ----
+
   this.name = 'Youth unemployment trend';
   this.id = 'sa-youth-unemployment';
 
   this.xAxisLabel = 'year';
   this.yAxisLabel = '%';
 
-  var marginSize = 35;
+  var marginSize = 35;   // base spacing used to derive the plot margins below
 
   this.layout = {
     marginSize: marginSize,
@@ -30,6 +32,8 @@ function SAYouthUnemployment() {
   };
 
   this.loaded = false;
+
+  // ---- Lifecycle ----
 
   this.preload = function() {
     var self = this;
@@ -61,6 +65,8 @@ function SAYouthUnemployment() {
 
   this.destroy = function() {
   };
+
+  // ---- Drawing ----
 
   this.draw = function() {
     if (!this.loaded) {
@@ -95,7 +101,8 @@ function SAYouthUnemployment() {
 
     this.drawLegend();
 
-    stroke(10, 45, 90);
+    // Trend line in SA flag blue.
+    stroke(SATheme.blue);
     strokeWeight(3);
     noFill();
 
@@ -118,11 +125,13 @@ function SAYouthUnemployment() {
     }
   };
 
+  // ---- Legend & mapping helpers ----
+
   this.drawLegend = function() {
     var x = this.layout.leftMargin + 12;
     var y = this.layout.topMargin + 14;
 
-    stroke(10, 45, 90);
+    stroke(SATheme.blue);
     strokeWeight(3);
     line(x, y, x + 35, y);
 
