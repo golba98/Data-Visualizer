@@ -1,4 +1,8 @@
-// South African flag palette, applied to all SA-themed charts.
+// South African flag-inspired palette, applied to all charts. A restrained
+// set of flat colours -- green, gold, red, blue, black (plus white from the
+// page background) -- used consistently so a category keeps the same colour
+// wherever it appears.
+//
 // Hex strings can be passed straight to fill()/stroke(); the *RGB triplets
 // are for the alpha ramps (heatmap cells, semi-transparent bubbles/circles).
 var SATheme = {

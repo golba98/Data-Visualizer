@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <title>Data Visualisation Dashboard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>South African Inequality, Explained</title>
 
     <script src="lib/p5.min.js"></script>
 
@@ -12,24 +14,33 @@
     <script src="src/sa-theme.js"></script>
 
     <script src="src/pie-chart.js"></script>
-    <script src="src/visualizations/waffle/box.js"></script>
-    <script src="src/visualizations/waffle/waffle.js"></script>
+    <script src="src/visualizations/survey/waffle/box.js"></script>
+    <script src="src/visualizations/survey/waffle/waffle.js"></script>
 
     <script src="src/gallery.js"></script>
 
 
-    <script src="src/visualizations/sa-population-group-census.js"></script>
-    <script src="src/visualizations/sa-sex-age-2022.js"></script>
-    <script src="src/visualizations/sa-age-sex-bubble-2022.js"></script>
-    <script src="src/visualizations/sa-youth-unemployment.js"></script>
-    <script src="src/visualizations/sa-life-expectancy.js"></script>
-    <script src="src/visualizations/climate-change.js"></script>
-    <script src="src/visualizations/survey-pressure-index.js"></script>
-    <script src="src/visualizations/survey-cutback-heatmap.js"></script>
-    <script src="src/visualizations/survey-food-transport-burden.js"></script>
-    <script src="src/visualizations/survey-income-reality-gap.js"></script>
-    <script src="src/visualizations/survey-status-pressure.js"></script>
-    <script src="src/visualizations/survey-pressure-waffle.js"></script>
+    <script src="src/visualizations/inequality/za-gini-trend.js"></script>
+    <script src="src/visualizations/inequality/za-population-group-earnings.js"></script>
+    <script src="src/visualizations/inequality/za-dwelling-ownership-by-group.js"></script>
+    <script src="src/visualizations/inequality/za-land-ownership-by-group.js"></script>
+    <script src="src/visualizations/inequality/za-income-share-trend.js"></script>
+    <script src="src/visualizations/inequality/za-ownership-comparison.js"></script>
+    <script src="src/visualizations/inequality/za-poverty-context.js"></script>
+    <script src="src/visualizations/survey/survey-pressure-index.js"></script>
+    <script src="src/visualizations/survey/survey-food-transport-burden.js"></script>
+    <script src="src/visualizations/survey/survey-pressure-waffle.js"></script>
+    <script src="src/visualizations/survey/survey-cutback-heatmap.js"></script>
+    <script src="src/visualizations/survey/survey-income-reality-gap.js"></script>
+    <script src="src/visualizations/survey/survey-status-pressure.js"></script>
+
+    <!-- Archived: earlier drafts of the project, kept for reference. -->
+    <script src="src/visualizations/archive/sa-population-group-census.js"></script>
+    <script src="src/visualizations/archive/sa-sex-age-2022.js"></script>
+    <script src="src/visualizations/archive/sa-age-sex-bubble-2022.js"></script>
+    <script src="src/visualizations/archive/sa-youth-unemployment.js"></script>
+    <script src="src/visualizations/archive/sa-life-expectancy.js"></script>
+    <script src="src/visualizations/archive/climate-change.js"></script>
 
     <script src="src/sketch.js"></script>
   </head>
@@ -37,19 +48,22 @@
   <body>
     <div id="app" class="app-shell">
       <aside class="sidebar" aria-label="Dataset navigation">
-        <h2 class="sidebar-title">Datasets</h2>
+        <h2 class="sidebar-title">Story Sections</h2>
         <nav id="visuals-menu" class="visuals-menu" aria-label="Visualisations"></nav>
       </aside>
 
       <main class="main-content">
         <header class="page-header">
-          <h1>Data Visualisation Dashboard</h1>
+          <h1>South African Inequality, Explained</h1>
         </header>
 
         <section id="overview" class="overview" aria-labelledby="overview-title">
           <div class="section-heading">
             <h2 id="overview-title">Overview</h2>
-            <p>Select a dataset to view the corresponding visualisation.</p>
+            <p>This top section looks at South African inequality through real data: national inequality trends, earnings by population group, who owns their home, who owns land, and how income, wealth, and poverty are spread out.</p>
+            <p>The middle section is my survey app. I've kept it separate so my placeholder survey data doesn't get mixed in with the real datasets above.</p>
+            <p>Right at the bottom is an archive of earlier charts from before the project settled on this topic — kept around rather than thrown away.</p>
+            <p class="demo-note">Heads up: the survey charts below use fake placeholder data for now. I'll swap in real responses once I've collected them.</p>
           </div>
           <div id="overview-cards" class="overview-groups"></div>
         </section>

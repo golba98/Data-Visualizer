@@ -45,7 +45,7 @@ function SALifeExpectancy() {
   this.preload = function() {
     var self = this;
     this.data = loadTable(
-      './data/health/sa_life_expectancy_1960_2024.csv',
+      './data/archive/sa_life_expectancy_1960_2024.csv',
       'csv',
       'header',
       function(table) {

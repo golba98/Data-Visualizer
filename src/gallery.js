@@ -11,135 +11,188 @@ function Gallery() {
 
   this.catalogue = [
     {
-      title: 'South Africa Census',
+      title: 'South African Inequality, Explained',
       items: [
         {
-          id: 'sa-population-group-census',
-          name: 'Population group',
-          title: 'South African population group distribution by census year',
-          shows: 'Population group percentages for the selected census year.',
-          finding: 'The pie chart shows how each population group contributes to the total population in that year.',
-          source: 'Statistics South Africa census population group data, 1996-2022.',
-          chartSource: 'Source: Stats SA Census 2022'
+          id: 'za-gini-trend',
+          name: 'National inequality',
+          title: 'South African Gini coefficient over time',
+          shows: 'How the Gini coefficient, a common way to measure inequality, has moved in South Africa over time.',
+          finding: 'I started with this chart to set the scene before getting into who owns what.',
+          source: 'data/inequality/za_gini_trend.csv, from the World Bank Poverty and Inequality Platform via Our World in Data.',
+          chartSource: 'Source: World Bank PIP via Our World in Data, 1993-2022'
         },
         {
-          id: 'sa-sex-age-2022',
-          name: 'Sex and age',
-          title: 'South African population by sex and age group, Census 2022',
-          shows: 'Female and male percentages for each age group in Census 2022.',
-          finding: 'The 50% line makes it easy to compare age groups where one sex is slightly larger.',
-          source: 'Statistics South Africa Census 2022 sex by age data.',
-          chartSource: 'Source: Stats SA Census 2022'
+          id: 'za-population-group-earnings',
+          name: 'Population group earnings',
+          title: 'Population share compared with mean earnings',
+          shows: 'How big each population group is compared with how much people in that group earn on average, per Stats SA.',
+          finding: "Population size and average earnings don't line up: the White population group is a small share of the population but earns a lot more on average in the Stats SA data I used.",
+          source: 'data/inequality/za_population_group_shares.csv and data/inequality/za_population_group_earnings.csv, from Stats SA.',
+          chartSource: 'Sources: Stats SA population group table, 2022; Stats SA earnings article, 2011-2015'
         },
         {
-          id: 'sa-age-sex-bubble-2022',
-          name: 'Age group size',
-          title: 'Age group size and female share, Census 2022',
-          shows: 'Each bubble is one age group. The x-axis is age midpoint, the y-axis is female percentage, and the bubble size is total population.',
-          finding: 'The chart shows both the size of age groups and how the female share changes at older ages.',
-          source: 'Statistics South Africa Census 2022 age and sex data.',
-          chartSource: 'Source: Stats SA Census 2022'
-        }
-      ]
-    },
-    {
-      title: 'Employment',
-      items: [
+          id: 'za-dwelling-ownership-by-group',
+          name: 'Dwelling ownership',
+          title: 'Dwelling tenure by population group',
+          shows: 'Who owns, rents, or lives rent-free, broken down by the population group of the household head.',
+          finding: 'White, Indian/Asian, and Coloured household heads own their homes at higher rates than Black African household heads in this survey. This is about tenure, not total wealth.',
+          source: 'data/inequality/za_dwelling_ownership_by_group.csv, from the Stats SA General Household Survey 2024.',
+          chartSource: 'Source: Stats SA General Household Survey 2024, Table 8.6'
+        },
         {
-          id: 'sa-youth-unemployment',
-          name: 'Youth unemployment',
-          title: 'South African youth unemployment trend, 1991-2025',
-          shows: 'Annual youth unemployment rate as a percentage.',
-          finding: 'The line chart makes the long-term pattern easier to see than reading the table year by year.',
-          source: 'World Bank / ILO South African youth unemployment data, 1991-2025.',
-          chartSource: 'Source: World Bank / ILO'
-        }
-      ]
-    },
-    {
-      title: 'Health',
-      items: [
+          id: 'za-land-ownership-by-group',
+          name: 'Land ownership',
+          title: 'Agricultural land ownership by population group',
+          shows: 'Who individually owns farms and agricultural land, by population group, according to the 2017 Land Audit.',
+          finding: 'White individual landowners held the biggest share of individually owned farms and agricultural land in this audit.',
+          source: 'data/inequality/za_land_ownership_by_group.csv, from the Department of Rural Development and Land Reform Land Audit Report 2017.',
+          chartSource: 'Source: Land Audit Report 2017, farms and agricultural holdings owned by individuals'
+        },
         {
-          id: 'sa-life-expectancy',
-          name: 'Life expectancy',
-          title: 'South African life expectancy at birth by sex, 1960-2024',
-          shows: 'Female, male, and total life expectancy at birth in years across the full time range.',
-          finding: 'The 2000s dip and later recovery stand out clearly, and the end labels make it easy to compare the latest values.',
-          source: 'World Bank life expectancy at birth indicators for South Africa, updated July 1, 2026, with data through 2024.',
-          chartSource: 'Source: World Bank'
-        }
-      ]
-    },
-    {
-      title: 'Climate',
-      items: [
+          id: 'za-income-share-trend',
+          name: 'Top income share',
+          title: 'Top 10 percent share of before-tax income',
+          shows: 'How much of all before-tax income goes to the richest 10 percent, based on WID estimates.',
+          finding: 'This shows income concentration pretty clearly: one small group holds a large chunk of total income.',
+          source: 'data/inequality/za_income_distribution.csv, from WID.world via Our World in Data.',
+          chartSource: 'Source: WID.world via Our World in Data, 1993-2014'
+        },
         {
-          id: 'climate-change',
-          name: 'Climate Change',
-          title: 'Global surface temperature anomaly, 1880-2025',
-          shows: 'Global annual surface temperature anomaly in degrees Celsius.',
-          finding: 'The slider can focus on shorter periods while the full range shows the long-term warming pattern.',
-          source: 'NASA GISTEMP v4 global temperature anomaly data, 1880-2025.',
-          chartSource: 'Source: NASA GISTEMP v4'
+          id: 'za-ownership-comparison',
+          name: 'Top 10 concentration',
+          title: 'Top 10 percent population share versus income and wealth share',
+          shows: 'The top 10 percent by population, compared with what share of income and wealth that same top 10 percent actually holds.',
+          finding: 'This is the key comparison for me: a group that makes up 10 percent of the population holds a much bigger share of income and wealth.',
+          source: 'data/inequality/za_population_groups.csv, data/inequality/za_income_distribution.csv, and data/inequality/za_wealth_distribution.csv, from WID.world via Our World in Data.',
+          chartSource: 'Source: WID.world via Our World in Data; population share is a derived reference group'
+        },
+        {
+          id: 'za-poverty-context',
+          name: 'Poverty indicators',
+          title: 'Poverty indicators as financial-pressure context',
+          shows: "A few different poverty measures, kept separate because they don't all mean the same thing.",
+          finding: "I added this for context on financial pressure, but I've kept the different poverty definitions apart rather than treating them as one number.",
+          source: 'data/inequality/za_poverty_indicators.csv, from World Bank PIP via Our World in Data and Stats SA.',
+          chartSource: 'Sources: World Bank PIP via OWID and Stats SA Poverty Trends, 1993-2023'
         }
       ]
     },
     {
-      title: 'Survey',
+      title: 'Survey App: Everyday Financial Pressure',
       items: [
         {
           id: 'survey-pressure-index',
           name: 'Pressure index',
-          title: 'Mzansi Monthly Pressure Index',
-          shows: 'A single survey pressure score built from main pressure, work worry, income reality, food cost, and transport cost.',
-          finding: 'The index gives a quick overall view of how heavy the cost-of-living pressure feels across the survey responses.',
-          source: 'Cleaned local survey response data. The dataset has no month column, so this is a survey-based current index.',
-          chartSource: 'Source: local survey CSV'
-        },
-        {
-          id: 'survey-cutback-heatmap',
-          name: 'Cutback heatmap',
-          title: 'Cutback Heatmap',
-          shows: 'A heatmap of what respondents cut back on, split by student and work status.',
-          finding: 'The darkest cells show where everyday sacrifices are most common, such as eating out, data, transport, subscriptions, or meat.',
-          source: 'Raw local survey response data in data/south-africa/survey_responses.csv.',
-          chartSource: 'Source: local survey CSV'
-        },
-        {
-          id: 'survey-food-transport-burden',
-          name: 'Food vs transport',
-          title: 'Food vs Transport Burden Chart',
-          shows: 'A burden grid comparing food-cost bands with transport-cost bands.',
-          finding: 'Food and transport stand out together because they are daily survival costs, not optional spending.',
-          source: 'Cleaned local survey response data in data/south-africa/survey_pressure_cleaned.csv.',
-          chartSource: 'Source: local survey CSV'
-        },
-        {
-          id: 'survey-income-reality-gap',
-          name: 'Income reality gap',
-          title: 'Income Reality Gap',
-          shows: 'Average work-worry rating compared with average income-keeps-up rating for each status group.',
-          finding: 'The gap shows where people feel high worry while also saying income is not keeping up.',
-          source: 'Cleaned local survey response data in data/south-africa/survey_pressure_cleaned.csv.',
-          chartSource: 'Source: local survey CSV'
-        },
-        {
-          id: 'survey-status-pressure',
-          name: 'Student vs worker',
-          title: 'Student vs Worker Pressure Chart',
-          shows: 'A status comparison for students, employed people, unemployed people, and people studying while working.',
-          finding: 'The stacked bars make it easier to compare which pressure categories matter most in each group.',
-          source: 'Cleaned local survey response data in data/south-africa/survey_pressure_cleaned.csv.',
-          chartSource: 'Source: local survey CSV'
+          title: 'How pressured are people feeling? (demo)',
+          shows: 'A single 0-100 score built by combining placeholder answers on pressure, work worry, income, food, and transport costs.',
+          finding: "This is the shape I want the final index to take — right now it's running on invented numbers standing in for real answers.",
+          source: 'data/survey/za_survey_demo.csv — a made-up dataset I put together to build the app before real responses exist.',
+          chartSource: 'Placeholder data, not real responses. Swapping this out is on my to-do list.'
         },
         {
           id: 'survey-pressure-waffle',
-          name: 'Survey waffle',
-          title: 'Main cost pressure from survey responses',
-          shows: 'A waffle chart showing the distribution of the real main cost-pressure question in the cleaned survey CSV.',
-          finding: 'Food, transport, and data are the most common pressure categories in the survey responses.',
-          source: 'Cleaned local survey response data in data/south-africa/survey_pressure_cleaned.csv, derived from data/south-africa/survey_responses.csv.',
-          chartSource: 'Source: local survey CSV'
+          name: 'Cost pressure mix',
+          title: 'What people worry about most (demo)',
+          shows: "A 100-square waffle chart splitting invented respondents by their main cost pressure — mostly to see if the layout works.",
+          finding: "This is the structure I'm planning for the real survey; the counts themselves don't mean anything yet.",
+          source: 'data/survey/za_survey_demo.csv, a stand-in dataset while I wait on actual responses.',
+          chartSource: "Mock data — update once collection is done."
+        },
+        {
+          id: 'survey-food-transport-burden',
+          name: 'Food & transport',
+          title: 'Food cost against transport cost (demo)',
+          shows: 'A grid crossing made-up food-cost bands against transport-cost bands, sized by how many fake respondents land in each cell.',
+          finding: "Food and transport are the two costs I most want to dig into once real survey data comes in.",
+          source: 'data/survey/za_survey_demo.csv, rows I invented just to test this chart.',
+          chartSource: 'Test data only, not from real respondents.'
+        },
+        {
+          id: 'survey-cutback-heatmap',
+          name: 'What gets cut',
+          title: 'What people say they cut back on (demo)',
+          shows: 'A heatmap crossing invented cutback answers against status group, darker where more fake rows land.',
+          finding: "The goal is to connect financial pressure to actual behaviour — but every row here is made up for now.",
+          source: 'data/survey/za_survey_demo.csv, placeholder rows standing in for the real survey.',
+          chartSource: 'Demo only — needs replacing once responses are collected.'
+        },
+        {
+          id: 'survey-income-reality-gap',
+          name: 'Worry vs. income',
+          title: 'Does income keep up with the worry? (demo)',
+          shows: 'A dumbbell chart lining up average work-worry ratings against average income-keeps-up ratings for each status group.',
+          finding: "I want this to show how worry and income adequacy pull apart across groups — but it's all invented numbers until real responses land.",
+          source: 'data/survey/za_survey_demo.csv, fabricated for development purposes only.',
+          chartSource: 'Not evidence — placeholder responses.'
+        },
+        {
+          id: 'survey-status-pressure',
+          name: 'Pressure by status',
+          title: 'Who feels which pressure most? (demo)',
+          shows: 'Stacked bars breaking down invented main-pressure answers by student, employed, unemployed, and studying-and-working groups.',
+          finding: "This is roughly how I want to compare groups once the placeholder rows are gone.",
+          source: 'data/survey/za_survey_demo.csv, made-up rows used to shape the chart ahead of real data.',
+          chartSource: 'Draft data — to be replaced with real survey responses.'
+        }
+      ]
+    },
+    {
+      title: 'Archived: Earlier Drafts',
+      items: [
+        {
+          id: 'sa-population-group-census',
+          name: 'Population by census year',
+          title: 'South African population by group, census 1996-2022',
+          shows: 'A pie chart of population-group shares, with a dropdown to switch between census years.',
+          finding: "An early version of the population-group story, from before I switched to comparing group size against earnings and ownership.",
+          source: 'data/archive/population_group_census_1996_2022.csv, from Stats SA census figures.',
+          chartSource: 'Source: Stats SA census data, 1996-2022'
+        },
+        {
+          id: 'sa-sex-age-2022',
+          name: 'Population by sex and age',
+          title: 'South African population by sex and age group, census 2022',
+          shows: 'Female and male population share for each age band in the 2022 census, split at the 50% line.',
+          finding: 'Left over from when this project was more of a general census dashboard.',
+          source: 'data/archive/sex_by_age_2022.csv, from Stats SA Census 2022.',
+          chartSource: 'Source: Stats SA Census 2022'
+        },
+        {
+          id: 'sa-age-sex-bubble-2022',
+          name: 'Age group size and female share',
+          title: 'Age group size versus female share, census 2022',
+          shows: 'Each bubble is an age group: position marks female share, size marks how many people are in that group.',
+          finding: "Another piece of the original census dashboard, kept here once the project's focus moved to inequality.",
+          source: 'data/archive/age_sex_bubble_2022.csv, from Stats SA Census 2022.',
+          chartSource: 'Source: Stats SA Census 2022'
+        },
+        {
+          id: 'sa-youth-unemployment',
+          name: 'Youth unemployment trend',
+          title: 'South African youth unemployment, 1991-2025',
+          shows: 'The youth unemployment rate across more than three decades.',
+          finding: 'Part of the project before I narrowed the scope down to income, wealth, and ownership.',
+          source: 'data/archive/sa_youth_unemployment_1991_2025.csv, from World Bank/ILO estimates.',
+          chartSource: 'Source: World Bank / ILO, 1991-2025'
+        },
+        {
+          id: 'sa-life-expectancy',
+          name: 'Life expectancy by sex',
+          title: 'South African life expectancy at birth, 1960-2024',
+          shows: 'Female, male, and overall life expectancy at birth across more than 60 years.',
+          finding: "One of the first charts I built for this project, kept here even though it fell outside the final inequality story.",
+          source: 'data/archive/sa_life_expectancy_1960_2024.csv, from World Bank indicators.',
+          chartSource: 'Source: World Bank, 1960-2024'
+        },
+        {
+          id: 'climate-change',
+          name: 'Global temperature anomaly',
+          title: 'Global surface temperature anomaly, 1880-2025',
+          shows: 'How much warmer or cooler each year has been compared with the long-term global average.',
+          finding: "Not related to South African inequality at all — an early experiment from before I settled on this topic.",
+          source: 'data/archive/global_temperature_anomaly_1880_2025.csv, from NASA GISTEMP v4.',
+          chartSource: 'Source: NASA GISTEMP v4, 1880-2025'
         }
       ]
     }
@@ -321,9 +374,9 @@ function Gallery() {
     document.getElementById('chart-view').classList.remove('hidden');
     document.getElementById('chart-title').textContent = metadata.title;
     document.getElementById('info-title').textContent = metadata.title;
-    document.getElementById('info-shows').textContent = 'Still working on this.';
-    document.getElementById('info-finding').textContent = 'Still working on this.';
-    document.getElementById('info-source').textContent = 'Still working on this.';
+    document.getElementById('info-shows').textContent = metadata.shows;
+    document.getElementById('info-finding').textContent = metadata.finding;
+    document.getElementById('info-source').textContent = metadata.source;
     document.getElementById('chart-source').textContent = metadata.chartSource;
     this.updateSelectedMenu(vis.id);
   };

@@ -40,10 +40,10 @@ function resizeChartCanvas() {
 function refreshVisualLayout(vis) {
   if (vis.layout) {
     if (vis.layout.hasOwnProperty('rightMargin')) {
-      vis.layout.rightMargin = width - (vis.layout.marginSize || 0);
+      vis.layout.rightMargin = width - (vis.layout.rightPadding || vis.layout.marginSize || 0);
     }
     if (vis.layout.hasOwnProperty('bottomMargin')) {
-      vis.layout.bottomMargin = height - ((vis.layout.marginSize || 0) * 2);
+      vis.layout.bottomMargin = height - (vis.layout.bottomPadding || ((vis.layout.marginSize || 0) * 2));
     }
   }
 
@@ -75,18 +75,29 @@ function setup() {
   gallery = new Gallery();
 
   // Add the visualisation objects here.
+  gallery.addVisual(new ZAGiniTrend());
+  gallery.addVisual(new ZAPopulationGroupEarnings());
+  gallery.addVisual(new ZADwellingOwnershipByGroup());
+  gallery.addVisual(new ZALandOwnershipByGroup());
+  gallery.addVisual(new ZAIncomeShareTrend());
+  gallery.addVisual(new ZAOwnershipComparison());
+  gallery.addVisual(new ZAPovertyContext());
+  gallery.addVisual(new SurveyPressureIndex());
+  gallery.addVisual(new SurveyFoodTransportBurden());
+  gallery.addVisual(new SurveyPressureWaffle());
+  gallery.addVisual(new SurveyCutbackHeatmap());
+  gallery.addVisual(new SurveyIncomeRealityGap());
+  gallery.addVisual(new SurveyStatusPressure());
+
+  // Archived: earlier drafts of the project, kept for reference below the
+  // survey section rather than deleted outright.
   gallery.addVisual(new SAPopulationGroupCensus());
   gallery.addVisual(new SAPopulationSexAge2022());
   gallery.addVisual(new SAAgeSexBubble2022());
   gallery.addVisual(new SAYouthUnemployment());
   gallery.addVisual(new SALifeExpectancy());
   gallery.addVisual(new ClimateChange());
-  gallery.addVisual(new SurveyPressureIndex());
-  gallery.addVisual(new SurveyCutbackHeatmap());
-  gallery.addVisual(new SurveyFoodTransportBurden());
-  gallery.addVisual(new SurveyIncomeRealityGap());
-  gallery.addVisual(new SurveyStatusPressure());
-  gallery.addVisual(new SurveyPressureWaffle());
+
   gallery.buildOverviewCards();
   gallery.showOverview();
 }

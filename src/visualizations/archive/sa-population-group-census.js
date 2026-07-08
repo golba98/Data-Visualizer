@@ -13,7 +13,7 @@ function SAPopulationGroupCensus() {
   this.preload = function() {
     var self = this;
     this.data = loadTable(
-      './data/south-africa/population_group_census_1996_2022.csv',
+      './data/archive/population_group_census_1996_2022.csv',
       'csv',
       'header',
       function(table) {

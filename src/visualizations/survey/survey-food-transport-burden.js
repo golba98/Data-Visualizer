@@ -17,7 +17,7 @@ function SurveyFoodTransportBurden() {
     var self = this;
 
     this.table = loadTable(
-      'data/south-africa/survey_pressure_cleaned.csv',
+      'data/survey/za_survey_demo.csv',
       'csv',
       'header',
       function(table) {
@@ -95,12 +95,12 @@ function SurveyFoodTransportBurden() {
     textAlign(LEFT, TOP);
     textStyle(BOLD);
     textSize(17);
-    text('Food vs transport', 24, 18);
+    text('Food cost against transport cost (demo)', 24, 18);
 
     textStyle(NORMAL);
     textSize(12);
     fill(90);
-    text('Each circle counts people in a food-cost and transport-cost band.',
+    text('Invented rows, not real respondents. Each circle counts how many land in that food/transport combination.',
          24,
          44,
          width - 48,

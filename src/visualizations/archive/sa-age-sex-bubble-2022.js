@@ -17,7 +17,7 @@ function SAAgeSexBubble2022() {
   this.preload = function() {
     var self = this;
     this.data = loadTable(
-      './data/south-africa/age_sex_bubble_2022.csv', 'csv', 'header',
+      './data/archive/age_sex_bubble_2022.csv', 'csv', 'header',
       function(table) {
         self.loaded = true;
       });

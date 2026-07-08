@@ -18,7 +18,7 @@ function SurveyStatusPressure() {
     var self = this;
 
     this.table = loadTable(
-      'data/south-africa/survey_pressure_cleaned.csv',
+      'data/survey/za_survey_demo.csv',
       'csv',
       'header',
       function(table) {
@@ -26,7 +26,7 @@ function SurveyStatusPressure() {
         self.loaded = true;
       },
       function(error) {
-        console.error('Could not load status pressure data', error);
+        console.error('Could not load demo status pressure data', error);
       });
   };
 
@@ -89,7 +89,7 @@ function SurveyStatusPressure() {
     fill(0);
     noStroke();
     textAlign(CENTER, CENTER);
-    text('Loading status pressure data...', width / 2, height / 2);
+    text('Loading demo status pressure data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -98,12 +98,12 @@ function SurveyStatusPressure() {
     textAlign(LEFT, TOP);
     textStyle(BOLD);
     textSize(17);
-    text('Pressure by status', 24, 18);
+    text('Who feels which pressure most? (demo)', 24, 18);
 
     textStyle(NORMAL);
     textSize(12);
     fill(80);
-    text('Each bar shows what people in that group said their main cost pressure was.',
+    text('Still running on invented rows — each bar splits a status group by its main cost pressure.',
          24,
          44,
          width - 48,

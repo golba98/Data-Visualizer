@@ -31,7 +31,7 @@ function SAPopulationSexAge2022() {
   this.preload = function() {
     var self = this;
     this.data = loadTable(
-      './data/south-africa/sex_by_age_2022.csv', 'csv', 'header',
+      './data/archive/sex_by_age_2022.csv', 'csv', 'header',
       function(table) {
         self.loaded = true;
       });

@@ -1,120 +1,140 @@
-# Data Visualisation Coursework
+# South African Inequality, Explained
 
-This project started from the Data Visualiser template. I changed the original
-template datasets to use newer external datasets, but kept the app simple so the
-charts are still easy to explain.
+## Abstract / Summary
 
-## Datasets Added
+This is a data-story website I built about South African inequality. I wanted to see how inequality shows up when you compare population size against income, wealth, earnings by population group, dwelling tenure, land ownership, and everyday financial pressure.
 
-The South African datasets are stored in `data/south-africa/`.
+The site has three parts. The top part uses real, credible data to explain South African inequality. The middle part is my survey app, which currently runs on placeholder data so I can demo how the final survey charts will look. At the bottom is a small archive of earlier charts I built before settling on this topic, kept for reference rather than deleted.
 
-- `sex_by_age_2022.csv`
-- `sex_by_age_2022_detailed.csv`
-- `population_group_census_1996_2022.csv`
-- `age_sex_bubble_2022.csv`
-- `sa_youth_unemployment_1991_2025.csv`
-- `survey_pressure_cleaned.csv`
-- `survey_responses.csv`
+## Research Question
 
-The climate dataset is stored in `data/climate/`.
+How can data visualisation help explain South African inequality — income, wealth, population-group differences, dwelling tenure, land ownership, and everyday financial pressure?
 
-- `global_temperature_anomaly_1880_2025.csv`
+## Background
 
-The health dataset is stored in `data/health/`.
+South Africa has a well-known inequality problem, so I focused on money and related measures: income groups, wealth ownership, earnings by population group, dwelling tenure, land ownership, poverty, and survey responses about financial pressure.
 
-- `sa_life_expectancy_1960_2024.csv`
+Population-group labels here are the official statistical categories used by Stats SA — not biological categories. No single chart is meant to explain the whole inequality picture; each one covers a specific piece of the story.
+
+## Methodology
+
+I used:
+
+- secondary data from credible sources: WID.world, the World Bank Poverty and Inequality Platform, Our World in Data, Statistics South Africa, and the 2017 Land Audit report
+- a survey section for this project
+- temporary, made-up survey data while I build the app
+- cleaned, chart-ready CSV files in the `data/` folder
+- p5.js to draw the charts and build the site
+
+The survey section isn't final evidence yet — it's there to show how the finished dashboard will work once I collect and clean real responses.
 
 ## Data Sources
 
-- Statistics South Africa Census 2022 data was used for the age, sex, and
-  population group charts.
-- World Bank / ILO youth unemployment data was used for the South African youth
-  unemployment chart.
-- World Bank life expectancy indicators were used for the South African life
-  expectancy chart.
-- NASA GISTEMP v4 global temperature anomaly data was used for the climate chart.
-- The waffle chart uses the cleaned local survey response CSV.
-  `data/south-africa/survey_pressure_cleaned.csv` was derived from
-  `data/south-africa/survey_responses.csv` and uses the real `main_pressure`
-  answers as the waffle categories.
+| Filename | Source | URL | Year or period | Status | Limitations |
+| --- | --- | --- | --- | --- | --- |
+| `data/inequality/za_gini_trend.csv` | World Bank Poverty and Inequality Platform via Our World in Data | https://ourworldindata.org/grapher/economic-inequality-gini-index | 1993-2022 | Real cleaned data | Survey-based inequality estimates aren't always fully comparable across years. |
+| `data/inequality/za_population_group_shares.csv` | Statistics South Africa population group table cleaned from the existing project census file | Local cleaned file | 2022 | Real cleaned data | Population group categories are official statistical categories, not biological groups. |
+| `data/inequality/za_population_group_earnings.csv` | Statistics South Africa, “How unequal is South Africa?” | https://www.statssa.gov.za/?p=12930 | 2011-2015 | Real cleaned data | Mean monthly earnings don't capture total wealth, assets, or all household resources. |
+| `data/inequality/za_dwelling_ownership_by_group.csv` | Statistics South Africa General Household Survey 2024, Table 8.6 | https://www.statssa.gov.za/publications/P0318/P03182024.pdf | 2024 | Real cleaned and calculated data | Measures dwelling tenure by the population group of the household head, not total property wealth or homes owned by individuals. |
+| `data/inequality/za_land_ownership_by_group.csv` | Department of Rural Development and Land Reform Land Audit Report 2017 | https://www.gov.za/sites/default/files/gcis_document/201802/landauditreport13feb2018.pdf | 2017 | Real cleaned data | Only covers individually owned farms and agricultural holdings, not all homes, property, or wealth. |
+| `data/inequality/za_income_distribution.csv` | WID.world via Our World in Data | https://ourworldindata.org/grapher/income-share-top-10-before-tax-wid | 1993-2014 | Real cleaned data | Before-tax income share isn't the same as disposable income after taxes and benefits. |
+| `data/inequality/za_wealth_distribution.csv` | WID.world via Our World in Data | https://ourworldindata.org/grapher/wealth-share-richest-10-percent | 1993-2024 | Real cleaned data | Wealth estimates may include modelled values where direct data is limited. |
+| `data/inequality/za_population_groups.csv` | Local derived grouping file | Local file | Not time-series | Derived grouping data | Simplifies top 10 percent, middle 40 percent, and bottom 50 percent groups for comparison. |
+| `data/inequality/za_poverty_indicators.csv` | World Bank PIP via OWID and Statistics South Africa | https://ourworldindata.org/grapher/relative-poverty-share-of-people-below-50-of-the-median and https://www.statssa.gov.za/?p=19078 | 1993-2023 | Real cleaned data | Different poverty definitions here shouldn't be merged into one measure. |
+| `data/survey/za_survey_demo.csv` | Local temporary demo dataset | Local file | Development placeholder | Synthetic placeholder data | Made-up data — not evidence, and needs to be replaced with real responses. |
+| `data/inequality/za_dashboard_sources.csv` | Local source register | Local file | Project documentation | Metadata | Summarises sources and limitations for the dashboard. |
 
-## Charts Replaced
+## Visualisation Design
 
-- The original stacked bar chart was changed to South African population by sex
-  and age group for Census 2022.
-- The original pie chart was changed to population group distribution by census
-  year.
-- The original bubble chart was changed to age group size and female share for
-  Census 2022.
-- The original line chart was changed to South African youth unemployment from 1991
-  to 2025.
-- A new multi-series line chart was added for South African life expectancy by
-  sex from 1960 to 2024.
-- The climate chart was updated with global temperature anomaly data from 1880
-  to 2025.
-- A waffle-chart view was added for the survey question about the main
-  cost-of-living pressure.
-- Five extra survey views were added for the cost-of-living survey:
-  the Mzansi Monthly Pressure Index, cutback heatmap, food vs transport burden,
-  income reality gap, and student vs worker pressure chart.
+The site is split into three parts. **South African Inequality, Explained** uses official and credible secondary data. **Survey App: Everyday Financial Pressure** uses temporary, made-up survey data and is labelled as such. **Archived: Earlier Drafts** holds charts from before the project's scope settled, kept below the survey section rather than deleted.
 
-## How More Graphs Are Organised
+### Gini coefficient over time
 
-The dashboard uses `src/gallery.js` as the chart catalogue. Each chart belongs
-to a topic group such as South Africa Census, Employment, Health, Climate, or
-Survey. The catalogue stores the menu label and the information-panel text in
-one place, so adding more graphs does not require separate edits to a menu list
-and a metadata object.
+This line chart uses `data/inequality/za_gini_trend.csv`, showing the South African Gini estimates I could find from World Bank/PIP via Our World in Data. I use it to set the national inequality context before getting into ownership and income specifics.
 
-To add a new graph:
+### Population share compared with mean earnings
 
-1. Add the chart JavaScript file in `src/visualizations/`.
-2. Load that file from `index.html`.
-3. Register the chart object in `src/sketch.js`.
-4. Add one catalogue item in `src/gallery.js` under the right topic group.
+This bar comparison uses `data/inequality/za_population_group_shares.csv` and `data/inequality/za_population_group_earnings.csv`, comparing population-group shares with Stats SA mean monthly real earnings. It shows how a small population group can earn far more on average than much larger groups.
 
-The evidence and decision log were saved in the CM1010 midterm evidence folder:
-`1-Evidence/3-Organisation/graph-organisation-log.md`.
+### Dwelling tenure by population group
 
-## How The CSV Files Were Cleaned
+This stacked bar chart uses `data/inequality/za_dwelling_ownership_by_group.csv`, showing owned, rented, rent-free, and other tenure rates by the population group of the household head. It's one practical way inequality shows up in everyday living conditions — though it's a tenure measure, not a full property-wealth one.
 
-The CSV files were simplified so the JavaScript can read them directly. I kept
-only the columns needed for the charts, used clear column names, and changed the
-values into percentages or yearly values where needed. This makes the project
-easier to understand because each visualisation uses a small chart-ready file.
+### Agricultural land ownership by population group
 
-For `data/south-africa/survey_pressure_cleaned.csv`, the raw survey export was
-cleaned into shorter headings such as `age`, `status`, `pressure`,
-`work_worry`, and `income_keeps_up`. The waffle chart reads the real `pressure`
-column.
+This bar chart uses `data/inequality/za_land_ownership_by_group.csv`, showing shares of individually owned farms and agricultural land from the 2017 Land Audit. It shows ownership concentration in a land-related measure, though it doesn't cover all homes or all wealth.
 
-The Mzansi Monthly Pressure Index also uses the cleaned survey file. The survey
-does not have a month column, so I used it as one current pressure index instead
-of pretending it is a monthly time-series chart. The cutback heatmap uses the
-raw survey file because that is where the `cut_back_on` answers are stored.
+### Top 10 percent income share
 
-## Why These Chart Types Fit
+This line chart uses `data/inequality/za_income_distribution.csv`, showing the share of before-tax income going to the richest 10 percent. It's here because the project is about money distribution, not just population size.
 
-- A stacked horizontal bar chart works well for comparing female and male
-  percentages across age groups.
-- A pie chart works for one census year at a time because it shows how the
-  population groups make up a whole.
-- A bubble chart fits the age data because it can show age midpoint, female
-  percentage, and total population at the same time.
-- A line chart fits youth unemployment because the data changes over many years.
-- A multi-series line chart works for life expectancy because it compares female,
-  male, and total trends over time on the same scale.
-- The temperature chart keeps the slider because it is useful for looking at
-  different year ranges in a long time series.
-- A waffle chart works for the survey because it shows the proportion of
-  categorical `pressure` responses as parts of a whole.
-- A pressure index works as an overview because it combines several survey
-  ratings into one easy-to-read score.
-- A heatmap works for cutbacks because it shows where sacrifices are strongest
-  across different status groups.
-- A burden grid works for food and transport because both costs are regular
-  survival expenses and can be compared as spending bands.
-- A gap chart works for income reality because the distance between worry and
-  income rating is the main point.
-- A stacked bar chart works for student versus worker pressure because it shows
-  the mix of pressure categories inside each group.
+### Top 10 percent population share versus income and wealth share
+
+This comparison chart uses `data/inequality/za_population_groups.csv`, `data/inequality/za_income_distribution.csv`, and `data/inequality/za_wealth_distribution.csv`, comparing a 10 percent population reference group with top 10 percent income and wealth shares. This is the central argument of the project: a small slice of the population holds a much bigger share of resources.
+
+### Poverty context
+
+This chart uses `data/inequality/za_poverty_indicators.csv`, showing a few poverty indicators from World Bank/PIP and Stats SA. It gives context for financial pressure, but the different definitions have to be read separately.
+
+### How pressured are people feeling? (demo)
+
+A gauge and a set of component bars built from `data/survey/za_survey_demo.csv`, combining food costs, transport costs, income pressure, and work worry into one 0-100 score. It's a stand-in for the index I want to calculate once real survey responses come in.
+
+### What people worry about most (demo)
+
+A waffle chart using `data/survey/za_survey_demo.csv` to check that a 100-square grid is a readable way to show the spread of main cost-pressure answers.
+
+### Food cost against transport cost (demo)
+
+A grid from `data/survey/za_survey_demo.csv` crossing food-cost bands against transport-cost bands, sized by how many placeholder respondents land in each combination.
+
+### What people say they cut back on (demo)
+
+A heatmap from `data/survey/za_survey_demo.csv` showing made-up cutback answers by status group — food, transport, data, social, clothing, subscriptions, and electricity. The idea is to eventually connect financial pressure to actual behaviour changes.
+
+### Does income keep up with the worry? (demo)
+
+A dumbbell chart from `data/survey/za_survey_demo.csv` lining up average work-worry ratings against average income-keeps-up ratings for each status group.
+
+### Who feels which pressure most? (demo)
+
+Stacked bars from `data/survey/za_survey_demo.csv` splitting student, employed, unemployed, and studying-and-working groups by their main cost pressure.
+
+### Archived charts
+
+Below the survey app is a small archive of six charts from earlier drafts of this project — a census pie chart, a sex-by-age breakdown, an age/female-share bubble chart, youth unemployment, life expectancy, and (unrelated to South Africa) a global temperature anomaly chart I built while still deciding on a topic. They're not part of the inequality story, so I moved them out of the main sections instead of deleting them.
+
+## Synthetic Data Disclaimer
+
+Some of the survey data in this project right now is made up — placeholder data to demo the final dashboard structure. It'll be replaced with real survey responses before final submission.
+
+The website, this README, and the data notes all label this survey data as synthetic placeholder data. Don't treat it as evidence about real respondents.
+
+## Findings / Expected Insights
+
+I designed this project to show that:
+
+- inequality shows up clearly when you compare population share with income and wealth share
+- national inequality indicators point to a broader structural problem
+- official population-group data shows unequal outcomes in earnings, dwelling tenure, and land ownership
+- survey responses can later help connect that structural inequality to everyday financial pressure
+
+## Limitations
+
+- The survey data isn't final yet, and the placeholder data isn't evidence.
+- Different sources measure income, wealth, poverty, population, dwelling tenure, and land ownership differently.
+- These charts simplify complex social and economic issues.
+- Some WID wealth and income estimates involve modelling where direct data is limited.
+- The dwelling chart measures household tenure rates, not full property wealth.
+- The land chart measures individually owned farms and agricultural holdings, not all land or homes.
+- Not all datasets share the same latest year, so I've labelled the year used on each chart.
+
+## Technical Implementation
+
+The site is a p5.js dashboard. `index.html` loads the app shell, p5.js, helper functions, chart scripts, and `src/sketch.js`. The chart catalogue in `src/gallery.js` controls the menu labels, overview cards, chart titles, descriptions, source text, and the split between the national-data section and the survey app.
+
+Each chart loads a CSV from `data/` with `loadTable()` and draws into one responsive canvas inside the chart panel. The layout uses CSS grid so the menu, chart area, and info panel work on both desktop and smaller screens.
+
+## Conclusion
+
+I built this project to make South African inequality easier to understand through data visualisation. It starts with an evidence-based story from national inequality, population-group earnings, dwelling tenure, land ownership, income concentration, wealth concentration, and poverty context, then keeps the survey app as a clearly labelled demo section until it runs on real collected responses.

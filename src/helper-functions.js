@@ -28,7 +28,7 @@ function sliceRowNumbers (row, start=0, end) {
     end = row.arr.length;
   }
 
-  for (i = start; i < end; i++) {
+  for (var i = start; i < end; i++) {
     rowData.push(row.getNum(i));
   }
 
@@ -39,24 +39,27 @@ function stringsToNumbers (array) {
   return array.map(Number);
 }
 
+// Add thousands separators to a number, e.g. 26663144 -> '26,663,144'.
+function formatThousands(value) {
+  return Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+}
+
 // --------------------------------------------------------------------
 // Plotting helper functions
 // --------------------------------------------------------------------
 
 function drawAxis(layout, colour=0) {
+  // Flat plot area: a plain border box around all four sides, not just the
+  // two axis lines. Drawn on top of any grid lines.
+  push();
   stroke(color(colour));
-
-  // x-axis
-  line(layout.leftMargin,
-       layout.bottomMargin,
-       layout.rightMargin,
-       layout.bottomMargin);
-
-  // y-axis
-  line(layout.leftMargin,
+  strokeWeight(2);
+  noFill();
+  rect(layout.leftMargin,
        layout.topMargin,
-       layout.leftMargin,
-       layout.bottomMargin);
+       layout.rightMargin - layout.leftMargin,
+       layout.bottomMargin - layout.topMargin);
+  pop();
 }
 
 function drawAxisLabels(xLabel, yLabel, layout) {
@@ -90,7 +93,7 @@ function drawYAxisTickLabels(min, max, layout, mapFunction,
   textAlign('right', 'center');
 
   // Draw all axis tick labels and grid lines.
-  for (i = 0; i <= layout.numYTickLabels; i++) {
+  for (var i = 0; i <= layout.numYTickLabels; i++) {
     var value = min + (i * yTickStep);
     var y = mapFunction(value);
 
@@ -101,7 +104,8 @@ function drawYAxisTickLabels(min, max, layout, mapFunction,
 
     if (layout.grid) {
       // Add grid line.
-      stroke(200);
+      stroke(140);
+      strokeWeight(1);
       line(layout.leftMargin, y, layout.rightMargin, y);
     }
   }
@@ -122,10 +126,25 @@ function drawXAxisTickLabel(value, layout, mapFunction) {
 
   if (layout.grid) {
     // Add grid line.
-    stroke(220);
+    stroke(140);
+    strokeWeight(1);
     line(x,
          layout.topMargin,
          x,
          layout.bottomMargin);
   }
+}
+
+// --------------------------------------------------------------------
+// Flat 2D chart styling helpers
+// --------------------------------------------------------------------
+
+// Draw a plain flat bar. (x, y) is the top-left of the bar; w/h its size.
+function drawBar(x, y, w, h, col) {
+  push();
+  stroke(0);
+  strokeWeight(1);
+  fill(col);
+  rect(x, y, w, h);
+  pop();
 }
