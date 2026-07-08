@@ -151,11 +151,27 @@ button {
   margin: 0;
 }
 
+.overview-groups {
+  display: grid;
+  gap: 1rem;
+}
+
 .card-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(220px, 1fr));
   gap: 0.75rem;
-  max-width: 1050;
+  max-width: 1050px;
+}
+
+.overview-group {
+  margin-bottom: 1rem;
+}
+
+.overview-group-title {
+  border-bottom: 1px solid var(--border-color);
+  font-size: 1rem;
+  margin: 0 0 0.6rem;
+  padding-bottom: 0.35rem;
 }
 
 .dataset-card {
@@ -163,7 +179,8 @@ button {
   padding: var(--panel-padding);
 }
 
-.dataset-card h3 {
+.dataset-card h3,
+.dataset-card h4 {
   margin: 0 0 0.5rem;
   font-size: 1.05rem;
 }
@@ -283,6 +300,7 @@ button {
 
 .info-panel p {
   margin: 0 0 0.85rem;
+  overflow-wrap: anywhere;
 }
 
 .info-panel p:last-child {
@@ -327,5 +345,9 @@ button {
 
   .info-panel {
     max-height: 26vh;
+  }
+
+  .card-grid {
+    grid-template-columns: 1fr;
   }
 } 

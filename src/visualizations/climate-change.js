@@ -45,6 +45,8 @@ function ClimateChange() {
   // Property to represent whether data has been loaded.
   this.loaded = false;
 
+  // ---- Lifecycle ----
+
   // Preload the data. This function is called automatically by the
   // gallery when a visualisation is added.
   this.preload = function() {
@@ -256,6 +258,8 @@ function ClimateChange() {
     this.frameCount++;
 
   };
+
+  // ---- Mapping helpers ----
 
   this.mapYearToWidth = function(value) {
     return map(value,

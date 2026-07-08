@@ -1,10 +1,15 @@
 function PieChart(x, y, diameter) {
 
+  // ---- State ----
+
   this.x = x;
   this.y = y;
   this.diameter = diameter;
-  this.labelSpace = 30;
+  this.labelSpace = 30;   // vertical gap between legend rows, in pixels
 
+  // ---- Geometry ----
+
+  // Convert each data value into its slice angle (its share of TWO_PI).
   this.get_radians = function(data) {
     var total = sum(data);
     var radians = [];
@@ -15,6 +20,8 @@ function PieChart(x, y, diameter) {
 
     return radians;
   };
+
+  // ---- Drawing ----
 
   this.draw = function(data, labels, colours, title) {
 
@@ -48,9 +55,11 @@ Arrays must be the same length!`);
       stroke(0);
       strokeWeight(1);
 
+      // The + 0.001 nudge forces p5 to render a visible slice even when
+      // a category's angle is 0. (Hack for 0!)
       arc(this.x, this.y,
           this.diameter, this.diameter,
-          lastAngle, lastAngle + angles[i] + 0.001); // Hack for 0!
+          lastAngle, lastAngle + angles[i] + 0.001);
 
       if (labels) {
         this.makeLegendItem(labels[i], i, colour);
@@ -67,6 +76,7 @@ Arrays must be the same length!`);
     }
   };
 
+  // Draw one coloured swatch + label for the legend, stacked by index i.
   this.makeLegendItem = function(label, i, colour) {
     var x = this.x + 50 + this.diameter / 2;
     var y = this.y + (this.labelSpace * i) - this.diameter / 3;

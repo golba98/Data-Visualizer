@@ -9,8 +9,11 @@
     <link rel="stylesheet" href="style.css">
 
     <script src="src/helper-functions.js"></script>
+    <script src="src/sa-theme.js"></script>
 
     <script src="src/pie-chart.js"></script>
+    <script src="src/visualizations/waffle/box.js"></script>
+    <script src="src/visualizations/waffle/waffle.js"></script>
 
     <script src="src/gallery.js"></script>
 
@@ -21,6 +24,12 @@
     <script src="src/visualizations/sa-youth-unemployment.js"></script>
     <script src="src/visualizations/sa-life-expectancy.js"></script>
     <script src="src/visualizations/climate-change.js"></script>
+    <script src="src/visualizations/survey-pressure-index.js"></script>
+    <script src="src/visualizations/survey-cutback-heatmap.js"></script>
+    <script src="src/visualizations/survey-food-transport-burden.js"></script>
+    <script src="src/visualizations/survey-income-reality-gap.js"></script>
+    <script src="src/visualizations/survey-status-pressure.js"></script>
+    <script src="src/visualizations/survey-pressure-waffle.js"></script>
 
     <script src="src/sketch.js"></script>
   </head>
@@ -42,7 +51,7 @@
             <h2 id="overview-title">Overview</h2>
             <p>Select a dataset to view the corresponding visualisation.</p>
           </div>
-          <div id="overview-cards" class="card-grid"></div>
+          <div id="overview-cards" class="overview-groups"></div>
         </section>
 
         <section id="chart-view" class="chart-view hidden" aria-label="Chart view">
