@@ -1,0 +1,10 @@
+Test suite — before
+===================
+Page: http://localhost:8877/index.html?test=1
+
+  window.cm1010Testing      ->  undefined
+  window.cm1010TestResults  ->  undefined
+
+There was no test harness, no unit tests, no integration tests and no system
+test cases in the project. The ?test=1 flag did not exist, so the URL behaved
+exactly like a normal page load.

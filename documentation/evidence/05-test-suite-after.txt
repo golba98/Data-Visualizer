@@ -1,0 +1,63 @@
+Test suite — after
+==================
+Page: http://localhost:8877/index.html?test=1
+
+[unit: formatThousands (helper-functions.js)]
+PASS  formats a large number with separators
+PASS  formats a mid-range number
+PASS  lowest boundary: zero needs no separator
+PASS  boundary either side of the first separator
+PASS  highest boundary: value at the safe-integer limit
+PASS  invalid input falls back to an unavailable marker
+
+[unit: sum / mean (helper-functions.js)]
+PASS  sum adds a list of numbers
+PASS  sum coerces the strings a CSV column yields
+PASS  lowest boundary: sum of an empty list is zero
+PASS  sum handles negative values (temperature anomalies)
+PASS  mean averages a list
+PASS  mean of a single value is that value
+PASS  invalid input: mean of an empty list is not a number
+
+[unit: SurveyPressureIndex scoring (survey-pressure-index.js)]
+PASS  getPressureScore returns the weight for a known answer
+PASS  getPressureScore boundaries: lowest and highest weights
+PASS  getPressureScore falls back for an unknown answer
+PASS  getFoodScore returns the weight for a known band
+PASS  getFoodScore boundaries: cheapest and dearest bands
+PASS  getFoodScore falls back for an unrecognised band
+PASS  getTransportScore boundaries: cheapest and dearest bands
+PASS  getTransportScore falls back for an unrecognised band
+
+[unit: PieChart.get_radians (pie-chart.js)]
+PASS  four equal values give four quarter turns
+PASS  a single value takes the whole circle
+PASS  lowest boundary: a zero value gets a zero angle
+PASS  angles always add up to a full circle
+
+[unit: Gallery lookups (gallery.js)]
+PASS  findVisIndex locates a registered visualisation
+PASS  highest boundary: the last registered visualisation
+PASS  findVisIndex returns null for an unknown id
+PASS  getCatalogueItem returns the metadata for an id
+PASS  getCatalogueItem returns null for an unknown id
+
+[integration: CSV row -> sliceRowNumbers -> mean -> formatThousands]
+PASS  a table row is parsed, averaged, and formatted for display
+
+[integration: CSV column -> stringsToNumbers -> PieChart.get_radians]
+PASS  a string column becomes slice angles that map back to shares
+
+[integration: survey table -> calculateIndex -> components + score]
+PASS  real survey rows produce the expected components and index
+PASS  an empty survey table zeroes the index instead of dividing by zero
+
+[integration: menu id -> gallery lookup -> chart details in the DOM]
+PASS  selecting a catalogue id populates the chart and info panels
+
+[integration: asynchronous load state -> ZAGiniTrend draw branch]
+PASS  the chart refuses to derive scales before its data arrives
+PASS  the success callback moves the chart to a ready, drawable state
+PASS  the error callback leaves a user-facing message, not a raw error
+
+Total: 38  |  Passed: 38  |  Failed: 0

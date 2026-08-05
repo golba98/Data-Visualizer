@@ -51,8 +51,16 @@
 
   <body>
     <div id="app" class="app-shell">
-      <aside class="sidebar" aria-label="Dataset navigation">
-        <h2 class="sidebar-title">Story Sections</h2>
+      <button id="mobile-menu-toggle" class="mobile-menu-toggle" aria-expanded="false" aria-controls="sidebar" aria-label="Open navigation menu">
+        <span class="menu-icon" aria-hidden="true">☰</span>
+        <span class="menu-text">Menu</span>
+      </button>
+
+      <aside id="sidebar" class="sidebar" aria-label="Dataset navigation">
+        <div class="sidebar-header">
+          <h2 class="sidebar-title">Story Sections</h2>
+          <button id="mobile-menu-close" class="mobile-menu-close" aria-label="Close navigation menu">&times;</button>
+        </div>
         <nav id="visuals-menu" class="visuals-menu" aria-label="Visualisations"></nav>
       </aside>
 
@@ -76,20 +84,28 @@
           <div class="chart-layout">
             <article class="chart-card" aria-label="Chart display">
               <div class="chart-header">
-                <h2 id="chart-title">Chart</h2>
-                <div id="chart-controls" class="chart-controls"></div>
+                <div class="chart-title-wrap">
+                  <h2 id="chart-title">Chart</h2>
+                </div>
+                <div class="chart-header-actions">
+                  <button id="about-chart-toggle" class="about-chart-toggle" aria-expanded="false" aria-controls="info-panel">About this chart</button>
+                  <div id="chart-controls" class="chart-controls"></div>
+                </div>
               </div>
               <div id="chart-container" class="chart-container"></div>
               <p id="chart-source" class="chart-source"></p>
             </article>
 
-            <aside class="info-panel" aria-label="Chart information">
-              <h2 id="info-title">Information</h2>
+            <aside id="info-panel" class="info-panel" aria-label="Chart information" hidden>
+              <div class="info-panel-header">
+                <h2 id="info-title">About this chart</h2>
+                <button id="info-panel-close" class="info-panel-close" aria-label="Close information panel">&times;</button>
+              </div>
 
-              <h3>What this shows</h3>
+              <h3>What it shows</h3>
               <p id="info-shows"></p>
 
-              <h3>Key finding</h3>
+              <h3>Main point</h3>
               <p id="info-finding"></p>
 
               <h3>Source</h3>
