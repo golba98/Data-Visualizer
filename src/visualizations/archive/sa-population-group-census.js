@@ -23,7 +23,7 @@ function SAPopulationGroupCensus() {
 
   this.setup = function() {
     if (!this.loaded) {
-      console.log('Data not yet loaded');
+      debugLog('Data not yet loaded');
       return;
     }
 
@@ -58,7 +58,7 @@ function SAPopulationGroupCensus() {
 
   this.draw = function() {
     if (!this.loaded) {
-      console.log('Data not yet loaded');
+      debugLog('Data not yet loaded');
       return;
     }
 

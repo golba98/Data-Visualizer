@@ -1,4 +1,44 @@
 // --------------------------------------------------------------------
+// Debug / test flags
+// --------------------------------------------------------------------
+
+// Opt-in flags read from the query string. None of these change anything for
+// a normal visitor -- the app only behaves differently when a flag is asked
+// for explicitly:
+//
+//   ?test=1      run the Topic 8 test suite (see topic8-testing.js)
+//   ?debug=1     allow debugLog() output through to the console
+//   ?failData=1  point data loads at a file that does not exist, so the
+//                asynchronous loader's error path can actually be observed
+function hasQueryFlag(name) {
+  if (typeof window == 'undefined' || !window.location) {
+    return false;
+  }
+
+  return new URLSearchParams(window.location.search).get(name) == '1';
+}
+
+// Console output that stays silent unless ?debug=1 is set, so temporary
+// diagnostics never reach a normal visitor's console.
+function debugLog() {
+  if (!hasQueryFlag('debug')) {
+    return;
+  }
+
+  console.log.apply(console, arguments);
+}
+
+// Returns the path unchanged in normal use. Under ?failData=1 it returns a
+// path that cannot resolve, which is how the load-failure state is tested.
+function resolveDataPath(path) {
+  if (hasQueryFlag('failData')) {
+    return path + '.missing';
+  }
+
+  return path;
+}
+
+// --------------------------------------------------------------------
 // Data processing helper functions.
 // --------------------------------------------------------------------
 function sum(data) {
@@ -40,8 +80,18 @@ function stringsToNumbers (array) {
 }
 
 // Add thousands separators to a number, e.g. 26663144 -> '26,663,144'.
+//
+// Chart labels are built straight from this, so a missing or non-numeric
+// cell used to render as "RNaN" or "NaN ha" on the canvas. Anything that
+// isn't a finite number now becomes an em dash instead.
 function formatThousands(value) {
-  return Math.round(value).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  var number = Number(value);
+
+  if (!isFinite(number)) {
+    return '—';
+  }
+
+  return Math.round(number).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
 // --------------------------------------------------------------------

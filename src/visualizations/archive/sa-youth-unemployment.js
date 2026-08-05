@@ -48,7 +48,7 @@ function SAYouthUnemployment() {
 
   this.setup = function() {
     if (!this.loaded) {
-      console.log('Data not yet loaded');
+      debugLog('Data not yet loaded');
       return;
     }
 
@@ -70,7 +70,7 @@ function SAYouthUnemployment() {
 
   this.draw = function() {
     if (!this.loaded) {
-      console.log('Data not yet loaded');
+      debugLog('Data not yet loaded');
       return;
     }
 
