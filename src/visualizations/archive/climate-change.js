@@ -62,7 +62,7 @@ function ClimateChange() {
 
   this.setup = function() {
     if (!this.loaded) {
-      console.log('Data not yet loaded');
+      debugLog('Data not yet loaded');
       return;
     }
 
@@ -136,7 +136,7 @@ function ClimateChange() {
 
   this.draw = function() {
     if (!this.loaded) {
-      console.log('Data not yet loaded');
+      debugLog('Data not yet loaded');
       return;
     }
 
