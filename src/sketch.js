@@ -99,7 +99,34 @@ function setup() {
   gallery.addVisual(new ClimateChange());
 
   gallery.buildOverviewCards();
-  gallery.showOverview();
+
+  var urlParams = typeof URLSearchParams !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  var visParam = urlParams ? urlParams.get('vis') : null;
+  var secParam = urlParams ? urlParams.get('section') : null;
+  var aboutParam = urlParams ? urlParams.get('about') : null;
+  var mobileParam = urlParams ? urlParams.get('mobile') : null;
+  var focusParam = urlParams ? urlParams.get('focus') : null;
+
+  if (visParam) {
+    gallery.selectVisual(visParam);
+    if (aboutParam === '1') {
+      gallery.toggleAboutPanel(true);
+    }
+  } else if (secParam) {
+    gallery.selectSection(secParam);
+  } else {
+    gallery.showOverview();
+  }
+
+  if (mobileParam === '1') {
+    var sidebar = document.querySelector('.sidebar');
+    if (sidebar) sidebar.classList.add('open');
+  }
+
+  if (focusParam === '1') {
+    var firstBtn = document.querySelector('.section-tab-btn');
+    if (firstBtn) firstBtn.focus();
+  }
 }
 
 function draw() {

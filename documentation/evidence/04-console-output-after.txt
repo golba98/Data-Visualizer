@@ -1,0 +1,11 @@
+Console output — after
+======================
+Page:  http://localhost:8877/index.html   (no query flags)
+Steps: identical to the before capture — network throttled to Slow 3G, then
+       "Global temperature anomaly" selected from the sidebar.
+
+  (no console messages found)
+
+The 10 calls are now debugLog(), which returns early unless ?debug=1 is set, so
+a normal visitor's console stays empty. The diagnostics are still available on
+demand at http://localhost:8877/index.html?debug=1.

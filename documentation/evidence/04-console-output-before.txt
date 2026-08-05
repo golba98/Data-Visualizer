@@ -1,0 +1,11 @@
+Console output — before
+=======================
+Page:  http://localhost:8877/index.html   (no query flags)
+Steps: network throttled to Slow 3G, then "Global temperature anomaly"
+       selected from the sidebar.
+
+  [log] Data not yet loaded          x 63
+
+Cause: 10 unconditional console.log('Data not yet loaded') calls across the six
+archived visualisations, inside draw(), so they fire once per frame for as long
+as the CSV is in flight. A normal visitor sees all of this in their console.

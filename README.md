@@ -6,6 +6,27 @@ This is a data-story website I built about South African inequality. I wanted to
 
 The site has three parts. The top part uses real, credible data to explain South African inequality. The middle part is my survey app, which currently runs on placeholder data so I can demo how the final survey charts will look. At the bottom is a small archive of earlier charts I built before settling on this topic, kept for reference rather than deleted.
 
+## Run locally
+
+Install the dependencies:
+
+```bash
+npm install
+```
+
+Start the development server:
+
+```bash
+npm run dev
+```
+
+Or build and preview the application:
+
+```bash
+npm run build
+npm run start
+```
+
 ## Research Question
 
 How can data visualisation help explain South African inequality — income, wealth, population-group differences, dwelling tenure, land ownership, and everyday financial pressure?

@@ -50,8 +50,8 @@ button {
 }
 
 .sidebar-title {
-  margin: 0 0 0.75rem;
-  font-size: 1.4rem;
+  margin: 0;
+  font-size: 1.25rem;
   font-weight: 700;
 }
 
@@ -72,7 +72,8 @@ button {
 
 .page-header h1 {
   margin: 0;
-  font-size: 1.6rem;
+  font-size: 1.5rem;
+  font-weight: 700;
   padding-left: 0.15rem;
 }
 
@@ -80,23 +81,111 @@ button {
 .demo-note,
 .info-panel p {
   color: var(--muted-text);
+  font-weight: 400;
 }
 
 /* Navigation */
 .visuals-menu {
   display: grid;
-  gap: 0.85rem;
+  gap: 0.5rem;
 }
 
-.menu-group-title {
-  margin: 0 0 0.4rem;
-  font-size: 1.2rem;
+.sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.mobile-menu-toggle {
+  display: none;
+  background: #1a1f27;
+  color: #e5e7eb;
+  border: 1px solid var(--border-color);
+  padding: 0.45rem 0.75rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.mobile-menu-toggle:hover,
+.mobile-menu-toggle:focus {
+  border-color: #9ca3af;
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.mobile-menu-close {
+  display: none;
+  background: transparent;
+  color: #e5e7eb;
+  border: 1px solid var(--border-color);
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+}
+
+.mobile-menu-close:hover,
+.mobile-menu-close:focus {
+  border-color: #9ca3af;
+  outline: 2px solid #3b82f6;
+}
+
+/* Compact Section Tabs Switcher */
+.section-tabs {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.section-tab-btn {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: #9ca3af;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 400;
+  padding: 0.35rem 0.2rem;
+  text-align: center;
+  white-space: nowrap;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.section-tab-btn:hover,
+.section-tab-btn:focus {
+  border-color: #9ca3af;
+  color: #e5e7eb;
+  outline: 2px solid #3b82f6;
+  outline-offset: 1px;
+}
+
+.section-tab-btn.active,
+.section-tab-btn[aria-selected="true"] {
+  background: #1a1f27;
+  border-color: #4b5563;
+  color: #ffffff;
+  font-weight: 600;
+  border-left: 3px solid #3b82f6;
+}
+
+.section-heading-title {
+  font-size: 0.72rem;
   font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--muted-text);
+  margin: 0.4rem 0 0.35rem;
+  padding-bottom: 0.2rem;
+  border-bottom: 1px solid var(--border-color);
 }
 
 .menu-list {
   display: grid;
-  gap: 0.35rem;
+  gap: 0.25rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -109,22 +198,32 @@ button {
 .menu-button {
   width: 100%;
   border: 1px solid transparent;
-  border-radius: 0;
+  border-left: 2px solid transparent;
   background: transparent;
-  color: inherit;
+  color: #d1d5db;
+  font-weight: 400;
   cursor: pointer;
   padding: 0.3rem 0.4rem;
   text-align: left;
+  font-size: 0.9rem;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .menu-button:hover,
 .menu-button:focus {
+  background: rgba(255, 255, 255, 0.04);
   border-color: var(--border-color);
+  color: #ffffff;
+  outline: 2px solid #3b82f6;
+  outline-offset: 1px;
 }
 
-.menu-button.selected {
-  border-color: black;
+.menu-button.selected,
+.menu-button[aria-current="page"] {
   background: #1a1f27;
+  border-color: transparent;
+  border-left: 3px solid #3b82f6;
+  color: #ffffff;
   font-weight: 600;
 }
 
@@ -146,6 +245,7 @@ button {
 .section-heading h2 {
   margin: 0 0 0.25rem;
   font-size: 1.35rem;
+  font-weight: 700;
 }
 
 .section-heading p {
@@ -184,6 +284,7 @@ button {
 .overview-group-title {
   border-bottom: 1px solid var(--border-color);
   font-size: 1rem;
+  font-weight: 600;
   margin: 0 0 0.6rem;
   padding-bottom: 0.35rem;
 }
@@ -197,6 +298,7 @@ button {
 .dataset-card h4 {
   margin: 0 0 0.5rem;
   font-size: 1.05rem;
+  font-weight: 600;
 }
 
 .dataset-card p {
@@ -206,19 +308,20 @@ button {
 /* Chart view */
 .chart-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(230px, 280px);
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.75rem;
   height: 100%;
   min-height: 0;
+  transition: grid-template-columns 0.2s ease;
 }
 
-.chart-card,
-.info-panel {
-  border: 1px solid var(--border-color);
-  padding: var(--panel-padding);
+.chart-layout.about-open {
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 300px);
 }
 
 .chart-card {
+  border: 1px solid var(--border-color);
+  padding: var(--panel-padding);
   display: grid;
   grid-template-rows: auto minmax(0, 1fr) auto;
   min-height: 0;
@@ -226,20 +329,51 @@ button {
 }
 
 .chart-header {
-  align-items: start;
+  align-items: center;
   border-bottom: 1px solid var(--border-color);
-  display: grid;
+  display: flex;
+  justify-content: space-between;
   gap: 0.5rem;
-  grid-template-columns: minmax(0, 1fr) auto;
   margin-bottom: 0.6rem;
   padding-bottom: 0.55rem;
+  flex-wrap: wrap;
 }
 
-.chart-header h2,
-.info-panel h2 {
+.chart-header h2 {
   font-size: 1.15rem;
+  font-weight: 600;
   line-height: 1.25;
   margin: 0;
+}
+
+.chart-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.about-chart-toggle {
+  background: #1a1f27;
+  border: 1px solid var(--border-color);
+  color: #d1d5db;
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.about-chart-toggle:hover,
+.about-chart-toggle:focus {
+  border-color: #9ca3af;
+  color: #ffffff;
+  outline: 2px solid #3b82f6;
+}
+
+.about-chart-toggle.active {
+  background: #252b36;
+  border-color: #3b82f6;
+  color: #ffffff;
 }
 
 .chart-controls {
@@ -283,7 +417,7 @@ button {
 
 .chart-container canvas {
   display: block;
-  border: 1px solid var(--border-color);
+  border: 0;
   max-height: 100%;
   max-width: 100%;
 }
@@ -291,29 +425,71 @@ button {
 .chart-source {
   color: var(--muted-text);
   font-size: 0.82rem;
+  font-weight: 400;
   margin: 0.35rem 0 0;
 }
 
+/* Optional About this chart Panel */
 .info-panel {
+  border: 1px solid var(--border-color);
+  padding: var(--panel-padding);
+  background: #14171d;
   align-self: stretch;
   min-height: 0;
-  overflow: auto;
+  overflow-y: auto;
 }
 
-.info-panel h2 {
+.info-panel[hidden] {
+  display: none;
+}
+
+.info-panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   border-bottom: 1px solid var(--border-color);
   margin-bottom: 0.75rem;
-  padding-bottom: 0.55rem;
+  padding-bottom: 0.4rem;
+}
+
+.info-panel-header h2 {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.info-panel-close {
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--muted-text);
+  font-size: 1.25rem;
+  line-height: 1;
+  padding: 0.1rem 0.4rem;
+  cursor: pointer;
+}
+
+.info-panel-close:hover,
+.info-panel-close:focus {
+  color: #ffffff;
+  border-color: var(--border-color);
+  outline: 2px solid #3b82f6;
 }
 
 .info-panel h3 {
-  margin: 0 0 0.2rem;
+  margin: 0.6rem 0 0.2rem;
   font-size: 0.82rem;
-  text-transform: uppercase;
+  text-transform: none;
+  font-weight: 600;
+  color: #e5e7eb;
+}
+
+.info-panel h3:first-of-type {
+  margin-top: 0;
 }
 
 .info-panel p {
   margin: 0 0 0.85rem;
+  font-size: 0.9rem;
   overflow-wrap: anywhere;
 }
 
@@ -336,6 +512,18 @@ button {
     overflow: auto;
   }
 
+  body.mobile-menu-open {
+    overflow: hidden;
+  }
+
+  .mobile-menu-toggle {
+    display: inline-flex;
+  }
+
+  .mobile-menu-close {
+    display: inline-block;
+  }
+
   .app-shell {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
@@ -345,9 +533,24 @@ button {
   }
 
   .sidebar {
-    border-right: 0;
-    border-bottom: 1px solid var(--border-color);
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    z-index: 1000;
+    background: #0f1115;
+    border-right: 1px solid var(--border-color);
+    border-bottom: 0;
     max-height: none;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease-in-out;
+    box-shadow: none;
+  }
+
+  .sidebar.open {
+    transform: translateX(0);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.6);
   }
 
   .main-content {
