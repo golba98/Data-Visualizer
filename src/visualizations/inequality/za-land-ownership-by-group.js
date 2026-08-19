@@ -107,6 +107,10 @@ function ZALandOwnershipByGroup() {
 
       drawBar(left, y, currentWidth, barHeight, colour);
 
+      if (mouseIsOverRect(left, y, currentWidth, barHeight)) {
+        drawChartTooltip(row.group, row.share.toFixed(1) + '%', formatThousands(row.hectares) + ' ha');
+      }
+
       fill(0);
       textStyle(BOLD);
       textSize(12);

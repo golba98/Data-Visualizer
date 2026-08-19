@@ -248,6 +248,11 @@ function ZAGiniTrend() {
       stroke(SATheme.blue);
       strokeWeight(2);
       circle(this.mapYearToWidth(current.year), this.mapValueToHeight(current.value), 7);
+      if (dist(mouseX, mouseY,
+               this.mapYearToWidth(current.year),
+               this.mapValueToHeight(current.value)) < 12) {
+        drawChartTooltip(String(current.year), current.value.toFixed(2), 'Gini coefficient');
+      }
       previous = current;
     }
 

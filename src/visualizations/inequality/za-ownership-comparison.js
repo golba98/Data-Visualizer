@@ -136,6 +136,10 @@ function ZAOwnershipComparison() {
 
       drawBar(left, y, currentWidth, barHeight, row.colour);
 
+      if (mouseIsOverRect(left, y, currentWidth, barHeight)) {
+        drawChartTooltip(row.label, row.value.toFixed(1) + '%', row.note);
+      }
+
       fill(0);
       textAlign(LEFT, CENTER);
       textStyle(BOLD);
