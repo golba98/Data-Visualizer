@@ -29,6 +29,19 @@ button {
   font: inherit;
 }
 
+.chart-save-button {
+  cursor: pointer;
+  border: 1px solid #30353f;
+  background: #f4f4f4;
+  color: #151515;
+  padding: 0.3rem 0.55rem;
+}
+
+.chart-save-button:hover,
+.chart-save-button:focus {
+  background: #dfe9f5;
+}
+
 .hidden {
   display: none;
 }

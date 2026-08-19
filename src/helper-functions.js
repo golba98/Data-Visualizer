@@ -198,3 +198,29 @@ function drawBar(x, y, w, h, col) {
   rect(x, y, w, h);
   pop();
 }
+
+// Small canvas tooltip used by the interactive charts.
+function drawChartTooltip(label, value, extra) {
+  var message = label + ': ' + value + (extra ? ' (' + extra + ')' : '');
+  textSize(12);
+  var boxWidth = textWidth(message) + 18;
+  var boxHeight = 28;
+  var boxX = constrain(mouseX + 12, 4, width - boxWidth - 4);
+  var boxY = constrain(mouseY - 38, 4, height - boxHeight - 4);
+
+  push();
+  stroke(40);
+  strokeWeight(1);
+  fill(255, 250);
+  rect(boxX, boxY, boxWidth, boxHeight, 4);
+  noStroke();
+  fill(20);
+  textAlign(LEFT, CENTER);
+  text(message, boxX + 9, boxY + boxHeight / 2);
+  pop();
+}
+
+function mouseIsOverRect(x, y, w, h) {
+  return mouseX >= x && mouseX <= x + w
+      && mouseY >= y && mouseY <= y + h;
+}

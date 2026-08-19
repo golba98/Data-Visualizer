@@ -6,6 +6,9 @@ function PieChart(x, y, diameter) {
   this.y = y;
   this.diameter = diameter;
   this.labelSpace = 30;   // vertical gap between legend rows, in pixels
+  this.currentData = null;
+  this.targetData = null;
+  this.animation = 1;
 
   // ---- Geometry ----
 
@@ -40,7 +43,24 @@ Arrays must be the same length!`);
 
     // https://p5js.org/examples/form-pie-chart.html
 
-    var angles = this.get_radians(data);
+    if (!this.targetData || this.targetData.length != data.length) {
+      this.currentData = data.slice();
+      this.targetData = data.slice();
+      this.animation = 1;
+    } else if (JSON.stringify(this.targetData) != JSON.stringify(data)) {
+      this.currentData = this.currentData || data.slice();
+      this.targetData = data.slice();
+      this.animation = 0;
+    }
+
+    this.animation = Math.min(1, this.animation + 0.08);
+    var shownData = [];
+    for (var d = 0; d < data.length; d++) {
+      shownData.push(lerp(this.currentData[d], this.targetData[d], this.animation));
+    }
+    if (this.animation >= 1) this.currentData = this.targetData.slice();
+
+    var angles = this.get_radians(shownData);
     var lastAngle = 0;
     var colour;
 
@@ -66,6 +86,26 @@ Arrays must be the same length!`);
       }
 
       lastAngle += angles[i];
+    }
+
+    var hovered = null;
+    var distance = dist(mouseX, mouseY, this.x, this.y);
+    if (distance <= this.diameter / 2) {
+      var mouseAngle = atan2(mouseY - this.y, mouseX - this.x);
+      if (mouseAngle < 0) mouseAngle += TWO_PI;
+      var testAngle = 0;
+      for (var h = 0; h < angles.length; h++) {
+        if (mouseAngle >= testAngle && mouseAngle <= testAngle + angles[h]) {
+          hovered = h;
+          break;
+        }
+        testAngle += angles[h];
+      }
+    }
+
+    if (hovered !== null) {
+      var percent = (shownData[hovered] / sum(shownData) * 100).toFixed(1) + '%';
+      drawChartTooltip(labels[hovered], shownData[hovered].toFixed(1) + '%', percent + ' of total');
     }
 
     if (title) {

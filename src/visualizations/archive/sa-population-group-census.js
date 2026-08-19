@@ -77,6 +77,6 @@ function SAPopulationGroupCensus() {
       legendLabels.push(labels[i] + ' (' + values[i].toFixed(1) + '%)');
     }
 
-    this.pie.draw(values, legendLabels, colours);
+    this.pie.draw(values, labels, colours);
   };
 }

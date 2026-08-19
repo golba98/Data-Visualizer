@@ -624,6 +624,16 @@ function Gallery() {
     document.getElementById('info-finding').textContent = metadata.finding;
     document.getElementById('info-source').textContent = metadata.source;
     document.getElementById('chart-source').textContent = metadata.chartSource;
+    var controls = document.getElementById('chart-controls');
+    var saveButton = document.createElement('button');
+    saveButton.type = 'button';
+    saveButton.className = 'chart-save-button';
+    saveButton.textContent = 'Save PNG';
+    saveButton.title = 'Save this chart as a PNG image';
+    saveButton.addEventListener('click', function() {
+      saveCanvas('south-african-inequality-chart', 'png');
+    });
+    controls.appendChild(saveButton);
     this.updateSelectedMenu(vis.id);
   };
 
