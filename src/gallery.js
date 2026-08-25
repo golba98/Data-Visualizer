@@ -6,6 +6,14 @@ function Gallery() {
   this.selectedVisual = null;
   this.activeSectionId = 'overview';
   this.isAboutOpen = false;
+  this.isEmbedded = typeof URLSearchParams !== 'undefined'
+      && new URLSearchParams(window.location.search).get('embedded') === '1';
+  this.isComparison = false;
+  this.isTourActive = false;
+  this.isTourTransitioning = false;
+  this.tourResizeFrame = null;
+  this.tourIndex = 0;
+  this.annotationsEnabled = true;
 
   var self = this;
 
@@ -200,6 +208,58 @@ function Gallery() {
     }
   ];
 
+  this.tourSteps = [
+    {
+      id: 'national-context',
+      visualId: 'za-gini-trend',
+      title: 'Start with the national inequality picture',
+      narrative: 'The Gini series stays high across the available observations. It reaches its highest point in this dataset in 2005 at about 0.65, then ends at about 0.54 in 2022. The estimates are useful context, but the source warns that survey methods can differ across years.',
+      source: 'World Bank Poverty and Inequality Platform via Our World in Data, 1993-2022.'
+    },
+    {
+      id: 'income-concentration',
+      visualId: 'za-income-share-trend',
+      title: 'Follow the concentration of before-tax income',
+      narrative: 'The top 10 percent receives 46.35% of before-tax income in 1993 and 65.41% in 2014. The 50% line makes the concentration easy to compare without suggesting that this measure is disposable income.',
+      source: 'WID.world via Our World in Data, 1993-2014.'
+    },
+    {
+      id: 'population-earnings',
+      visualId: 'za-population-group-earnings',
+      title: 'Compare population size with earnings',
+      narrative: 'Population share and mean monthly earnings do not move together. In the cleaned Stats SA data, the displayed mean ranges from R6,899 for Black African workers to R24,646 for White workers. Earnings are not the same thing as wealth.',
+      source: 'Stats SA Census 2022 and Stats SA earnings data, 2011-2015.'
+    },
+    {
+      id: 'dwelling-tenure',
+      visualId: 'za-dwelling-ownership-by-group',
+      title: 'See inequality in everyday housing conditions',
+      narrative: 'Dwelling tenure adds a practical living-conditions layer to the story. Ownership, renting, rent-free occupation, and other categories vary by population group, but this chart is not a measure of total property wealth.',
+      source: 'Stats SA General Household Survey 2024, Table 8.6.'
+    },
+    {
+      id: 'land-concentration',
+      visualId: 'za-land-ownership-by-group',
+      title: 'Look at concentration in the land audit',
+      narrative: 'The 2017 land-audit measure shows individually owned farms and agricultural holdings, not all land or all wealth. The White category accounts for 72% of the displayed share, well above the 50% reference line.',
+      source: 'Department of Rural Development and Land Reform Land Audit Report 2017.'
+    },
+    {
+      id: 'top-ten-concentration',
+      visualId: 'za-ownership-comparison',
+      title: 'Put the top 10 percent side by side',
+      narrative: 'The same 10% reference group is compared with its latest available income and wealth shares. The visual gap between population size and resource share is the central concentration pattern in this project.',
+      source: 'WID.world via Our World in Data.'
+    },
+    {
+      id: 'poverty-context',
+      visualId: 'za-poverty-context',
+      title: 'End with poverty measures in context',
+      narrative: 'Poverty depends on the definition used. In 2023, the upper-bound poverty-line series is 66.7% while the food-poverty-line series is 17.6%. They must remain separate measures rather than being combined into one score.',
+      source: 'World Bank PIP via OWID and Statistics South Africa Poverty Trends.'
+    }
+  ];
+
   // ---- Menu & navigation ----
 
   this.getSectionGroups = function() {
@@ -229,6 +289,127 @@ function Gallery() {
         items: this.catalogue[2].items
       }
     ];
+  };
+
+  this.getTourStep = function(stepId) {
+    for (var i = 0; i < this.tourSteps.length; i++) {
+      if (this.tourSteps[i].id === stepId) return this.tourSteps[i];
+    }
+    return null;
+  };
+
+  this.setTourLayoutActive = function(active) {
+    var main = document.querySelector('.main-content');
+    if (main) main.classList.toggle('tour-active', active);
+  };
+
+  this.updateTourUI = function() {
+    var step = this.tourSteps[this.tourIndex];
+    var progress = document.getElementById('tour-progress');
+    var title = document.getElementById('tour-title');
+    var narrative = document.getElementById('tour-narrative');
+    var source = document.getElementById('tour-source');
+    var previous = document.getElementById('tour-previous');
+    var next = document.getElementById('tour-next');
+    var annotationButton = document.getElementById('tour-annotations');
+
+    if (!step) return;
+    progress.textContent = 'Story step ' + (this.tourIndex + 1) + ' of ' + this.tourSteps.length;
+    title.textContent = step.title;
+    narrative.textContent = step.narrative;
+    source.textContent = 'Source: ' + step.source;
+    previous.disabled = this.isTourTransitioning || this.tourIndex === 0;
+    next.disabled = this.isTourTransitioning;
+    next.textContent = this.tourIndex === this.tourSteps.length - 1 ? 'Finish story' : 'Next';
+    annotationButton.textContent = this.annotationsEnabled ? 'Hide annotations' : 'Show annotations';
+    annotationButton.setAttribute('aria-pressed', this.annotationsEnabled ? 'true' : 'false');
+  };
+
+  this.showTourStep = function(index, fromHash) {
+    if (this.isTourTransitioning || index < 0 || index >= this.tourSteps.length) return;
+    var step = this.tourSteps[index];
+    this.isTourTransitioning = true;
+    this.isTourActive = true;
+    this.tourIndex = index;
+    this.setTourLayoutActive(true);
+
+    document.getElementById('overview').classList.add('hidden');
+    document.getElementById('chart-view').classList.remove('hidden');
+    document.getElementById('comparison-view').classList.add('hidden');
+    document.getElementById('tour-view').classList.remove('hidden');
+    this.selectVisual(step.visualId, true, true);
+    this.updateAnnotationButtons();
+    this.updateTourUI();
+
+    if (!fromHash && !this.isEmbedded) this.updateHash('tour/' + step.id);
+    if (this.tourResizeFrame != null) cancelAnimationFrame(this.tourResizeFrame);
+    this.tourResizeFrame = requestAnimationFrame(function() {
+      if (typeof resizeChartCanvas === 'function') resizeChartCanvas();
+      self.tourResizeFrame = null;
+      self.isTourTransitioning = false;
+      self.updateTourUI();
+      var narrative = document.getElementById('tour-narrative');
+      if (narrative) narrative.focus({ preventScroll: true });
+    });
+  };
+
+  this.startTour = function() {
+    this.annotationsEnabled = true;
+    this.showTourStep(0, false);
+  };
+
+  this.nextTourStep = function() {
+    if (this.tourIndex === this.tourSteps.length - 1) {
+      this.exitTour();
+      return;
+    }
+    this.showTourStep(this.tourIndex + 1, false);
+  };
+
+  this.previousTourStep = function() {
+    if (this.tourIndex > 0) this.showTourStep(this.tourIndex - 1, false);
+  };
+
+  this.exitTour = function() {
+    if (this.tourResizeFrame != null) cancelAnimationFrame(this.tourResizeFrame);
+    this.tourResizeFrame = null;
+    this.isTourTransitioning = false;
+    this.isTourActive = false;
+    document.getElementById('tour-view').classList.add('hidden');
+    this.showOverview();
+  };
+
+  this.initTour = function() {
+    var start = document.getElementById('start-tour-button');
+    var previous = document.getElementById('tour-previous');
+    var next = document.getElementById('tour-next');
+    var exit = document.getElementById('tour-exit');
+    var annotations = document.getElementById('tour-annotations');
+
+    if (start && !start.dataset.bound) {
+      start.dataset.bound = 'true';
+      start.addEventListener('click', function() { self.startTour(); });
+    }
+    if (previous && !previous.dataset.bound) {
+      previous.dataset.bound = 'true';
+      previous.addEventListener('click', function() { self.previousTourStep(); });
+    }
+    if (next && !next.dataset.bound) {
+      next.dataset.bound = 'true';
+      next.addEventListener('click', function() { self.nextTourStep(); });
+    }
+    if (exit && !exit.dataset.bound) {
+      exit.dataset.bound = 'true';
+      exit.addEventListener('click', function() { self.exitTour(); });
+    }
+    if (annotations && !annotations.dataset.bound) {
+      annotations.dataset.bound = 'true';
+      annotations.addEventListener('click', function() {
+        self.annotationsEnabled = !self.annotationsEnabled;
+        self.updateAnnotationButtons();
+        self.updateTourUI();
+      });
+    }
   };
 
   this.getCatalogueItem = function(visId) {
@@ -595,7 +776,14 @@ function Gallery() {
 
     document.getElementById('overview').classList.remove('hidden');
     document.getElementById('chart-view').classList.add('hidden');
+    var comparison = document.getElementById('comparison-view');
+    if (comparison) comparison.classList.add('hidden');
+    var tour = document.getElementById('tour-view');
+    if (tour) tour.classList.add('hidden');
+    this.isTourActive = false;
+    this.setTourLayoutActive(false);
     this.updateSelectedMenu('overview');
+    if (!this.isEmbedded) this.updateHash('overview');
   };
 
   this.clearChartControls = function() {
@@ -618,6 +806,8 @@ function Gallery() {
 
     document.getElementById('overview').classList.add('hidden');
     document.getElementById('chart-view').classList.remove('hidden');
+    var comparison = document.getElementById('comparison-view');
+    if (comparison) comparison.classList.add('hidden');
     document.getElementById('chart-title').textContent = metadata.title;
     document.getElementById('info-title').textContent = 'About this chart';
     document.getElementById('info-shows').textContent = metadata.shows;
@@ -625,16 +815,165 @@ function Gallery() {
     document.getElementById('info-source').textContent = metadata.source;
     document.getElementById('chart-source').textContent = metadata.chartSource;
     var controls = document.getElementById('chart-controls');
-    var saveButton = document.createElement('button');
-    saveButton.type = 'button';
-    saveButton.className = 'chart-save-button';
-    saveButton.textContent = 'Save PNG';
-    saveButton.title = 'Save this chart as a PNG image';
-    saveButton.addEventListener('click', function() {
-      saveCanvas('south-african-inequality-chart', 'png');
+    var saveButton = this.makeActionButton('Save high-res PNG', 'Export this chart as a 3x PNG image', function() {
+      exportHighResolutionPNG(vis);
     });
+    var csvButton = this.makeActionButton('Download CSV', 'Download the chart-ready data as CSV', function() {
+      exportDataCSV(vis);
+    });
+    var compareButton = this.makeActionButton('Compare', 'Open this chart in comparison mode', function() {
+      self.openComparison(vis.id, self.getDefaultComparisonId(vis.id));
+    });
+    var annotationButton = this.makeActionButton(
+      this.annotationsEnabled ? 'Hide annotations' : 'Show annotations',
+      'Show or hide contextual chart annotations',
+      function() {
+        self.annotationsEnabled = !self.annotationsEnabled;
+        self.updateAnnotationButtons();
+      });
+    annotationButton.dataset.annotationButton = 'true';
     controls.appendChild(saveButton);
+    controls.appendChild(csvButton);
+    if (!this.isTourActive) controls.appendChild(annotationButton);
+    if (!this.isEmbedded) controls.appendChild(compareButton);
+    this.updateAnnotationButtons();
     this.updateSelectedMenu(vis.id);
+  };
+
+  this.makeActionButton = function(label, title, callback) {
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.className = 'chart-action-button';
+    button.textContent = label;
+    button.title = title;
+    button.addEventListener('click', callback);
+    return button;
+  };
+
+  this.updateAnnotationButtons = function() {
+    var buttons = document.querySelectorAll('[data-annotation-button="true"]');
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].textContent = this.annotationsEnabled ? 'Hide annotations' : 'Show annotations';
+      buttons[i].setAttribute('aria-pressed', this.annotationsEnabled ? 'true' : 'false');
+    }
+    var tourButton = document.getElementById('tour-annotations');
+    if (tourButton) {
+      tourButton.textContent = this.annotationsEnabled ? 'Hide annotations' : 'Show annotations';
+      tourButton.setAttribute('aria-pressed', this.annotationsEnabled ? 'true' : 'false');
+    }
+  };
+
+  this.getDefaultComparisonId = function(visId) {
+    var preferred = visId === 'za-dwelling-ownership-by-group'
+      ? 'za-population-group-earnings'
+      : 'za-dwelling-ownership-by-group';
+    return this.findVisIndex(preferred) != null ? preferred : this.visuals[0].id;
+  };
+
+  this.updateHash = function(value) {
+    if (window.location.hash === '#' + value) return;
+    window.history.replaceState(null, '', window.location.pathname + window.location.search + '#' + value);
+  };
+
+  this.parseHash = function() {
+    var hash = window.location.hash.replace(/^#/, '');
+    if (!hash || hash === 'overview') return { type: 'overview' };
+    if (hash.indexOf('tour/') === 0) {
+      var tourStep = this.getTourStep(hash.slice(5));
+      return tourStep ? { type: 'tour', stepId: tourStep.id } : null;
+    }
+    if (hash.indexOf('compare/') === 0) {
+      var ids = hash.slice(8).split('/').filter(Boolean);
+      return ids.length === 2 ? { type: 'compare', left: ids[0], right: ids[1] } : null;
+    }
+    return this.findVisIndex(hash) != null ? { type: 'visual', id: hash } : null;
+  };
+
+  this.openComparison = function(leftId, rightId, fromHash) {
+    if (this.isEmbedded) return;
+    if (this.findVisIndex(leftId) == null || this.findVisIndex(rightId) == null) return;
+
+    this.isComparison = true;
+    this.isTourActive = false;
+    this.setTourLayoutActive(false);
+    document.getElementById('overview').classList.add('hidden');
+    document.getElementById('chart-view').classList.add('hidden');
+    document.getElementById('tour-view').classList.add('hidden');
+    document.getElementById('comparison-view').classList.remove('hidden');
+    this.renderComparisonControls(leftId, rightId);
+    this.renderComparisonPanes(leftId, rightId);
+    if (!fromHash) this.updateHash('compare/' + leftId + '/' + rightId);
+  };
+
+  this.renderComparisonControls = function(leftId, rightId) {
+    var controls = document.getElementById('comparison-controls');
+    controls.innerHTML = '';
+    var selfGallery = this;
+    [
+      { label: 'Left chart', value: leftId },
+      { label: 'Right chart', value: rightId }
+    ].forEach(function(item) {
+      var label = document.createElement('label');
+      label.textContent = item.label;
+      var select = document.createElement('select');
+      select.className = 'comparison-select';
+      selfGallery.visuals.forEach(function(vis) {
+        if (selfGallery.getCatalogueItem(vis.id) && selfGallery.getCatalogueItem(vis.id).id === vis.id
+            && ['sa-population-group-census','sa-sex-age-2022','sa-age-sex-bubble-2022','sa-youth-unemployment','sa-life-expectancy','climate-change'].indexOf(vis.id) === -1) {
+          var option = document.createElement('option');
+          option.value = vis.id;
+          option.textContent = selfGallery.getCatalogueItem(vis.id).name;
+          option.selected = vis.id === item.value;
+          select.appendChild(option);
+        }
+      });
+      select.addEventListener('change', function() {
+        var nextLeft = controls.querySelectorAll('select')[0].value;
+        var nextRight = controls.querySelectorAll('select')[1].value;
+        selfGallery.openComparison(nextLeft, nextRight);
+      });
+      label.appendChild(select);
+      controls.appendChild(label);
+    });
+  };
+
+  this.renderComparisonPanes = function(leftId, rightId) {
+    var panes = document.getElementById('comparison-panes');
+    panes.innerHTML = '';
+    [leftId, rightId].forEach(function(id, index) {
+      var pane = document.createElement('article');
+      pane.className = 'comparison-pane';
+      var title = document.createElement('h3');
+      title.textContent = index === 0 ? 'Left visualisation' : 'Right visualisation';
+      var frame = document.createElement('iframe');
+      frame.title = 'Live ' + (index === 0 ? 'left' : 'right') + ' comparison chart';
+      frame.src = window.location.pathname + '?embedded=1&vis=' + encodeURIComponent(id);
+      frame.loading = 'eager';
+      pane.appendChild(title);
+      pane.appendChild(frame);
+      panes.appendChild(pane);
+    });
+  };
+
+  this.initComparison = function() {
+    var closeButton = document.getElementById('comparison-close');
+    if (closeButton && !closeButton.dataset.bound) {
+      closeButton.dataset.bound = 'true';
+      closeButton.addEventListener('click', function() {
+        self.isComparison = false;
+        self.showOverview();
+      });
+    }
+    window.addEventListener('hashchange', function() {
+      var route = self.parseHash();
+      if (!route) return;
+      if (route.type === 'overview') self.showOverview();
+      else if (route.type === 'tour') self.showTourStep(self.tourSteps.findIndex(function(step) {
+        return step.id === route.stepId;
+      }), true);
+      else if (route.type === 'compare') self.openComparison(route.left, route.right, true);
+      else self.selectVisual(route.id, true);
+    });
   };
 
   // ---- Visualisation registry ----
@@ -674,10 +1013,16 @@ function Gallery() {
     return null;
   };
 
-  this.selectVisual = function(visId) {
+  this.selectVisual = function(visId, fromHash, keepTour) {
     var visIndex = this.findVisIndex(visId);
 
     if (visIndex != null) {
+      if (!keepTour) {
+        this.isTourActive = false;
+        this.setTourLayoutActive(false);
+        var tour = document.getElementById('tour-view');
+        if (tour) tour.classList.add('hidden');
+      }
       // If the current visualisation has a deselect method run it.
       if (this.selectedVisual != null
           && this.selectedVisual.hasOwnProperty('destroy')) {
@@ -689,7 +1034,7 @@ function Gallery() {
       this.selectedVisual = this.visuals[visIndex];
       this.showChartDetails(this.selectedVisual);
 
-      if (typeof resizeChartCanvas == 'function') {
+      if (!keepTour && typeof resizeChartCanvas == 'function') {
         resizeChartCanvas();
       }
 
@@ -701,8 +1046,11 @@ function Gallery() {
       // Enable animation in case it has been paused by the current
       // visualisation.
       loop();
+      if (!this.isEmbedded && !fromHash) this.updateHash(visId);
     }
   };
 
   this.buildMenu();
+  this.initComparison();
+  this.initTour();
 }

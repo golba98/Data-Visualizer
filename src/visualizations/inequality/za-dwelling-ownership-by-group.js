@@ -42,6 +42,7 @@ function ZADwellingOwnershipByGroup() {
 
     background(255);
     this.drawTitle();
+    this.drawAnnotations();
     this.drawStackedBars();
     this.drawLegend();
   };
@@ -70,6 +71,21 @@ function ZADwellingOwnershipByGroup() {
          44,
          width - 48,
          42);
+  };
+
+  this.drawAnnotations = function() {
+    // On narrow canvases the legend and first bar use all available space.
+    // The limitation remains written below the chart, so omit the duplicate
+    // badge instead of covering data labels.
+    if (width < 720) return;
+
+    drawAnnotationBadge(
+      'Read as tenure',
+      'Not total property wealth',
+      width - 220,
+      18,
+      SATheme.blue
+    );
   };
 
   this.drawStackedBars = function() {
@@ -132,6 +148,10 @@ function ZADwellingOwnershipByGroup() {
             textAlign(CENTER, CENTER);
             text(value.toFixed(1) + '%', currentX + (segmentWidth / 2), y + (barHeight / 2));
           }
+
+          if (mouseIsOverRect(currentX, y, segmentWidth, barHeight)) {
+            drawChartTooltip(row.group, value.toFixed(1) + '%', item.label);
+          }
         }
 
         currentX += segmentWidth;
@@ -175,5 +195,9 @@ function ZADwellingOwnershipByGroup() {
       fill(0);
       text(labels[i].label, x + 20, y);
     }
+  };
+
+  this.getExportData = function() {
+    return tableToExportData(this.data);
   };
 }

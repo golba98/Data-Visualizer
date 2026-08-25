@@ -166,6 +166,12 @@ function SurveyIncomeRealityGap() {
       fill(SATheme.red);
       circle(worryX, y, 14);
 
+      if (dist(mouseX, mouseY, incomeX, y) < 12) {
+        drawChartTooltip(item.label, item.income.toFixed(2), 'income keeps up');
+      } else if (dist(mouseX, mouseY, worryX, y) < 12) {
+        drawChartTooltip(item.label, item.worry.toFixed(2), 'work worry');
+      }
+
       fill(0);
       textStyle(BOLD);
       textSize(width < 680 ? 10 : 12);
@@ -204,5 +210,9 @@ function SurveyIncomeRealityGap() {
     }
 
     return label;
+  };
+
+  this.getExportData = function() {
+    return rowsToExportData(this.rows);
   };
 }

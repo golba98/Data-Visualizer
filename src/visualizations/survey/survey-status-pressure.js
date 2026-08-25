@@ -153,6 +153,13 @@ function SurveyStatusPressure() {
             textSize(11);
             text(count, currentX + (segmentWidth / 2), y + (barHeight / 2));
           }
+
+          if (mouseIsOverRect(currentX, y, segmentWidth, barHeight)) {
+            var percent = this.totals[status] > 0
+              ? ((count / this.totals[status]) * 100).toFixed(1)
+              : '0.0';
+            drawChartTooltip(status + ' / ' + pressure, count + ' responses', percent + '% of group');
+          }
         }
 
         currentX += segmentWidth;
@@ -198,5 +205,9 @@ function SurveyStatusPressure() {
     }
 
     return status;
+  };
+
+  this.getExportData = function() {
+    return tableToExportData(this.table);
   };
 }

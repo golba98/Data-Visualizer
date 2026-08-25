@@ -1,5 +1,28 @@
 # Change Log - Round 2 UI Usability & Decluttering
 
+## 25 August 2026 — Interactive Exploration Enhancements
+
+### Objective
+Add high-impact exploration, export, sharing, and comparison features to the current inequality and survey visualisations while leaving archived charts unchanged.
+
+### Implemented
+- Added exact hover tooltips for lines, bars, stacked segments, waffle cells, heatmap cells, circles, gauge components, and survey counts.
+- Added crosshairs for active line-chart points.
+- Added 3× high-resolution PNG export and chart-ready CSV export, including cleaned source metadata and derived chart rows where applicable.
+- Added hash routing for direct chart links such as `#za-gini-trend` and comparison links such as `#compare/za-dwelling-ownership-by-group/za-population-group-earnings`.
+- Added independent desktop comparison panes and responsive mobile stacking using embedded p5 chart instances.
+- Extended the Topic 8 test harness with CSV escaping, hash routing, comparison, and export-data checks.
+
+### Verification
+- JavaScript syntax checks: passed.
+- `npm run build`: passed; only existing legacy-script informational warnings were emitted.
+- `git diff --check`: passed.
+- Browser validation: 41 tests passed, 0 failed; tooltip/crosshair rendering, deep links, desktop/mobile comparison, PNG export, and CSV export verified.
+- PNG output verified at 3504 × 1716 pixels; Gini CSV export contained the cleaned source columns and seven data rows.
+
+### Finals evidence
+Five new rendered screenshots and the corresponding evidence descriptions were added to the requested external `1-Picture Evidence` folder. The evidence log records the feature states, download checks, routes, and verification results.
+
 **Date/Time**: 2026-08-05 14:15:00 (+02:00)
 
 ## Objective
@@ -89,3 +112,92 @@ The following picture evidence and test logs were collected and stored in [`docu
 
 ## Final Git Status
 Uncommitted modifications on `main`: `index.html`, `style.css`, `src/gallery.js`, `src/sketch.js`, `README.md`, `.gitignore`, `package.json`, `package-lock.json`. Untracked: `documentation/`.
+
+## 25 August 2026 — Guided inequality story and canvas annotations
+
+### Changes made
+
+- Added a seven-step guided story covering national Gini context, before-tax income concentration, population-group earnings, dwelling tenure, land concentration, top-10 concentration, and poverty-line context.
+- Added `#tour/<step-id>` hash routes so story steps can be bookmarked and reloaded directly.
+- Added Previous, Next/Finish, Exit story, progress, narrative, and source controls.
+- Added toggleable direct-canvas annotations: a 1994 historical context marker, a Gini peak callout, 50% threshold/reference lines, a 10% population reference, and chart-specific value/context badges.
+- Kept annotations source-aware: the 1994 marker is labelled as a context/reference point rather than a causal policy claim, and poverty measures remain explicitly separate.
+- Added one annotation visibility toggle: in the story controls during a tour, or in the normal chart action bar outside a tour.
+
+### Verification
+
+- JavaScript syntax checks: passed across all source visualisations and gallery files.
+- Browser route check: `#tour/national-context` loaded step 1; Next advanced to `#tour/income-concentration` and step 2 of 7.
+- Annotation toggle check: Hide annotations changed the active story control to Show annotations with `aria-pressed="false"`.
+- `npm run build`: passed; only existing legacy-script informational warnings were emitted.
+- `git diff --check`: passed.
+
+### Finals evidence
+
+Added to the requested external `1-Picture Evidence` folder:
+
+- `feature-guided-tour-gini.png` — Gini story step with 1994 context and 2005 peak annotations.
+- `feature-guided-tour-income-threshold.png` — income concentration story step with the 50% reference line.
+
+## 25 August 2026 — Short-viewport story-mode repair
+
+- Replaced the fixed, non-scrollable story layout with a vertically scrollable tour stack.
+- Gave the active chart a 520px minimum section height and resized the p5 canvas after the tour layout settles.
+- Prevented direct `#tour/<step-id>` routes from being overwritten by ordinary chart hashes.
+- Preserved hidden annotations between Previous and Next, while resetting them only when a new tour starts.
+- Removed the duplicate chart-toolbar annotation control during a tour.
+- Returned the scroll position to the top when each new story chart opens.
+
+Chrome verification at 1119 × 527: the canvas rendered between 388px and 419px tall across all seven steps, every tour hash remained correct, one annotation control was shown, and Finish story returned to `#overview`. At 390 × 844 the page had no horizontal overflow and used a bounded mobile chart height. The browser suite passed 44/44. Added `feature-guided-tour-short-viewport-fixed.png` to the Finals evidence folder.
+
+### Dwelling-tenure annotation correction
+
+- Moved the “Read as tenure” badge into unused top-right whitespace on wide charts.
+- Omitted the duplicate badge on canvases narrower than 720px, where the written limitation remains visible below the bars.
+- Increased the mobile tour chart section to 620px so the limitation note no longer overlaps the White row or percentage axis.
+- Verified in Chrome at 1920 × 937 and 390 × 844 with no label, legend, bar, or horizontal-overflow collision.
+
+### Top-10 reference annotation correction
+
+- Separated the dashed 10% reference line from its explanatory badge.
+- Moved the badge into unused top-right whitespace on wide charts so it no longer covers the population-share bar or its 10.0% value.
+- Kept only the dashed line on compact charts, where the bar and value already identify the 10% reference.
+- Verified in Chrome at 1920 × 937 and 390 × 844 with the 10.0% label fully visible and no horizontal overflow.
+
+## 25 August 2026 — Compact story rail and complete annotation audit
+
+- Moved the guided narrative and controls above the active chart in a compact rail.
+- Removed forced scroll-to-top calls and the delayed duplicate canvas resize; each step now performs one animation-frame resize and temporarily guards the navigation buttons against double activation.
+- At 1600 × 900 and 1920 × 937, the story rail and chart fit the main viewport without vertical overflow. At 1119 × 527, the short-height fallback keeps all story controls visible above a scrollable chart.
+- Split reference-line drawing from annotation badges so narrow layouts can retain useful thresholds without duplicate explanatory boxes.
+- Audited all seven story charts in Chrome at 1920 × 937, 1600 × 900, 1119 × 527, and 390 × 844.
+- Corrected mobile Gini, income-share, earnings, land, and poverty annotations; dwelling tenure and top-10 concentration retained their already-correct compact behavior.
+
+### Verification and evidence
+
+- Chrome browser suite: 44/44 passed.
+- All source JavaScript passed `node --check`.
+- `npm run build` and `git diff --check` passed.
+- Added five final Chrome captures to the requested Finals `1-Picture Evidence` folder: compact desktop rail, corrected mobile income, land and poverty charts, and corrected desktop earnings callout.
+
+## Complete implementation and picture-evidence index — 25 August 2026
+
+This section consolidates every change in the current 20-file implementation so the code, verification, and pictures can be reviewed from one place.
+
+| Area | Source files | Implemented change | Picture evidence |
+| --- | --- | --- | --- |
+| Shared interaction | `src/helper-functions.js`, `src/sketch.js` | Shared tooltips, line-chart crosshairs, annotation helpers, 3× PNG export, and cleaned CSV export | `feature-interaction-gini-tooltip.png`, `feature-interaction-deep-link-export.png` |
+| Navigation and sharing | `index.html`, `src/gallery.js`, `style.css` | Chart hash routes, tour routes, comparison routes, responsive controls, and two live comparison panes | `feature-interaction-deep-link-export.png`, `feature-interaction-comparison-desktop.png`, `feature-interaction-comparison-mobile.png` |
+| Survey exploration | Six files under `src/visualizations/survey/` | Exact values/sample counts on survey charts and export-ready derived rows | `feature-interaction-survey-waffle.png` |
+| Guided story | `index.html`, `src/gallery.js`, `style.css` | Seven-step narrative, progress, Previous/Next/Finish, Exit, source text, and annotation toggle | `feature-guided-tour-compact-rail.png`, `feature-guided-tour-gini.png` |
+| Story performance/layout | `src/gallery.js`, `style.css` | Compact rail above chart, one animation-frame resize, double-activation guard, no forced scroll reset, and short-height fallback | `before-guided-story-below-chart.png` → `feature-guided-tour-compact-rail.png`; `feature-guided-tour-short-viewport-fixed.png` |
+| Inequality annotations | Seven files under `src/visualizations/inequality/` | Chart-specific reference lines, callouts, compact mobile rules, direct values, and collision-free spacing | All `feature-guided-tour-*-fixed.png` pictures listed in the Finals evidence README |
+| Automated checks | `src/topic8-testing.js` | CSV escaping, export-data, comparison/hash, seven-step tour, and annotation-default tests | Browser console result recorded as 44/44 passing in `evidence-log.md` |
+
+### Recorded before/after issue evidence
+
+- `before-guided-story-below-chart.png` → `feature-guided-tour-compact-rail.png`
+- `before-dwelling-annotation-overlap.png` → `feature-guided-tour-dwelling-callout-fixed.png`
+- `before-top-ten-annotation-overlap-crop.png` and `before-top-ten-annotation-layout.png` → `feature-guided-tour-top-ten-reference-fixed.png`
+
+The four `before-*` files are the original screenshots supplied during debugging. The `feature-*` files are live Chrome captures of the implemented state; none are recreated mockups.

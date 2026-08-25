@@ -239,10 +239,18 @@ function SurveyPressureIndex() {
       fill(component.colour);
       rect(startX, y + 3, barWidth * component.value, barHeight);
 
+      if (mouseIsOverRect(startX, y + 3, barWidth * component.value, barHeight)) {
+        drawChartTooltip(component.label, Math.round(component.value * 100) + '%', 'component score');
+      }
+
       fill(90);
       textAlign(RIGHT, CENTER);
       text(Math.round(component.value * 100), startX + barWidth, y - 10);
       textAlign(LEFT, CENTER);
     }
+  };
+
+  this.getExportData = function() {
+    return tableToExportData(this.table);
   };
 }

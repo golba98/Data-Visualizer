@@ -40,6 +40,7 @@ function ZALandOwnershipByGroup() {
 
     background(255);
     this.drawTitle();
+    this.drawAnnotations();
     this.drawBars();
   };
 
@@ -69,13 +70,43 @@ function ZALandOwnershipByGroup() {
          38);
   };
 
+  this.drawAnnotations = function() {
+    var left = width < 720 ? 98 : 142;
+    var right = width - 54;
+    var referenceX = map(50, 0, 80, left, right);
+    var bottom = Math.min(height - 64, 118 + (this.rows.length * this.getBarGap()));
+
+    if (width < 520) {
+      drawVerticalReferenceLine(referenceX, 106, bottom, SATheme.red);
+      drawAnnotationBadge('50% reference', '', width - 150, 78, SATheme.red);
+      return;
+    }
+
+    drawVerticalAnnotation(
+      referenceX,
+      '50% reference',
+      'Displayed ownership share',
+      106,
+      bottom,
+      SATheme.red
+    );
+  };
+
+  this.getBarGap = function() {
+    if (width >= 720) return 52;
+    if (this.rows.length < 2) return 44;
+
+    var available = height - 100 - 118 - 24;
+    return Math.min(52, Math.max(36, available / (this.rows.length - 1)));
+  };
+
   this.drawBars = function() {
     var compact = width < 720;
     var left = compact ? 98 : 142;
     var right = width - 54;
     var top = 118;
     var barHeight = compact ? 24 : 30;
-    var gap = compact ? 44 : 52;
+    var gap = this.getBarGap();
     var barWidth = right - left;
 
     stroke(220);
@@ -118,9 +149,9 @@ function ZALandOwnershipByGroup() {
       text(row.share.toFixed(0) + '%', left + currentWidth + 8, y + (barHeight / 2));
 
       textStyle(NORMAL);
-      textSize(10);
+      textSize(compact ? 9 : 10);
       fill(90);
-      text(formatThousands(row.hectares) + ' ha', left, y + barHeight + 12);
+      text(formatThousands(row.hectares) + ' ha', left, y + barHeight + (compact ? 8 : 12));
     }
 
     noStroke();
@@ -133,5 +164,9 @@ function ZALandOwnershipByGroup() {
          height - 30,
          width - 48,
          28);
+  };
+
+  this.getExportData = function() {
+    return tableToExportData(this.data);
   };
 }

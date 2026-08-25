@@ -69,6 +69,7 @@ function ZAIncomeShareTrend() {
     drawAxis(this.layout);
     drawAxisLabels(this.xAxisLabel, this.yAxisLabel, this.layout);
     this.drawYearLabels();
+    this.drawAnnotations();
     this.drawLine();
   };
 
@@ -106,12 +107,58 @@ function ZAIncomeShareTrend() {
     }
   };
 
+  this.drawAnnotations = function() {
+    var contextX = this.mapYearToWidth(1994);
+    var referenceY = this.mapValueToHeight(50);
+
+    if (width < 520) {
+      drawVerticalReferenceLine(
+        contextX,
+        this.layout.topMargin,
+        this.layout.bottomMargin,
+        SATheme.gold
+      );
+      drawHorizontalReferenceLine(
+        referenceY,
+        this.layout.leftMargin,
+        this.layout.rightMargin,
+        SATheme.red
+      );
+      drawAnnotationBadge(
+        '50% reference',
+        '',
+        this.layout.leftMargin + 8,
+        referenceY - 26,
+        SATheme.red
+      );
+      return;
+    }
+
+    drawVerticalAnnotation(
+      contextX,
+      '1994 context marker',
+      'Reference point, not a causal claim',
+      this.layout.topMargin,
+      this.layout.bottomMargin,
+      SATheme.gold
+    );
+    drawHorizontalAnnotation(
+      referenceY,
+      '50% reference',
+      'Before-tax income share',
+      this.layout.leftMargin,
+      this.layout.rightMargin,
+      SATheme.red
+    );
+  };
+
   this.drawLine = function() {
     stroke(SATheme.green);
     strokeWeight(3);
     noFill();
 
     var previous = null;
+    var hovered = null;
 
     for (var i = 0; i < this.data.getRowCount(); i++) {
       var current = {
@@ -130,7 +177,19 @@ function ZAIncomeShareTrend() {
       stroke(SATheme.green);
       strokeWeight(2);
       circle(this.mapYearToWidth(current.year), this.mapValueToHeight(current.value), 7);
+      if (dist(mouseX, mouseY,
+               this.mapYearToWidth(current.year),
+               this.mapValueToHeight(current.value)) < 12) {
+        hovered = current;
+      }
       previous = current;
+    }
+
+    if (hovered) {
+      var hoverX = this.mapYearToWidth(hovered.year);
+      var hoverY = this.mapValueToHeight(hovered.value);
+      drawChartCrosshair(hoverX, hoverY);
+      drawChartTooltip(String(hovered.year), hovered.value.toFixed(1) + '%', 'Top 10 income share');
     }
 
     var last = previous;
@@ -144,6 +203,10 @@ function ZAIncomeShareTrend() {
            this.layout.rightMargin - 8,
            this.mapValueToHeight(last.value));
     }
+  };
+
+  this.getExportData = function() {
+    return tableToExportData(this.data);
   };
 
   this.mapYearToWidth = function(value) {
