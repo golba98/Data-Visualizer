@@ -389,6 +389,50 @@
     t.test('getCatalogueItem returns null for an unknown id', function() {
       t.assertNull(gallery.getCatalogueItem('no-such-chart'), 'id not in catalogue');
     });
+
+    t.test('CSV cells are escaped for downloadable chart data', function() {
+      t.assertEqual(escapeCSVCell('Food, transport'), '"Food, transport"', 'comma escaped');
+      t.assertEqual(escapeCSVCell('say "hello"'), '"say ""hello"""', 'quote escaped');
+      t.assertEqual(escapeCSVCell('plain'), 'plain', 'plain cell unchanged');
+    });
+
+    t.test('comparison hashes are parsed into two registered chart ids', function() {
+      var originalHash = window.location.hash;
+      try {
+        window.location.hash = '#compare/za-dwelling-ownership-by-group/za-population-group-earnings';
+        var route = gallery.parseHash();
+        t.assertEqual(route.type, 'compare', 'comparison route detected');
+        t.assertEqual(route.left, 'za-dwelling-ownership-by-group', 'left chart id');
+        t.assertEqual(route.right, 'za-population-group-earnings', 'right chart id');
+      } finally {
+        window.location.hash = originalHash;
+      }
+    });
+
+    t.test('guided story contains the seven primary inequality charts', function() {
+      t.assertEqual(gallery.tourSteps.length, 7, 'seven story steps');
+      t.assertEqual(gallery.tourSteps[0].id, 'national-context', 'first step id');
+      t.assertEqual(gallery.tourSteps[0].visualId, 'za-gini-trend', 'first chart');
+      t.assertEqual(gallery.tourSteps[6].id, 'poverty-context', 'last step id');
+      t.assertEqual(gallery.tourSteps[6].visualId, 'za-poverty-context', 'last chart');
+    });
+
+    t.test('guided story hashes resolve to a known step', function() {
+      var originalHash = window.location.hash;
+      try {
+        window.location.hash = '#tour/income-concentration';
+        var route = gallery.parseHash();
+        t.assertEqual(route.type, 'tour', 'tour route detected');
+        t.assertEqual(route.stepId, 'income-concentration', 'tour step id');
+      } finally {
+        window.location.hash = originalHash;
+      }
+    });
+
+    t.test('annotation visibility defaults to enabled', function() {
+      t.assertTrue(gallery.annotationsEnabled, 'annotations start visible');
+      t.assertTrue(annotationsAreVisible(), 'annotation helper permits drawing');
+    });
   }
 
   // ------------------------------------------------------------------
@@ -526,6 +570,18 @@
           gallery.selectVisual(previous.id);
         }
       }
+    });
+
+    t.suite('integration: chart visual -> chart-ready export data');
+
+    t.test('a loaded survey table produces export columns and rows', function() {
+      var chart = new SurveyPressureIndex();
+      chart.table = makeTable(SURVEY_HEADERS, SURVEY_ROWS);
+      chart.loaded = true;
+      var exported = chart.getExportData();
+
+      t.assertTrue(exported.columns.indexOf('pressure') !== -1, 'pressure column exported');
+      t.assertEqual(exported.rows.length, 2, 'all survey rows exported');
     });
 
     t.suite('integration: asynchronous load state -> ZAGiniTrend draw branch');

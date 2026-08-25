@@ -220,7 +220,193 @@ function drawChartTooltip(label, value, extra) {
   pop();
 }
 
+// Draw a compact crosshair behind the shared tooltip. Line charts pass the
+// nearest point; other charts can omit it and keep the same tooltip style.
+function drawChartCrosshair(x, y) {
+  if (!isFinite(x) || !isFinite(y)) return;
+
+  push();
+  stroke(45, 55, 72, 130);
+  strokeWeight(1);
+  drawingContext.setLineDash([4, 4]);
+  line(x, 0, x, height);
+  line(0, y, width, y);
+  drawingContext.setLineDash([]);
+  pop();
+}
+
+function annotationsAreVisible() {
+  return typeof gallery === 'undefined'
+      || gallery === null
+      || gallery.annotationsEnabled !== false;
+}
+
+function drawAnnotationBadge(label, detail, x, y, colour) {
+  if (!annotationsAreVisible()) return;
+
+  var main = String(label || '');
+  var secondary = detail ? String(detail) : '';
+  textSize(11);
+  var boxWidth = Math.max(textWidth(main), secondary ? textWidth(secondary) : 0) + 20;
+  var boxHeight = secondary ? 34 : 22;
+  var boxX = constrain(x, 6, width - boxWidth - 6);
+  var boxY = constrain(y, 6, height - boxHeight - 6);
+
+  push();
+  stroke(colour || color(30, 41, 59));
+  strokeWeight(1);
+  fill(255, 248);
+  rect(boxX, boxY, boxWidth, boxHeight, 4);
+  noStroke();
+  fill(colour || color(30, 41, 59));
+  textAlign(LEFT, TOP);
+  textStyle(BOLD);
+  text(main, boxX + 10, boxY + 5);
+  if (secondary) {
+    textStyle(NORMAL);
+    textSize(10);
+    text(secondary, boxX + 10, boxY + 19);
+  }
+  pop();
+}
+
+function drawVerticalReferenceLine(x, top, bottom, colour) {
+  if (!annotationsAreVisible()) return;
+
+  push();
+  stroke(colour || color(100, 116, 139));
+  strokeWeight(1.5);
+  drawingContext.setLineDash([5, 4]);
+  line(x, top, x, bottom);
+  drawingContext.setLineDash([]);
+  pop();
+}
+
+function drawVerticalAnnotation(x, label, detail, top, bottom, colour, badgeYOffset) {
+  if (!annotationsAreVisible()) return;
+
+  drawVerticalReferenceLine(x, top, bottom, colour);
+  drawAnnotationBadge(label, detail, x + 7, top + 4 + (badgeYOffset || 0), colour);
+}
+
+function drawHorizontalReferenceLine(y, left, right, colour) {
+  if (!annotationsAreVisible()) return;
+
+  push();
+  stroke(colour || color(100, 116, 139));
+  strokeWeight(1.5);
+  drawingContext.setLineDash([5, 4]);
+  line(left, y, right, y);
+  drawingContext.setLineDash([]);
+  pop();
+}
+
+function drawHorizontalAnnotation(y, label, detail, left, right, colour) {
+  if (!annotationsAreVisible()) return;
+
+  drawHorizontalReferenceLine(y, left, right, colour);
+  drawAnnotationBadge(label, detail, left + 8, y - 30, colour);
+}
+
 function mouseIsOverRect(x, y, w, h) {
   return mouseX >= x && mouseX <= x + w
       && mouseY >= y && mouseY <= y + h;
+}
+
+function tableToExportData(table) {
+  if (!table || typeof table.getColumnCount !== 'function') return null;
+
+  var columns = table.columns ? table.columns.slice() : [];
+  var rows = [];
+  for (var r = 0; r < table.getRowCount(); r++) {
+    var row = {};
+    for (var c = 0; c < columns.length; c++) {
+      row[columns[c]] = table.getString(r, columns[c]);
+    }
+    rows.push(row);
+  }
+  return { columns: columns, rows: rows };
+}
+
+function rowsToExportData(rows) {
+  if (!Array.isArray(rows) || rows.length === 0) return null;
+  var columns = [];
+  rows.forEach(function(row) {
+    Object.keys(row || {}).forEach(function(key) {
+      if (columns.indexOf(key) === -1) columns.push(key);
+    });
+  });
+  return { columns: columns, rows: rows };
+}
+
+function getVisualExportData(vis) {
+  if (vis && typeof vis.getExportData === 'function') {
+    var customData = vis.getExportData();
+    if (customData) return customData;
+  }
+
+  if (vis && vis.rows && vis.rows.length) {
+    return rowsToExportData(vis.rows);
+  }
+
+  if (vis && vis.data) return tableToExportData(vis.data);
+  if (vis && vis.table) return tableToExportData(vis.table);
+
+  if (vis) {
+    var tables = [];
+    ['population', 'earnings', 'income', 'wealth'].forEach(function(key) {
+      var tableData = tableToExportData(vis[key]);
+      if (tableData) tables.push({ key: key, data: tableData });
+    });
+    if (tables.length) {
+      var combined = [];
+      tables.forEach(function(item) {
+        item.data.rows.forEach(function(row) {
+          var copy = {};
+          Object.keys(row).forEach(function(key) {
+            copy[item.key + '_' + key] = row[key];
+          });
+          combined.push(copy);
+        });
+      });
+      return rowsToExportData(combined);
+    }
+  }
+
+  return { columns: ['message'], rows: [{ message: 'Data is still loading.' }] };
+}
+
+function escapeCSVCell(value) {
+  var textValue = value == null ? '' : String(value);
+  return /[",\n\r]/.test(textValue)
+    ? '"' + textValue.replace(/"/g, '""') + '"'
+    : textValue;
+}
+
+function exportDataCSV(vis) {
+  var data = getVisualExportData(vis);
+  var lines = [data.columns.map(escapeCSVCell).join(',')];
+  data.rows.forEach(function(row) {
+    lines.push(data.columns.map(function(column) {
+      return escapeCSVCell(row[column]);
+    }).join(','));
+  });
+
+  var blob = new Blob([lines.join('\r\n') + '\r\n'], { type: 'text/csv;charset=utf-8' });
+  var link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = (vis.id || 'visualisation') + '-chart-data.csv';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  setTimeout(function() { URL.revokeObjectURL(link.href); }, 0);
+}
+
+function exportHighResolutionPNG(vis) {
+  var previousDensity = pixelDensity();
+  pixelDensity(3);
+  redraw();
+  saveCanvas((vis.id || 'visualisation') + '-chart', 'png');
+  pixelDensity(previousDensity);
+  redraw();
 }

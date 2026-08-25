@@ -91,7 +91,7 @@ function ZAPopulationGroupEarnings() {
   this.drawChart = function() {
     var compact = width < 720;
     var left = compact ? 106 : 150;
-    var right = width - (compact ? 28 : 52);
+    var right = width - (compact ? 58 : 52);
     var top = 118;
     var rowGap = compact ? 58 : 70;
     var shareWidth = (right - left) * (compact ? 0.25 : 0.28);
@@ -137,12 +137,28 @@ function ZAPopulationGroupEarnings() {
       drawBar(left, y, shareBarWidth, barHeight, SATheme.blueTint);
       drawBar(earningsLeft, y, earningsBarWidth, barHeight, colour);
 
+      if (mouseIsOverRect(left, y, shareBarWidth, barHeight)) {
+        drawChartTooltip(row.group, row.populationShare.toFixed(1) + '%', 'population share');
+      } else if (mouseIsOverRect(earningsLeft, y, earningsBarWidth, barHeight)) {
+        drawChartTooltip(row.group, 'R' + formatThousands(row.earnings), 'mean monthly earnings');
+      }
+
       fill(0);
       textStyle(NORMAL);
       textSize(compact ? 10 : 11);
       textAlign(LEFT, CENTER);
       text(row.populationShare.toFixed(1) + '%', left + shareBarWidth + 6, y + (barHeight / 2));
       text('R' + formatThousands(row.earnings), earningsLeft + earningsBarWidth + 6, y + (barHeight / 2));
+
+      if (row.group == 'White' && width >= 680) {
+        drawAnnotationBadge(
+          'Highest shown mean',
+          'R' + formatThousands(row.earnings),
+          width - 210,
+          82,
+          SATheme.red
+        );
+      }
     }
 
     noStroke();
@@ -155,5 +171,9 @@ function ZAPopulationGroupEarnings() {
          height - 30,
          width - 48,
          28);
+  };
+
+  this.getExportData = function() {
+    return rowsToExportData(this.rows);
   };
 }

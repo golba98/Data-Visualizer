@@ -179,4 +179,8 @@ function SurveyPressureWaffle() {
     textAlign(LEFT, CENTER);
     text(label, x + 9, y + (labelHeight / 2));
   };
+
+  this.getExportData = function() {
+    return tableToExportData(this.table);
+  };
 }

@@ -170,6 +170,10 @@ function SurveyCutbackHeatmap() {
         fill(0);
         textAlign(CENTER, CENTER);
         text(count, x + ((cellWidth - 4) / 2), y + ((cellHeight - 4) / 2));
+
+        if (mouseIsOverRect(x, y, cellWidth - 4, cellHeight - 4)) {
+          drawChartTooltip(cutback + ' / ' + status, String(count), 'responses');
+        }
       }
     }
   };
@@ -200,5 +204,9 @@ function SurveyCutbackHeatmap() {
     }
 
     return status;
+  };
+
+  this.getExportData = function() {
+    return tableToExportData(this.table);
   };
 }

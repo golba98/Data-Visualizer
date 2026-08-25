@@ -66,6 +66,11 @@ function refreshVisualLayout(vis) {
 // ---- p5 lifecycle ----
 
 function setup() {
+  var urlParams = typeof URLSearchParams !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  if (urlParams && urlParams.get('embedded') === '1') {
+    document.body.classList.add('embedded-chart');
+  }
+
   // Create a canvas for the chart card from index.html.
   var size = getChartCanvasSize();
   chartCanvas = createCanvas(size.width, size.height);
@@ -100,14 +105,27 @@ function setup() {
 
   gallery.buildOverviewCards();
 
-  var urlParams = typeof URLSearchParams !== 'undefined' ? new URLSearchParams(window.location.search) : null;
   var visParam = urlParams ? urlParams.get('vis') : null;
   var secParam = urlParams ? urlParams.get('section') : null;
   var aboutParam = urlParams ? urlParams.get('about') : null;
   var mobileParam = urlParams ? urlParams.get('mobile') : null;
   var focusParam = urlParams ? urlParams.get('focus') : null;
 
-  if (visParam) {
+  var hashRoute = gallery.parseHash();
+
+  if (hashRoute && hashRoute.type === 'tour' && !gallery.isEmbedded) {
+    var tourIndex = gallery.tourSteps.findIndex(function(step) {
+      return step.id === hashRoute.stepId;
+    });
+    gallery.showTourStep(tourIndex, true);
+  } else if (hashRoute && hashRoute.type === 'compare' && !gallery.isEmbedded) {
+    gallery.openComparison(hashRoute.left, hashRoute.right, true);
+  } else if (hashRoute && hashRoute.type === 'visual' && !visParam) {
+    gallery.selectVisual(hashRoute.id, true);
+    if (aboutParam === '1') {
+      gallery.toggleAboutPanel(true);
+    }
+  } else if (visParam) {
     gallery.selectVisual(visParam);
     if (aboutParam === '1') {
       gallery.toggleAboutPanel(true);
@@ -130,8 +148,8 @@ function setup() {
 }
 
 function draw() {
-  background(255);
-  if (gallery.selectedVisual != null) {
+  if (gallery && gallery.selectedVisual != null) {
+    background(255);
     gallery.selectedVisual.draw();
   }
 }

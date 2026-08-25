@@ -72,6 +72,7 @@ function ZAOwnershipComparison() {
 
     background(255);
     this.drawTitle();
+    this.drawAnnotations();
     this.drawBars();
   };
 
@@ -99,6 +100,36 @@ function ZAOwnershipComparison() {
          44,
          width - 48,
          40);
+  };
+
+  this.drawAnnotations = function() {
+    var left = width < 680 ? 136 : 190;
+    var right = width - 48;
+    var referenceX = map(10, 0, 100, left, right);
+    var referenceBottom = Math.min(
+      height - 66,
+      128 + (this.rows.length * (width < 680 ? 68 : 82))
+    );
+
+    push();
+    stroke(SATheme.blue);
+    strokeWeight(1.5);
+    drawingContext.setLineDash([5, 4]);
+    line(referenceX, 110, referenceX, referenceBottom);
+    drawingContext.setLineDash([]);
+    pop();
+
+    // Keep the explanatory badge away from the 10.0% value and first bar.
+    // Compact charts already label that bar, so the reference line is enough.
+    if (width >= 680) {
+      drawAnnotationBadge(
+        '10% reference',
+        'Population share',
+        width - 190,
+        18,
+        SATheme.blue
+      );
+    }
   };
 
   this.drawBars = function() {
@@ -151,5 +182,9 @@ function ZAOwnershipComparison() {
       fill(85);
       text(row.note, left, y + barHeight + 17);
     }
+  };
+
+  this.getExportData = function() {
+    return rowsToExportData(this.rows);
   };
 }

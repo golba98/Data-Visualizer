@@ -152,6 +152,7 @@ function ZAGiniTrend() {
     drawAxis(this.layout);
     drawAxisLabels(this.xAxisLabel, this.yAxisLabel, this.layout);
     this.drawYearLabels();
+    this.drawAnnotations();
     this.drawLine();
   };
 
@@ -224,12 +225,52 @@ function ZAGiniTrend() {
     }
   };
 
+  this.drawAnnotations = function() {
+    var contextX = this.mapYearToWidth(1994);
+    var peakX = this.mapYearToWidth(2005);
+
+    if (width < 520) {
+      drawVerticalReferenceLine(
+        contextX,
+        this.layout.topMargin,
+        this.layout.bottomMargin,
+        SATheme.gold
+      );
+      drawVerticalReferenceLine(
+        peakX,
+        this.layout.topMargin,
+        this.layout.bottomMargin,
+        SATheme.red
+      );
+      drawAnnotationBadge('Peak: 0.65', '', peakX + 7, this.layout.topMargin + 4, SATheme.red);
+      return;
+    }
+
+    drawVerticalAnnotation(
+      contextX,
+      '1994 context marker',
+      'Reference point, not a causal claim',
+      this.layout.topMargin,
+      this.layout.bottomMargin,
+      SATheme.gold
+    );
+    drawVerticalAnnotation(
+      peakX,
+      'Peak in this series',
+      'Gini 0.65',
+      this.layout.topMargin,
+      this.layout.bottomMargin,
+      SATheme.red
+    );
+  };
+
   this.drawLine = function() {
     stroke(SATheme.blue);
     strokeWeight(3);
     noFill();
 
     var previous = null;
+    var hovered = null;
 
     for (var i = 0; i < this.data.getRowCount(); i++) {
       var current = {
@@ -251,9 +292,16 @@ function ZAGiniTrend() {
       if (dist(mouseX, mouseY,
                this.mapYearToWidth(current.year),
                this.mapValueToHeight(current.value)) < 12) {
-        drawChartTooltip(String(current.year), current.value.toFixed(2), 'Gini coefficient');
+        hovered = current;
       }
       previous = current;
+    }
+
+    if (hovered) {
+      var hoverX = this.mapYearToWidth(hovered.year);
+      var hoverY = this.mapValueToHeight(hovered.value);
+      drawChartCrosshair(hoverX, hoverY);
+      drawChartTooltip(String(hovered.year), hovered.value.toFixed(2), 'Gini coefficient');
     }
 
     var last = previous;
@@ -267,6 +315,10 @@ function ZAGiniTrend() {
            this.layout.rightMargin - 8,
            this.mapValueToHeight(last.value));
     }
+  };
+
+  this.getExportData = function() {
+    return tableToExportData(this.data);
   };
 
   this.mapYearToWidth = function(value) {

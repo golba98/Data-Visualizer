@@ -190,7 +190,15 @@ function SurveyFoodTransportBurden() {
         textStyle(BOLD);
         textSize(12);
         text(count, cx, cy);
+
+        if (dist(mouseX, mouseY, cx, cy) < Math.max(size / 2, 14)) {
+          drawChartTooltip(food + ' / ' + transport, String(count), 'responses');
+        }
       }
     }
+  };
+
+  this.getExportData = function() {
+    return tableToExportData(this.table);
   };
 }

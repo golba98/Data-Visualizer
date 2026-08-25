@@ -81,6 +81,10 @@ function ZAPovertyContext() {
       this.setup();
     }
 
+    // On phones, reserve a narrow strip below the stacked legend so the
+    // single summary badge never covers a data point or reference line.
+    this.layout.topMargin = width < 520 ? 180 : 154;
+
     background(255);
     this.drawTitle();
     drawYAxisTickLabels(this.minValue,
@@ -91,6 +95,7 @@ function ZAPovertyContext() {
     drawAxis(this.layout);
     drawAxisLabels(this.xAxisLabel, this.yAxisLabel, this.layout);
     this.drawYearLabels();
+    this.drawAnnotations();
     this.drawSeries();
     this.drawLegend();
   };
@@ -121,6 +126,79 @@ function ZAPovertyContext() {
          36);
   };
 
+  this.drawAnnotations = function() {
+    var referenceY = this.mapValueToHeight(50);
+    var upper = this.series['Upper-bound poverty line headcount'];
+    var food = this.series['Food poverty line headcount'];
+
+    if (width < 520) {
+      drawHorizontalReferenceLine(
+        referenceY,
+        this.layout.leftMargin,
+        this.layout.rightMargin,
+        SATheme.gold
+      );
+
+      if (upper && upper.length && food && food.length) {
+        var compactUpper = upper[upper.length - 1];
+        var compactFood = food[food.length - 1];
+        drawAnnotationBadge(
+          '2023 poverty levels',
+          'Upper 66.7% | Food 17.6%',
+          width - 190,
+          this.layout.topMargin - 38,
+          SATheme.red
+        );
+        this.drawEndpointLabel(compactUpper, -49, -13);
+        this.drawEndpointLabel(compactFood, -49, 14);
+      }
+      return;
+    }
+
+    drawHorizontalAnnotation(
+      referenceY,
+      '50% reference',
+      'Definitions remain separate',
+      this.layout.leftMargin,
+      this.layout.rightMargin,
+      SATheme.gold
+    );
+
+    if (upper && upper.length) {
+      var upperPoint = upper[upper.length - 1];
+      drawAnnotationBadge(
+        '2023 upper-bound line',
+        upperPoint.value.toFixed(1) + '%',
+        this.mapYearToWidth(upperPoint.year) - 132,
+        this.mapValueToHeight(upperPoint.value) - 42,
+        SATheme.red
+      );
+    }
+    if (food && food.length) {
+      var foodPoint = food[food.length - 1];
+      drawAnnotationBadge(
+        '2023 food line',
+        foodPoint.value.toFixed(1) + '%',
+        this.mapYearToWidth(foodPoint.year) - 112,
+        this.mapValueToHeight(foodPoint.value) + 8,
+        SATheme.blue
+      );
+    }
+  };
+
+  this.drawEndpointLabel = function(point, xOffset, yOffset) {
+    noStroke();
+    fill(30);
+    textStyle(BOLD);
+    textSize(10);
+    textAlign(LEFT, CENTER);
+    text(
+      point.value.toFixed(1) + '%',
+      this.mapYearToWidth(point.year) + xOffset,
+      this.mapValueToHeight(point.value) + yOffset
+    );
+  };
+
   this.drawYearLabels = function() {
     var labelYears = [1993, 2000, 2006, 2014, 2023];
     for (var i = 0; i < labelYears.length; i++) {
@@ -148,7 +226,13 @@ function ZAPovertyContext() {
         fill(255);
         stroke(this.colours[s]);
         strokeWeight(2);
-        circle(this.mapYearToWidth(rows[j].year), this.mapValueToHeight(rows[j].value), 7);
+        var pointX = this.mapYearToWidth(rows[j].year);
+        var pointY = this.mapValueToHeight(rows[j].value);
+        circle(pointX, pointY, 7);
+        if (dist(mouseX, mouseY, pointX, pointY) < 12) {
+          drawChartCrosshair(pointX, pointY);
+          drawChartTooltip(String(rows[j].year), rows[j].value.toFixed(1) + '%', name);
+        }
       }
     }
   };
@@ -179,5 +263,9 @@ function ZAPovertyContext() {
 
   this.mapValueToHeight = function(value) {
     return map(value, this.minValue, this.maxValue, this.layout.bottomMargin, this.layout.topMargin);
+  };
+
+  this.getExportData = function() {
+    return tableToExportData(this.data);
   };
 }

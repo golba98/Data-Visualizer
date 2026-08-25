@@ -73,8 +73,30 @@
           <div class="section-heading">
             <h2 id="overview-title">Overview</h2>
             <p>Interactive data visualisations exploring economic inequality in South Africa and everyday financial pressures.</p>
+            <button id="start-tour-button" class="start-tour-button" type="button">Start guided story</button>
           </div>
           <div id="overview-cards" class="overview-groups"></div>
+        </section>
+
+        <section id="tour-view" class="tour-view hidden" aria-label="Guided inequality story">
+          <div class="tour-header">
+            <div>
+              <p id="tour-progress" class="tour-progress"></p>
+              <h2 id="tour-title">Guided inequality story</h2>
+            </div>
+            <button id="tour-exit" type="button">Exit story</button>
+          </div>
+          <div class="tour-layout">
+            <article class="tour-narrative" aria-labelledby="tour-title">
+              <p id="tour-narrative" tabindex="-1" aria-live="polite"></p>
+              <p id="tour-source" class="tour-source"></p>
+              <div class="tour-actions">
+                <button id="tour-previous" type="button">Previous</button>
+                <button id="tour-next" type="button">Next</button>
+                <button id="tour-annotations" type="button" aria-pressed="true">Hide annotations</button>
+              </div>
+            </article>
+          </div>
         </section>
 
         <section id="chart-view" class="chart-view hidden" aria-label="Chart view">
@@ -109,6 +131,18 @@
               <p id="info-source"></p>
             </aside>
           </div>
+        </section>
+
+        <section id="comparison-view" class="comparison-view hidden" aria-label="Visualisation comparison">
+          <div class="comparison-header">
+            <div>
+              <h2>Compare visualisations</h2>
+              <p>Two live charts can be explored side by side.</p>
+            </div>
+            <button id="comparison-close" type="button">Exit comparison</button>
+          </div>
+          <div id="comparison-controls" class="comparison-controls"></div>
+          <div id="comparison-panes" class="comparison-panes"></div>
         </section>
       </main>
     </div>
