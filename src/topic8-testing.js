@@ -429,6 +429,56 @@
       }
     });
 
+    t.test('guided story uses concise presentation copy', function() {
+      for (var i = 0; i < gallery.tourSteps.length; i++) {
+        t.assertTrue(gallery.tourSteps[i].narrative.length <= 120,
+          'story step ' + (i + 1) + ' has a short takeaway');
+      }
+    });
+
+    t.test('guided story presentation classes toggle together', function() {
+      var app = document.getElementById('app');
+      var main = document.querySelector('.main-content');
+
+      gallery.setTourLayoutActive(true);
+      t.assertTrue(app.classList.contains('story-mode'), 'app enters story mode');
+      t.assertTrue(document.body.classList.contains('story-mode'), 'body enters story mode');
+      t.assertTrue(main.classList.contains('tour-active'), 'main uses story layout');
+
+      gallery.setTourLayoutActive(false);
+      t.assertTrue(!app.classList.contains('story-mode'), 'app leaves story mode');
+      t.assertTrue(!document.body.classList.contains('story-mode'), 'body leaves story mode');
+      t.assertTrue(!main.classList.contains('tour-active'), 'main restores normal layout');
+    });
+
+    t.test('guided story responds to presentation keyboard shortcuts', function() {
+      var originalPrevious = gallery.previousTourStep;
+      var originalNext = gallery.nextTourStep;
+      var originalExit = gallery.exitTour;
+      var originalActive = gallery.isTourActive;
+      var calls = { previous: 0, next: 0, exit: 0 };
+
+      try {
+        gallery.isTourActive = true;
+        gallery.previousTourStep = function() { calls.previous += 1; };
+        gallery.nextTourStep = function() { calls.next += 1; };
+        gallery.exitTour = function() { calls.exit += 1; };
+
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft' }));
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+        document.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
+
+        t.assertEqual(calls.previous, 1, 'Left Arrow moves to the previous slide');
+        t.assertEqual(calls.next, 1, 'Right Arrow moves to the next slide');
+        t.assertEqual(calls.exit, 1, 'Escape exits the story');
+      } finally {
+        gallery.previousTourStep = originalPrevious;
+        gallery.nextTourStep = originalNext;
+        gallery.exitTour = originalExit;
+        gallery.isTourActive = originalActive;
+      }
+    });
+
     t.test('annotation visibility defaults to enabled', function() {
       t.assertTrue(gallery.annotationsEnabled, 'annotations start visible');
       t.assertTrue(annotationsAreVisible(), 'annotation helper permits drawing');

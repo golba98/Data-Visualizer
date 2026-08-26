@@ -201,3 +201,14 @@ This section consolidates every change in the current 20-file implementation so 
 - `before-top-ten-annotation-overlap-crop.png` and `before-top-ten-annotation-layout.png` → `feature-guided-tour-top-ten-reference-fixed.png`
 
 The four `before-*` files are the original screenshots supplied during debugging. The `feature-*` files are live Chrome captures of the implemented state; none are recreated mockups.
+
+## 26 August 2026 — Distraction-free presentation Story Mode
+
+- Replaced the dashboard-like tour layout with a full-width, chart-first presentation state.
+- Hid the sidebar, page heading, About/export/comparison toolbar, and duplicate chart source only while Story Mode is active.
+- Shortened all seven story narratives to one-sentence takeaways and moved the source into a single subdued footer.
+- Added Left Arrow, Right Arrow, and Escape shortcuts while retaining visible Previous, Next/Finish, annotations, and Exit controls.
+- Added automated checks for concise story copy, coordinated presentation classes, and keyboard navigation.
+- Added [`story-mode-presentation-layout.svg`](evidence/story-mode-presentation-layout.svg), clearly labelled as a layout diagram rather than a screenshot.
+
+Verification: JavaScript syntax checks, `npm run build`, served-markup inspection, and `git diff --check` passed. A live browser screenshot was not claimed because the browser runtime was unavailable.

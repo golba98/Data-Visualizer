@@ -20,6 +20,10 @@ The Topic 8 work was set aside with `git stash push -u`, returning the working t
 
 All images are unedited screenshots of the app running at `http://localhost:8877/index.html`.
 
+## 26 August 2026 — Story Mode layout diagram
+
+[`story-mode-presentation-layout.svg`](story-mode-presentation-layout.svg) is a simple explanatory diagram of the new distraction-free Story Mode: compact step information and controls, a large chart stage, and one source footer. It is visibly labelled **“Layout diagram — not a screenshot”** and is not included in the screenshot claims above.
+
 ---
 
 ## 01 · Number formatting

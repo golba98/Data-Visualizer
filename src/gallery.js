@@ -213,49 +213,49 @@ function Gallery() {
       id: 'national-context',
       visualId: 'za-gini-trend',
       title: 'Start with the national inequality picture',
-      narrative: 'The Gini series stays high across the available observations. It reaches its highest point in this dataset in 2005 at about 0.65, then ends at about 0.54 in 2022. The estimates are useful context, but the source warns that survey methods can differ across years.',
+      narrative: 'The Gini coefficient peaks at about 0.65 in 2005 and remains high across the available years.',
       source: 'World Bank Poverty and Inequality Platform via Our World in Data, 1993-2022.'
     },
     {
       id: 'income-concentration',
       visualId: 'za-income-share-trend',
       title: 'Follow the concentration of before-tax income',
-      narrative: 'The top 10 percent receives 46.35% of before-tax income in 1993 and 65.41% in 2014. The 50% line makes the concentration easy to compare without suggesting that this measure is disposable income.',
+      narrative: 'The top 10% income share rises from 46.35% in 1993 to 65.41% in 2014.',
       source: 'WID.world via Our World in Data, 1993-2014.'
     },
     {
       id: 'population-earnings',
       visualId: 'za-population-group-earnings',
       title: 'Compare population size with earnings',
-      narrative: 'Population share and mean monthly earnings do not move together. In the cleaned Stats SA data, the displayed mean ranges from R6,899 for Black African workers to R24,646 for White workers. Earnings are not the same thing as wealth.',
+      narrative: 'Displayed mean monthly earnings range from R6,899 for Black African workers to R24,646 for White workers.',
       source: 'Stats SA Census 2022 and Stats SA earnings data, 2011-2015.'
     },
     {
       id: 'dwelling-tenure',
       visualId: 'za-dwelling-ownership-by-group',
       title: 'See inequality in everyday housing conditions',
-      narrative: 'Dwelling tenure adds a practical living-conditions layer to the story. Ownership, renting, rent-free occupation, and other categories vary by population group, but this chart is not a measure of total property wealth.',
+      narrative: 'Dwelling tenure differs across population groups, adding a housing-conditions view of inequality.',
       source: 'Stats SA General Household Survey 2024, Table 8.6.'
     },
     {
       id: 'land-concentration',
       visualId: 'za-land-ownership-by-group',
       title: 'Look at concentration in the land audit',
-      narrative: 'The 2017 land-audit measure shows individually owned farms and agricultural holdings, not all land or all wealth. The White category accounts for 72% of the displayed share, well above the 50% reference line.',
+      narrative: 'White individuals account for 72% of the farms and agricultural holdings shown in the 2017 land audit.',
       source: 'Department of Rural Development and Land Reform Land Audit Report 2017.'
     },
     {
       id: 'top-ten-concentration',
       visualId: 'za-ownership-comparison',
       title: 'Put the top 10 percent side by side',
-      narrative: 'The same 10% reference group is compared with its latest available income and wealth shares. The visual gap between population size and resource share is the central concentration pattern in this project.',
+      narrative: 'The top 10% holds a much larger share of income and wealth than its population share.',
       source: 'WID.world via Our World in Data.'
     },
     {
       id: 'poverty-context',
       visualId: 'za-poverty-context',
       title: 'End with poverty measures in context',
-      narrative: 'Poverty depends on the definition used. In 2023, the upper-bound poverty-line series is 66.7% while the food-poverty-line series is 17.6%. They must remain separate measures rather than being combined into one score.',
+      narrative: 'In 2023, 66.7% were below the upper-bound poverty line and 17.6% below the food poverty line.',
       source: 'World Bank PIP via OWID and Statistics South Africa Poverty Trends.'
     }
   ];
@@ -300,7 +300,20 @@ function Gallery() {
 
   this.setTourLayoutActive = function(active) {
     var main = document.querySelector('.main-content');
+    var app = document.getElementById('app');
+    var sidebar = document.getElementById('sidebar');
+    var menuToggle = document.getElementById('mobile-menu-toggle');
+
     if (main) main.classList.toggle('tour-active', active);
+    if (app) app.classList.toggle('story-mode', active);
+    document.body.classList.toggle('story-mode', active);
+
+    if (active) {
+      if (sidebar) sidebar.classList.remove('open');
+      document.body.classList.remove('mobile-menu-open');
+      if (menuToggle) menuToggle.setAttribute('aria-expanded', 'false');
+      if (this.isAboutOpen) this.toggleAboutPanel(false);
+    }
   };
 
   this.updateTourUI = function() {
@@ -408,6 +421,31 @@ function Gallery() {
         self.annotationsEnabled = !self.annotationsEnabled;
         self.updateAnnotationButtons();
         self.updateTourUI();
+      });
+    }
+
+    if (!document.datasetTourKeyboardBound) {
+      document.datasetTourKeyboardBound = true;
+      document.addEventListener('keydown', function(e) {
+        if (!self.isTourActive || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+
+        var target = e.target;
+        var isEditable = target && (target.isContentEditable
+          || target.tagName === 'INPUT'
+          || target.tagName === 'SELECT'
+          || target.tagName === 'TEXTAREA');
+        if (isEditable) return;
+
+        if (e.key === 'ArrowLeft') {
+          e.preventDefault();
+          self.previousTourStep();
+        } else if (e.key === 'ArrowRight') {
+          e.preventDefault();
+          self.nextTourStep();
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          self.exitTour();
+        }
       });
     }
   };
