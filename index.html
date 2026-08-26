@@ -84,16 +84,15 @@
               <p id="tour-progress" class="tour-progress"></p>
               <h2 id="tour-title">Guided inequality story</h2>
             </div>
-            <button id="tour-exit" type="button">Exit story</button>
           </div>
           <div class="tour-layout">
             <article class="tour-narrative" aria-labelledby="tour-title">
               <p id="tour-narrative" tabindex="-1" aria-live="polite"></p>
-              <p id="tour-source" class="tour-source"></p>
               <div class="tour-actions">
-                <button id="tour-previous" type="button">Previous</button>
-                <button id="tour-next" type="button">Next</button>
+                <button id="tour-previous" type="button" aria-keyshortcuts="ArrowLeft">Previous</button>
+                <button id="tour-next" type="button" aria-keyshortcuts="ArrowRight">Next</button>
                 <button id="tour-annotations" type="button" aria-pressed="true">Hide annotations</button>
+                <button id="tour-exit" type="button" aria-keyshortcuts="Escape">Exit story</button>
               </div>
             </article>
           </div>
@@ -132,6 +131,10 @@
             </aside>
           </div>
         </section>
+
+        <footer class="tour-footer">
+          <p id="tour-source" class="tour-source"></p>
+        </footer>
 
         <section id="comparison-view" class="comparison-view hidden" aria-label="Visualisation comparison">
           <div class="comparison-header">

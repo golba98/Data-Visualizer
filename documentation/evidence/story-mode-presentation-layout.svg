@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="675" viewBox="0 0 1200 675" role="img" aria-labelledby="title description">
+  <title id="title">Distraction-free Story Mode layout diagram</title>
+  <desc id="description">A simple diagram showing the compact story header, large chart area, source footer, and the sidebar and chart toolbar removed.</desc>
+
+  <rect width="1200" height="675" fill="#0f1115"/>
+
+  <rect x="24" y="22" width="1152" height="96" rx="8" fill="#171b22" stroke="#30353f" stroke-width="2"/>
+  <text x="48" y="50" fill="#9ca3af" font-family="system-ui, sans-serif" font-size="14" font-weight="700">STORY STEP 1 OF 7</text>
+  <text x="48" y="79" fill="#f3f4f6" font-family="system-ui, sans-serif" font-size="23" font-weight="700">Start with the national inequality picture</text>
+  <text x="470" y="99" fill="#d1d5db" font-family="system-ui, sans-serif" font-size="15">One short takeaway keeps attention on the chart.</text>
+
+  <g font-family="system-ui, sans-serif" font-size="13" font-weight="600" text-anchor="middle">
+    <rect x="820" y="46" width="76" height="38" rx="4" fill="#f3f4f6"/>
+    <text x="858" y="70" fill="#111827">Previous</text>
+    <rect x="906" y="46" width="60" height="38" rx="4" fill="#f3f4f6"/>
+    <text x="936" y="70" fill="#111827">Next</text>
+    <rect x="976" y="46" width="96" height="38" rx="4" fill="#f3f4f6"/>
+    <text x="1024" y="70" fill="#111827">Annotations</text>
+    <rect x="1082" y="46" width="70" height="38" rx="4" fill="#f3f4f6"/>
+    <text x="1117" y="70" fill="#111827">Exit</text>
+  </g>
+
+  <rect x="24" y="132" width="1152" height="476" rx="8" fill="#ffffff"/>
+  <text x="55" y="172" fill="#111827" font-family="system-ui, sans-serif" font-size="22" font-weight="700">National inequality context</text>
+  <text x="55" y="197" fill="#6b7280" font-family="system-ui, sans-serif" font-size="14">The chart receives most of the presentation space.</text>
+
+  <line x1="98" y1="528" x2="1115" y2="528" stroke="#111827" stroke-width="2"/>
+  <line x1="98" y1="232" x2="98" y2="528" stroke="#111827" stroke-width="2"/>
+  <g stroke="#d1d5db" stroke-width="1">
+    <line x1="98" y1="454" x2="1115" y2="454"/>
+    <line x1="98" y1="380" x2="1115" y2="380"/>
+    <line x1="98" y1="306" x2="1115" y2="306"/>
+    <line x1="98" y1="232" x2="1115" y2="232"/>
+  </g>
+  <polyline points="98,398 342,420 516,284 622,320 798,347 934,365 1115,465" fill="none" stroke="#123b9f" stroke-width="5"/>
+  <g fill="#ffffff" stroke="#123b9f" stroke-width="4">
+    <circle cx="98" cy="398" r="6"/>
+    <circle cx="342" cy="420" r="6"/>
+    <circle cx="516" cy="284" r="6"/>
+    <circle cx="622" cy="320" r="6"/>
+    <circle cx="798" cy="347" r="6"/>
+    <circle cx="934" cy="365" r="6"/>
+    <circle cx="1115" cy="465" r="6"/>
+  </g>
+  <line x1="516" y1="232" x2="516" y2="528" stroke="#ef4444" stroke-width="2" stroke-dasharray="8 6"/>
+  <rect x="530" y="246" width="142" height="54" rx="5" fill="#fff7f7" stroke="#ef4444" stroke-width="2"/>
+  <text x="543" y="268" fill="#ef4444" font-family="system-ui, sans-serif" font-size="14" font-weight="700">Peak in this series</text>
+  <text x="543" y="288" fill="#ef4444" font-family="system-ui, sans-serif" font-size="13">Gini 0.65</text>
+
+  <text x="24" y="635" fill="#9ca3af" font-family="system-ui, sans-serif" font-size="13">Source: World Bank Poverty and Inequality Platform via Our World in Data.</text>
+  <text x="1176" y="661" fill="#6b7280" font-family="system-ui, sans-serif" font-size="12" text-anchor="end">Layout diagram — not a screenshot</text>
+</svg>
