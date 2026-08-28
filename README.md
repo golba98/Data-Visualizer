@@ -65,65 +65,34 @@ The survey section presents 48 rows of survey data collected through https://sur
 | `data/survey/za_survey_responses.csv` | Project Survey App export | https://surveyapp.ink/ | Through 2026-08-25 | Real survey data | 48 Survey App rows collected via https://surveyapp.ink/ and shared on Reddit, Facebook, Instagram, and with IRL friends and family. |
 | `data/inequality/za_dashboard_sources.csv` | Local source register | Local file | Project documentation | Metadata | Summarises sources and limitations for the dashboard. |
 
-## Visualisation Design
+## Visualisation Design (Simple Chart Guide)
 
-The site separates official inequality data, Survey App data, and archived charts.
+### 1. South African Inequality, Explained (Official Data)
 
-### Gini coefficient over time
+- **National inequality (Gini over time)**: Measures inequality from 0 (equal) to 1 (totally unequal). South Africa stays above 0.60, making it one of the most unequal countries in the world.
+- **Population earnings**: Compares population size with average monthly pay. Black Africans make up over 80% of people but have the lowest average pay; White people make up ~7% but earn over 3x the national average.
+- **Dwelling ownership**: Shows housing tenure (own, rent, or rent-free). Shows big gaps in who owns their home versus who has to rent.
+- **Land ownership**: Shows who owns individual farm and agricultural land. Over 70% of individually owned farmland is held by White owners.
+- **Top 10% income share**: Shows how much pre-tax national income goes to the top 10% richest earners (over 50% to 65%).
+- **Top 10% concentration**: Compares 10% of the population against their income share (~65%) and wealth share (~86%). Shows wealth is even more concentrated than income.
+- **Poverty indicators**: Shows the percentage of people living below different poverty lines over time.
 
-This line chart uses `data/inequality/za_gini_trend.csv`, showing the South African Gini estimates I could find from World Bank/PIP via Our World in Data. I use it to set the national inequality context before getting into ownership and income specifics.
+### 2. Survey App: Everyday Financial Pressure (48 Responses)
 
-### Population share compared with mean earnings
+- **Pressure index**: Combines all survey answers into one stress score out of 100 (**71/100 = high pressure**) and shows the 5 parts that make it up: Main pressure (86), Income gap (80), Work worry (72), Food cost (63), and Transport cost (56).
+- **Cost pressure mix**: A 100-block waffle chart showing people's #1 financial worry (Food, Transport, Rent, Debt, Data, Electricity).
+- **Food & transport**: Compares monthly food spending against monthly transport spending to show who gets squeezed by both.
+- **What gets cut**: A heatmap showing what people stop buying when money is tight (eating out, entertainment, meat, clothes, data).
+- **Worry vs. income**: Compares work stress with whether income is enough. Shows unemployed people and working students have the biggest gap.
+- **Pressure by status**: Shows what hurts each group most (students worry about tuition and data; workers worry about rent and debt).
 
-This bar comparison uses `data/inequality/za_population_group_shares.csv` and `data/inequality/za_population_group_earnings.csv`, comparing population-group shares with Stats SA mean monthly real earnings. It shows how a small population group can earn far more on average than much larger groups.
+### 3. Archived Drafts
 
-### Dwelling tenure by population group
-
-This stacked bar chart uses `data/inequality/za_dwelling_ownership_by_group.csv`, showing owned, rented, rent-free, and other tenure rates by the population group of the household head. It's one practical way inequality shows up in everyday living conditions — though it's a tenure measure, not a full property-wealth one.
-
-### Agricultural land ownership by population group
-
-This bar chart uses `data/inequality/za_land_ownership_by_group.csv`, showing shares of individually owned farms and agricultural land from the 2017 Land Audit. It shows ownership concentration in a land-related measure, though it doesn't cover all homes or all wealth.
-
-### Top 10 percent income share
-
-This line chart uses `data/inequality/za_income_distribution.csv`, showing the share of before-tax income going to the richest 10 percent. It's here because the project is about money distribution, not just population size.
-
-### Top 10 percent population share versus income and wealth share
-
-This comparison chart uses `data/inequality/za_population_groups.csv`, `data/inequality/za_income_distribution.csv`, and `data/inequality/za_wealth_distribution.csv`, comparing a 10 percent population reference group with top 10 percent income and wealth shares. This is the central argument of the project: a small slice of the population holds a much bigger share of resources.
-
-### Poverty context
-
-This chart uses `data/inequality/za_poverty_indicators.csv`, showing a few poverty indicators from World Bank/PIP and Stats SA. It gives context for financial pressure, but the different definitions have to be read separately.
-
-### How pressured are people feeling?
-
-A gauge combines the 48 Survey App rows into one 0–100 pressure score.
-
-### What people worry about most
-
-A waffle chart shows the main cost-pressure answers in the 48-row dataset.
-
-### Food cost against transport cost
-
-A grid compares food-cost bands with transport-cost bands.
-
-### What people say they cut back on
-
-A heatmap compares cutback choices across status groups.
-
-### Does income keep up with the worry?
-
-A dumbbell chart compares work worry with income adequacy.
-
-### Who feels which pressure most?
-
-Stacked bars compare main cost pressures across status groups.
-
-### Archived charts
-
-Below the survey app is a small archive of six charts from earlier drafts of this project — a census pie chart, a sex-by-age breakdown, an age/female-share bubble chart, youth unemployment, life expectancy, and (unrelated to South Africa) a global temperature anomaly chart I built while still deciding on a topic. They're not part of the inequality story, so I moved them out of the main sections instead of deleting them.
+- **Population by census (1996–2022)**: Demographic proportions across four census counts.
+- **Sex & age structure (2022)**: South Africa's population pyramid.
+- **Youth unemployment**: Unemployment rates for youth over time.
+- **Life expectancy**: Historical lifespan trends.
+- **Global temperature anomaly**: Exploration draft on world temperature changes.
 
 ## Survey Data
 
