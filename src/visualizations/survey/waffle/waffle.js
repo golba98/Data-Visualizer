@@ -1,8 +1,7 @@
-// Waffle chart: a boxesAcross x boxesDown grid of Box cells whose colours
-// show each category's share of the values in table[columnName].
+// Waffle chart: a boxesAcross x boxesDown grid of Box cells whose colours show each category's share of the values in table[columnName].
 function Waffle(x, y, width, height, boxesAcross, boxesDown, table, columnName, categories, colours) {
 
-  // ---- State ----
+  // State
 
   this.x = x;
   this.y = y;
@@ -17,10 +16,9 @@ function Waffle(x, y, width, height, boxesAcross, boxesDown, table, columnName, 
   this.boxes = [];
   this.counts = {};
 
-  // ---- Build ----
+  // Build
 
-  // Count categories, work out how many boxes each one gets, then fill a
-  // row-by-row grid of Box objects.
+  // Count categories, work out how many boxes each one gets, then fill a row-by-row grid of Box objects.
   this.build = function() {
     var validTotal = this.countCategories();
     var boxTotals = this.calculateBoxTotals(validTotal);
@@ -59,7 +57,7 @@ function Waffle(x, y, width, height, boxesAcross, boxesDown, table, columnName, 
     }
   };
 
-  // ---- Counting ----
+  // Counting
 
   // Tally how many table rows fall into each known category.
   this.countCategories = function() {
@@ -82,10 +80,9 @@ function Waffle(x, y, width, height, boxesAcross, boxesDown, table, columnName, 
     return total;
   };
 
-  // ---- Box allocation ----
+  // Box allocation
 
-  // Convert category counts into whole box totals using the largest-remainder
-  // method, so the boxes always sum to exactly totalBoxes.
+  // Convert category counts into whole box totals using the largest-remainder method, so the boxes always sum to exactly totalBoxes.
   this.calculateBoxTotals = function(validTotal) {
     var totalBoxes = this.boxesAcross * this.boxesDown;
     var boxTotals = {};
@@ -107,8 +104,7 @@ function Waffle(x, y, width, height, boxesAcross, boxesDown, table, columnName, 
       });
     }
 
-    // Hand the leftover boxes to the categories with the largest fractional
-    // remainders first.
+    // Hand the leftover boxes to the categories with the largest fractional remainders first.
     remainders.sort(function(a, b) {
       return b.remainder - a.remainder;
     });
@@ -120,7 +116,7 @@ function Waffle(x, y, width, height, boxesAcross, boxesDown, table, columnName, 
     return boxTotals;
   };
 
-  // ---- Drawing & interaction ----
+  // Drawing & interaction
 
   this.draw = function() {
     for (var row = 0; row < this.boxes.length; row++) {

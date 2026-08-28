@@ -1,6 +1,6 @@
 function SurveyPressureWaffle() {
 
-  // ---- State ----
+  // State
 
   this.name = 'Survey pressure waffle';
   this.id = 'survey-pressure-waffle';
@@ -8,23 +8,23 @@ function SurveyPressureWaffle() {
   this.loaded = false;
   this.waffle = null;
   this.categories = ['Food', 'Transport', 'Data', 'Rent', 'Tuition', 'Debt', 'Electricity'];
-  this.colours = SATheme.pressure;   // SA flag colours, shared with the stacked-bar chart
-  this.boxesAcross = 10;   // 10 x 10 = 100 boxes, so each box is roughly 1%
+  this.colours = SATheme.pressure;
+  this.boxesAcross = 10;
   this.boxesDown = 10;
-  this.layoutWidth = 0;    // cached canvas size; rebuild the waffle when it changes
+  this.layoutWidth = 0;
   this.layoutHeight = 0;
   this.legendBelow = false;
 
-  // ---- Lifecycle ----
+  // Lifecycle
 
   this.preload = function() {
     var self = this;
 
-    this.table = loadTable('data/survey/za_survey_demo.csv', 'csv', 'header', function(table) {
+    this.table = loadTable(SurveyData.path, 'csv', 'header', function(table) {
       self.table = table;
       self.loaded = true;
     }, function(error) {
-      console.error('Could not load za_survey_demo.csv for survey pressure waffle', error);
+      console.error('Could not load survey data for the pressure waffle', error);
       self.table = null;
       self.loaded = false;
     });
@@ -38,10 +38,9 @@ function SurveyPressureWaffle() {
     this.buildWaffle();
   };
 
-  // ---- Layout ----
+  // Layout
 
-  // (Re)build the waffle sized to the current canvas. On narrow screens the
-  // legend moves below the waffle instead of beside it.
+  // (Re)build the waffle sized to the current canvas.
   this.buildWaffle = function() {
     if (!this.loaded || !this.table) {
       return;
@@ -49,8 +48,9 @@ function SurveyPressureWaffle() {
 
     this.layoutWidth = width;
     this.layoutHeight = height;
+    this.colours = SATheme.pressure;
 
-    this.legendBelow = width < 760;   // width < 760 => narrow / mobile layout
+    this.legendBelow = width < 760;
 
     var waffleSize = this.legendBelow
         ? Math.min(width - 56, height * 0.44, 320)
@@ -78,11 +78,11 @@ function SurveyPressureWaffle() {
     );
   };
 
-  // ---- Drawing ----
+  // Drawing
 
   this.draw = function() {
     if (!this.loaded || !this.table) {
-      fill(0);
+      fill(SATheme.text);
       noStroke();
       textAlign(CENTER, CENTER);
       text('Loading survey data...', width / 2, height / 2);
@@ -93,7 +93,7 @@ function SurveyPressureWaffle() {
       this.buildWaffle();
     }
 
-    background(255);
+    background(SATheme.bg);
     this.drawHeading();
 
     this.waffle.draw();
@@ -107,17 +107,17 @@ function SurveyPressureWaffle() {
 
   this.drawHeading = function() {
     noStroke();
-    fill(0);
+    fill(SATheme.text);
     textAlign(LEFT, TOP);
-    textSize(16);
+    textSize(width < 520 ? 13 : 16);
     textStyle(BOLD);
-    text('What people worry about most (demo)', 24, 18);
+    text('What people worry about most', 24, 18, width - 48, 36);
 
     textStyle(NORMAL);
-    fill(90);
+    fill(SATheme.textMuted);
     textSize(12);
-    var subtitle = 'Each square is a made-up respondent — the mix will change once real answers replace these.';
-    text(subtitle, 24, 42, width - 48, 34);
+    var subtitle = SurveyData.chartLabel;
+    text(subtitle, 24, width < 520 ? 54 : 42, width - 48, 34);
   };
 
   this.drawLegend = function() {
@@ -143,16 +143,16 @@ function SurveyPressureWaffle() {
           : y + (i * 34);
 
       fill(this.colours[category]);
-      stroke(0);
+      stroke(SATheme.axis);
       strokeWeight(1);
       rect(itemX, itemY - 7, 14, 14);
       noStroke();
 
-      fill(0);
+      fill(SATheme.text);
       textStyle(BOLD);
       text(category, itemX + 22, itemY);
 
-      fill(90);
+      fill(SATheme.textMuted);
       textStyle(NORMAL);
       text(count + ' (' + percent + '%)', itemX + valueOffset, itemY);
     }
@@ -167,15 +167,16 @@ function SurveyPressureWaffle() {
     textSize(12);
     var labelWidth = textWidth(label) + 18;
     var labelHeight = 24;
-    var x = constrain(mouseX + 12, 4, width - labelWidth - 4);
-    var y = constrain(mouseY - 32, 4, height - labelHeight - 4);
+    var pointer = getChartPointer();
+    var x = constrain(pointer.x + 12, 4, width - labelWidth - 4);
+    var y = constrain(pointer.y - 32, 4, height - labelHeight - 4);
 
-    stroke(0);
+    stroke(SATheme.axis);
     strokeWeight(1);
-    fill(255);
+    fill(SATheme.bg);
     rect(x, y, labelWidth, labelHeight);
     noStroke();
-    fill(0);
+    fill(SATheme.text);
     textAlign(LEFT, CENTER);
     text(label, x + 9, y + (labelHeight / 2));
   };

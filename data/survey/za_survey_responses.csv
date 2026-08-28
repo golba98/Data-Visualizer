@@ -1,0 +1,49 @@
+age,status,pressure,cost_increased,work_worry,income_keeps_up,transport_cost,food_cost,cut_back_on
+18-21,Student,Food,Yes,5,1,R0-R300,R3000+,Eating out; Transport; Social life
+18-21,Student,Data,Yes,2,4,R0-R300,R501-R1000,Data
+18-21,Student,Tuition,Yes,3,3,R301-R600,R501-R1000,Eating out; Transport
+31+,Employed,Electricity,Yes,4,2,R1500+,R2001-R3000,Eating out; Subscriptions; Clothing
+22-25,Student,Food,Yes,5,1,R601-R1000,R1001-R2000,Meat
+31+,Studying and working,Transport,Not sure,2,1,R301-R600,R501-R1000,Transport; Social life
+26-30,Employed,Transport,No,3,3,R601-R1000,R1001-R2000,Transport; Data; Eating out
+18-21,Student,Tuition,Yes,4,2,R301-R600,R501-R1000,Eating out
+22-25,Studying and working,Debt,Yes,5,1,R1500+,R2001-R3000,Eating out; Meat
+22-25,Unemployed,Food,Yes,4,2,R0-R300,R3000+,Meat; Transport; Subscriptions
+26-30,Student,Transport,Yes,3,1,R1001-R1500,R2001-R3000,Transport
+31+,Employed,Transport,Not sure,4,2,R601-R1000,R1001-R2000,Transport; Clothing
+18-21,Student,Tuition,No,5,1,R301-R600,R501-R1000,Eating out; Social life; Data
+22-25,Student,Rent,Yes,2,3,R301-R600,R1001-R2000,Eating out
+26-30,Employed,Rent,Yes,3,2,R0-R300,R3000+,Eating out; Meat
+26-30,Student,Transport,Yes,4,1,R1001-R1500,R2001-R3000,Transport; Meat; Subscriptions
+18-21,Studying and working,Rent,Yes,5,1,R601-R1000,R1001-R2000,Eating out
+22-25,Unemployed,Debt,Not sure,4,2,R1001-R1500,R1001-R2000,Eating out; Subscriptions
+22-25,Student,Rent,No,3,3,R301-R600,R1001-R2000,Eating out; Clothing; Social life
+26-30,Studying and working,Food,Yes,4,2,R0-R300,R3000+,Meat
+26-30,Student,Transport,Yes,5,1,R1001-R1500,R2001-R3000,Transport; Data
+18-21,Student,Data,Yes,2,4,R0-R300,R501-R1000,Data; Eating out; Meat
+26-30,Employed,Debt,Yes,3,3,R1001-R1500,R1001-R2000,Eating out
+22-25,Student,Rent,Not sure,4,2,R301-R600,R1001-R2000,Eating out; Transport
+26-30,Studying and working,Food,No,5,1,R0-R300,R3000+,Meat; Subscriptions; Clothing
+22-25,Employed,Food,Yes,2,1,R301-R600,R501-R1000,Meat
+18-21,Student,Data,Yes,3,3,R0-R300,R501-R1000,Data; Social life
+22-25,Studying and working,Data,Yes,4,2,R1001-R1500,R1001-R2000,Data; Eating out; Meat
+18-21,Unemployed,Rent,Yes,5,1,R1500+,R2001-R3000,Eating out
+22-25,Student,Food,Not sure,2,2,R601-R1000,R1001-R2000,Meat; Transport
+26-30,Employed,Food,No,3,1,R301-R600,R501-R1000,Meat; Transport; Subscriptions
+18-21,Student,Data,Yes,4,2,R0-R300,R501-R1000,Data
+22-25,Studying and working,Data,Yes,5,1,R1001-R1500,R1001-R2000,Data; Clothing
+22-25,Employed,Electricity,Yes,2,3,R1500+,R2001-R3000,Eating out; Social life; Data
+22-25,Student,Food,Yes,3,2,R601-R1000,R1001-R2000,Meat
+31+,Studying and working,Transport,Not sure,4,1,R301-R600,R501-R1000,Transport; Eating out
+18-21,Unemployed,Data,No,5,1,R601-R1000,R1001-R2000,Data; Meat; Transport
+18-21,Student,Tuition,Yes,2,4,R301-R600,R501-R1000,Eating out
+22-25,Studying and working,Debt,Yes,3,3,R1500+,R2001-R3000,Eating out; Subscriptions
+22-25,Student,Food,Yes,4,2,R601-R1000,R1001-R2000,Meat; Clothing; Social life
+26-30,Student,Transport,Yes,5,1,R1001-R1500,R2001-R3000,Transport
+22-25,Employed,Transport,Not sure,2,4,R601-R1000,R1001-R2000,Transport; Data
+18-21,Student,Tuition,No,3,3,R301-R600,R501-R1000,Eating out; Meat; Transport
+22-25,Studying and working,Debt,Yes,4,2,R1500+,R2001-R3000,Eating out
+18-21,Unemployed,Food,Yes,5,1,R0-R300,R3000+,Meat; Transport
+26-30,Student,Transport,Yes,2,1,R1001-R1500,R2001-R3000,Transport; Subscriptions; Clothing
+18-21,Studying and working,Rent,Yes,3,3,R601-R1000,R1001-R2000,Eating out
+18-21,Student,Tuition,Not sure,4,2,R301-R600,R501-R1000,Eating out; Social life

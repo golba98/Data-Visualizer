@@ -1,15 +1,15 @@
 
-// ---- State ----
+// State
 
-// Global variable to store the gallery object. The gallery object is
-// a container for all the visualisations.
+// Global variable to store the gallery object.
 var gallery;
-var chartCanvas;   // p5 canvas element mounted inside #chart-container
+var chartCanvas;
+var chartResizeFrame = null;
+var chartLoopStartedAt = 0;
 
-// ---- Canvas sizing & layout ----
+// Canvas sizing & layout
 
-// Measure the chart card so the canvas fills it, with sensible fallbacks
-// (window size minus the sidebar / header) and minimum dimensions.
+// Measure the chart card so the canvas fills it, with sensible fallbacks (window size minus the sidebar / header) and minimum dimensions.
 function getChartCanvasSize() {
   var chartContainer = document.getElementById('chart-container');
   var width = chartContainer && chartContainer.clientWidth
@@ -20,7 +20,8 @@ function getChartCanvasSize() {
       : windowHeight - 140;  // fallback: window minus header height
 
   return {
-    width: Math.max(300, Math.floor(width)),
+    // On very small phones the old 300px minimum could make the canvas wider than its card.
+    width: Math.max(1, Math.floor(width)),
     height: Math.max(240, Math.floor(height))
   };
 }
@@ -32,38 +33,109 @@ function resizeChartCanvas() {
 
   if (gallery && gallery.selectedVisual) {
     refreshVisualLayout(gallery.selectedVisual);
+    requestChartRender();
   }
 }
 
-// Recompute a visualisation's layout margins after a resize so its plot
-// keeps filling the current canvas.
+function requestChartRender(animate) {
+  if (animate) {
+    chartLoopStartedAt = typeof millis === 'function' ? millis() : 0;
+    loop();
+  } else {
+    redraw();
+  }
+}
+
+function chartNeedsMoreFrames(vis) {
+  if (!vis) return false;
+  if (typeof vis.isAnimating === 'function' && vis.isAnimating()) return true;
+  if (vis.pie && typeof vis.pie.isAnimating === 'function' && vis.pie.isAnimating()) return true;
+
+  var waitingForData = vis.isLoading === true || (vis.loaded === false && !vis.loadError);
+  return waitingForData && millis() - chartLoopStartedAt < 10000;
+}
+
+// Views are hidden while their content is being changed.
+function queueChartResize() {
+  if (chartResizeFrame != null) cancelAnimationFrame(chartResizeFrame);
+  chartResizeFrame = requestAnimationFrame(function() {
+    chartResizeFrame = null;
+    resizeChartCanvas();
+  });
+}
+
+// Recompute a visualisation's layout margins after a resize so its plot keeps filling the current canvas.
 function refreshVisualLayout(vis) {
   if (vis.layout) {
+    if (!vis.layout.responsiveDefaults) {
+      vis.layout.responsiveDefaults = {
+        marginSize: vis.layout.marginSize,
+        leftMargin: vis.layout.leftMargin,
+        rightPadding: vis.layout.rightPadding,
+        bottomPadding: vis.layout.bottomPadding,
+        numXTickLabels: vis.layout.numXTickLabels,
+        numYTickLabels: vis.layout.numYTickLabels
+      };
+    }
+
+    var defaults = vis.layout.responsiveDefaults;
+    var phoneLayout = width < 520;
+    if (phoneLayout) {
+      if (vis.layout.hasOwnProperty('marginSize')) vis.layout.marginSize = 28;
+      if (vis.layout.hasOwnProperty('leftMargin')) {
+        vis.layout.leftMargin = Math.min(defaults.leftMargin || 56, 56);
+      }
+      if (vis.layout.hasOwnProperty('numXTickLabels')) {
+        vis.layout.numXTickLabels = Math.min(defaults.numXTickLabels || 4, 4);
+      }
+      if (vis.layout.hasOwnProperty('numYTickLabels')) {
+        vis.layout.numYTickLabels = Math.min(defaults.numYTickLabels || 5, 5);
+      }
+    } else {
+      if (defaults.marginSize !== undefined) vis.layout.marginSize = defaults.marginSize;
+      if (defaults.leftMargin !== undefined) vis.layout.leftMargin = defaults.leftMargin;
+      if (defaults.numXTickLabels !== undefined) vis.layout.numXTickLabels = defaults.numXTickLabels;
+      if (defaults.numYTickLabels !== undefined) vis.layout.numYTickLabels = defaults.numYTickLabels;
+    }
+
     if (vis.layout.hasOwnProperty('rightMargin')) {
-      vis.layout.rightMargin = width - (vis.layout.rightPadding || vis.layout.marginSize || 0);
+      vis.layout.rightMargin = width - (phoneLayout
+        ? 18
+        : (defaults.rightPadding || vis.layout.marginSize || 0));
     }
     if (vis.layout.hasOwnProperty('bottomMargin')) {
-      vis.layout.bottomMargin = height - (vis.layout.bottomPadding || ((vis.layout.marginSize || 0) * 2));
+      vis.layout.bottomMargin = height - (phoneLayout
+        ? 58
+        : (defaults.bottomPadding || ((vis.layout.marginSize || 0) * 2)));
     }
   }
 
   // sa-sex-age-2022 spans the full canvas width, so override the shared margins.
   if (vis.id == 'sa-sex-age-2022') {
+    vis.layout.leftMargin = width < 520 ? 62 : 130;
     vis.layout.rightMargin = width - 12;
-    vis.layout.bottomMargin = height;
+    vis.layout.bottomMargin = height - (width < 520 ? 12 : 0);
     vis.midX = (vis.layout.plotWidth() / 2) + vis.layout.leftMargin;
+  }
+
+  if (vis.id == 'sa-age-sex-bubble-2022') {
+    vis.pad = width < 520 ? 48 : 58;
+    vis.dotSizeMax = width < 520 ? 34 : 42;
   }
 
   // Pie-chart visualisations recentre and rescale their pie on resize.
   if (vis.pie) {
-    var diameter = Math.min(width * 0.34, height * 0.68);
-    vis.pie.x = Math.max((diameter / 2) + 20, width * 0.34);
-    vis.pie.y = height / 2;
+    var phonePie = width < 520;
+    var diameter = phonePie
+      ? Math.min(width - 64, height * 0.46)
+      : Math.min(width * 0.34, height * 0.68);
+    vis.pie.x = phonePie ? width / 2 : Math.max((diameter / 2) + 20, width * 0.34);
+    vis.pie.y = phonePie ? Math.max((diameter / 2) + 24, height * 0.32) : height / 2;
     vis.pie.diameter = diameter;
   }
 }
 
-// ---- p5 lifecycle ----
+// p5 lifecycle
 
 function setup() {
   var urlParams = typeof URLSearchParams !== 'undefined' ? new URLSearchParams(window.location.search) : null;
@@ -94,8 +166,7 @@ function setup() {
   gallery.addVisual(new SurveyIncomeRealityGap());
   gallery.addVisual(new SurveyStatusPressure());
 
-  // Archived: earlier drafts of the project, kept for reference below the
-  // survey section rather than deleted outright.
+  // Archived: earlier drafts of the project, kept for reference below the survey section rather than deleted outright.
   gallery.addVisual(new SAPopulationGroupCensus());
   gallery.addVisual(new SAPopulationSexAge2022());
   gallery.addVisual(new SAAgeSexBubble2022());
@@ -104,6 +175,17 @@ function setup() {
   gallery.addVisual(new ClimateChange());
 
   gallery.buildOverviewCards();
+
+  var controls = document.getElementById('chart-controls');
+  controls.addEventListener('input', function() {
+    if (gallery.selectedVisual && typeof gallery.selectedVisual.restartAnimation === 'function') {
+      gallery.selectedVisual.restartAnimation();
+    }
+    requestChartRender(true);
+  });
+  controls.addEventListener('change', function() {
+    requestChartRender(true);
+  });
 
   var visParam = urlParams ? urlParams.get('vis') : null;
   var secParam = urlParams ? urlParams.get('section') : null;
@@ -149,11 +231,26 @@ function setup() {
 
 function draw() {
   if (gallery && gallery.selectedVisual != null) {
-    background(255);
+    background(SATheme.bg);
+    clearChartTooltip();
     gallery.selectedVisual.draw();
+    drawPendingChartTooltip();
+    if (!chartNeedsMoreFrames(gallery.selectedVisual)) noLoop();
   }
 }
 
+function mouseMoved() {
+  if (gallery && gallery.selectedVisual) requestChartRender();
+}
+
+function mouseDragged() {
+  if (gallery && gallery.selectedVisual) requestChartRender();
+}
+
+function touchStarted() {
+  if (gallery && gallery.selectedVisual) requestChartRender();
+}
+
 function windowResized() {
-  resizeChartCanvas();
+  queueChartResize();
 }

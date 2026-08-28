@@ -1,6 +1,6 @@
 function SurveyIncomeRealityGap() {
 
-  // ---- State ----
+  // State
 
   this.name = 'Income reality gap';
   this.id = 'survey-income-reality-gap';
@@ -9,13 +9,13 @@ function SurveyIncomeRealityGap() {
   this.statuses = ['Overall', 'Student', 'Employed', 'Unemployed', 'Studying and working'];
   this.rows = [];   // per-status average worry vs income ratings
 
-  // ---- Lifecycle ----
+  // Lifecycle
 
   this.preload = function() {
     var self = this;
 
     this.table = loadTable(
-      'data/survey/za_survey_demo.csv',
+      SurveyData.path,
       'csv',
       'header',
       function(table) {
@@ -45,16 +45,15 @@ function SurveyIncomeRealityGap() {
       this.calculateRows();
     }
 
-    background(247, 248, 252);
+    background(SATheme.bg);
     this.drawTitle();
     this.drawScale();
     this.drawGapRows();
   };
 
-  // ---- Data ----
+  // Data
 
-  // For each status group (plus an 'Overall' pass over everyone), average the
-  // work-worry and income-keeps-up ratings.
+  // For each status group (plus an 'Overall' pass over everyone), average the work-worry and income-keeps-up ratings.
   this.calculateRows = function() {
     this.rows = [];
 
@@ -85,11 +84,11 @@ function SurveyIncomeRealityGap() {
     }
   };
 
-  // ---- Drawing ----
+  // Drawing
 
   this.drawLoading = function() {
-    background(247, 248, 252);
-    fill(31, 41, 55);
+    background(SATheme.bg);
+    fill(SATheme.text);
     noStroke();
     textAlign(CENTER, CENTER);
     text('Loading demo income gap data...', width / 2, height / 2);
@@ -97,18 +96,18 @@ function SurveyIncomeRealityGap() {
 
   this.drawTitle = function() {
     noStroke();
-    fill(0);
+    fill(SATheme.text);
     textAlign(LEFT, TOP);
     textStyle(BOLD);
-    textSize(17);
-    text('Does income keep up with the worry? (demo)', 24, 18);
+    textSize(width < 520 ? 13 : 17);
+    text('Does income keep up with the worry?', 24, 18, width - 48, 36);
 
     textStyle(NORMAL);
     textSize(12);
-    fill(90);
-    text("Placeholder numbers — the line joins average work-worry to average income-keeps-up rating per group.",
+    fill(SATheme.textMuted);
+    text(SurveyData.chartLabel,
          24,
-         44,
+         width < 520 ? 54 : 44,
          width - 48,
          32);
   };
@@ -119,25 +118,25 @@ function SurveyIncomeRealityGap() {
     var right = width - 54;
     var top = 124;
 
-    stroke(200);
+    stroke(SATheme.grid);
     strokeWeight(1);
     line(left, top, right, top);
 
     noStroke();
-    fill(90);
+    fill(SATheme.textMuted);
     textSize(11);
     textStyle(NORMAL);
     textAlign(CENTER, TOP);
 
     for (var value = 1; value <= 5; value++) {
       var x = map(value, 1, 5, left, right);
-      stroke(200);
+      stroke(SATheme.grid);
       line(x, top - 4, x, height - 42);
       noStroke();
       text(value, x, top - 22);
     }
 
-    fill(60);
+    fill(SATheme.textMuted);
     textAlign(LEFT, TOP);
     text('Rating scale: 1 low, 5 high', left, top - 40);
   };
@@ -147,6 +146,7 @@ function SurveyIncomeRealityGap() {
     var right = width - 54;
     var startY = 156;
     var rowGap = min(54, (height - startY - 40) / this.rows.length);
+    var pointer = getChartPointer();
 
     for (var i = 0; i < this.rows.length; i++) {
       var item = this.rows[i];
@@ -154,9 +154,8 @@ function SurveyIncomeRealityGap() {
       var worryX = map(item.worry, 1, 5, left, right);
       var incomeX = map(item.income, 1, 5, left, right);
 
-      // Dumbbell row: the line joins the income dot (blue) to the worry dot
-      // (red); a wider gap means more worry relative to income keeping up.
-      stroke(150);
+      // Dumbbell row: the line joins the income dot (blue) to the worry dot (red); a wider gap means more worry relative to income keeping up.
+      stroke(SATheme.axis);
       strokeWeight(3);
       line(incomeX, y, worryX, y);
 
@@ -166,19 +165,19 @@ function SurveyIncomeRealityGap() {
       fill(SATheme.red);
       circle(worryX, y, 14);
 
-      if (dist(mouseX, mouseY, incomeX, y) < 12) {
+      if (dist(pointer.x, pointer.y, incomeX, y) < 12) {
         drawChartTooltip(item.label, item.income.toFixed(2), 'income keeps up');
-      } else if (dist(mouseX, mouseY, worryX, y) < 12) {
+      } else if (dist(pointer.x, pointer.y, worryX, y) < 12) {
         drawChartTooltip(item.label, item.worry.toFixed(2), 'work worry');
       }
 
-      fill(0);
+      fill(SATheme.text);
       textStyle(BOLD);
       textSize(width < 680 ? 10 : 12);
       textAlign(RIGHT, CENTER);
       text(this.getShortLabel(item.label), left - 12, y);
 
-      fill(90);
+      fill(SATheme.textMuted);
       textStyle(NORMAL);
       textAlign(LEFT, CENTER);
       text('n=' + item.count, right + 8, y);
@@ -195,12 +194,12 @@ function SurveyIncomeRealityGap() {
 
     fill(SATheme.blue);
     circle(x, y, 10);
-    fill(60);
+    fill(SATheme.textMuted);
     text('Income keeps up', x + 10, y);
 
     fill(SATheme.red);
     circle(x + 130, y, 10);
-    fill(60);
+    fill(SATheme.textMuted);
     text('Work worry', x + 140, y);
   };
 

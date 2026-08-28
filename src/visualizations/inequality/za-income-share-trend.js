@@ -59,7 +59,7 @@ function ZAIncomeShareTrend() {
       this.setup();
     }
 
-    background(255);
+    background(SATheme.bg);
     this.drawTitle();
     drawYAxisTickLabels(this.minValue,
                         this.maxValue,
@@ -74,33 +74,35 @@ function ZAIncomeShareTrend() {
   };
 
   this.drawLoading = function() {
-    background(255);
-    fill(0);
+    background(SATheme.bg);
+    fill(SATheme.text);
     noStroke();
     textAlign(CENTER, CENTER);
     text('Loading income-share data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
-    fill(0);
+    fill(SATheme.text);
     noStroke();
     textStyle(BOLD);
-    textSize(17);
+    textSize(width < 520 ? 13 : 17);
     textAlign(LEFT, TOP);
-    text('Top 10 percent income share', 24, 18);
+    text('Top 10 percent income share', 24, 18, width - 48, 36);
 
     textStyle(NORMAL);
     textSize(12);
-    fill(80);
+    fill(SATheme.textMuted);
     text('Before-tax income share received by the richest 10 percent in WID estimates.',
          24,
-         44,
+         width < 520 ? 54 : 44,
          width - 48,
          36);
   };
 
   this.drawYearLabels = function() {
-    var labelYears = [1993, 2000, 2005, 2010, 2014];
+    var labelYears = width < 520
+      ? [1993, 2000, 2007, 2014]
+      : [1993, 2000, 2005, 2010, 2014];
 
     for (var i = 0; i < labelYears.length; i++) {
       drawXAxisTickLabel(labelYears[i], this.layout, this.mapYearToWidth.bind(this));
@@ -159,6 +161,7 @@ function ZAIncomeShareTrend() {
 
     var previous = null;
     var hovered = null;
+    var pointer = getChartPointer();
 
     for (var i = 0; i < this.data.getRowCount(); i++) {
       var current = {
@@ -173,11 +176,11 @@ function ZAIncomeShareTrend() {
              this.mapValueToHeight(current.value));
       }
 
-      fill(255);
+      fill(SATheme.bg);
       stroke(SATheme.green);
       strokeWeight(2);
       circle(this.mapYearToWidth(current.year), this.mapValueToHeight(current.value), 7);
-      if (dist(mouseX, mouseY,
+      if (dist(pointer.x, pointer.y,
                this.mapYearToWidth(current.year),
                this.mapValueToHeight(current.value)) < 12) {
         hovered = current;
@@ -195,7 +198,7 @@ function ZAIncomeShareTrend() {
     var last = previous;
     if (last) {
       noStroke();
-      fill(0);
+      fill(SATheme.text);
       textStyle(BOLD);
       textSize(12);
       textAlign(RIGHT, CENTER);

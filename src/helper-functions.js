@@ -1,15 +1,6 @@
-// --------------------------------------------------------------------
 // Debug / test flags
-// --------------------------------------------------------------------
 
-// Opt-in flags read from the query string. None of these change anything for
-// a normal visitor -- the app only behaves differently when a flag is asked
-// for explicitly:
-//
-//   ?test=1      run the Topic 8 test suite (see topic8-testing.js)
-//   ?debug=1     allow debugLog() output through to the console
-//   ?failData=1  point data loads at a file that does not exist, so the
-//                asynchronous loader's error path can actually be observed
+// Opt-in flags read from the query string.
 function hasQueryFlag(name) {
   if (typeof window == 'undefined' || !window.location) {
     return false;
@@ -18,8 +9,7 @@ function hasQueryFlag(name) {
   return new URLSearchParams(window.location.search).get(name) == '1';
 }
 
-// Console output that stays silent unless ?debug=1 is set, so temporary
-// diagnostics never reach a normal visitor's console.
+// Console output that stays silent unless ?debug=1 is set, so temporary diagnostics never reach a normal visitor's console.
 function debugLog() {
   if (!hasQueryFlag('debug')) {
     return;
@@ -28,8 +18,7 @@ function debugLog() {
   console.log.apply(console, arguments);
 }
 
-// Returns the path unchanged in normal use. Under ?failData=1 it returns a
-// path that cannot resolve, which is how the load-failure state is tested.
+// Returns the path unchanged in normal use.
 function resolveDataPath(path) {
   if (hasQueryFlag('failData')) {
     return path + '.missing';
@@ -38,9 +27,7 @@ function resolveDataPath(path) {
   return path;
 }
 
-// --------------------------------------------------------------------
 // Data processing helper functions.
-// --------------------------------------------------------------------
 function sum(data) {
   var total = 0;
 
@@ -79,11 +66,7 @@ function stringsToNumbers (array) {
   return array.map(Number);
 }
 
-// Add thousands separators to a number, e.g. 26663144 -> '26,663,144'.
-//
-// Chart labels are built straight from this, so a missing or non-numeric
-// cell used to render as "RNaN" or "NaN ha" on the canvas. Anything that
-// isn't a finite number now becomes an em dash instead.
+// Add thousands separators to a number, e.g.
 function formatThousands(value) {
   var number = Number(value);
 
@@ -94,16 +77,14 @@ function formatThousands(value) {
   return Math.round(number).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
 }
 
-// --------------------------------------------------------------------
 // Plotting helper functions
-// --------------------------------------------------------------------
 
-function drawAxis(layout, colour=0) {
-  // Flat plot area: a plain border box around all four sides, not just the
-  // two axis lines. Drawn on top of any grid lines.
+function drawAxis(layout, colour) {
+  // Flat plot area: a plain border box around all four sides.
   push();
-  stroke(color(colour));
-  strokeWeight(2);
+  var strokeCol = colour !== undefined ? colour : (typeof SATheme !== 'undefined' ? SATheme.axis : 80);
+  stroke(strokeCol);
+  strokeWeight(1.5);
   noFill();
   rect(layout.leftMargin,
        layout.topMargin,
@@ -113,18 +94,18 @@ function drawAxis(layout, colour=0) {
 }
 
 function drawAxisLabels(xLabel, yLabel, layout) {
-  fill(0);
+  push();
+  var textCol = typeof SATheme !== 'undefined' ? SATheme.text : 245;
+  fill(textCol);
   noStroke();
   textAlign('center', 'center');
 
-  // Draw x-axis label, centred below the plot. The 1.5 * marginSize
-  // offset drops it clear of the tick labels.
+  // Draw x-axis label, centred below the plot.
   text(xLabel,
        (layout.plotWidth() / 2) + layout.leftMargin,
        layout.bottomMargin + (layout.marginSize * 1.5));
 
   // Draw y-axis label, rotated 90 degrees and centred to the left of the plot.
-  push();
   translate(layout.leftMargin - (layout.marginSize * 1.5),
             layout.bottomMargin / 2);
   rotate(- PI / 2);
@@ -137,8 +118,10 @@ function drawYAxisTickLabels(min, max, layout, mapFunction,
   // Map function must be passed with .bind(this).
   var range = max - min;
   var yTickStep = range / layout.numYTickLabels;
+  var textCol = typeof SATheme !== 'undefined' ? SATheme.textMuted : 160;
+  var gridCol = typeof SATheme !== 'undefined' ? SATheme.grid : 40;
 
-  fill(0);
+  fill(textCol);
   noStroke();
   textAlign('right', 'center');
 
@@ -148,13 +131,15 @@ function drawYAxisTickLabels(min, max, layout, mapFunction,
     var y = mapFunction(value);
 
     // Add tick label.
+    fill(textCol);
+    noStroke();
     text(value.toFixed(decimalPlaces),
          layout.leftMargin - layout.pad,
          y);
 
     if (layout.grid) {
       // Add grid line.
-      stroke(140);
+      stroke(gridCol);
       strokeWeight(1);
       line(layout.leftMargin, y, layout.rightMargin, y);
     }
@@ -164,8 +149,10 @@ function drawYAxisTickLabels(min, max, layout, mapFunction,
 function drawXAxisTickLabel(value, layout, mapFunction) {
   // Map function must be passed with .bind(this).
   var x = mapFunction(value);
+  var textCol = typeof SATheme !== 'undefined' ? SATheme.textMuted : 160;
+  var gridCol = typeof SATheme !== 'undefined' ? SATheme.grid : 40;
 
-  fill(0);
+  fill(textCol);
   noStroke();
   textAlign('center', 'center');
 
@@ -176,7 +163,7 @@ function drawXAxisTickLabel(value, layout, mapFunction) {
 
   if (layout.grid) {
     // Add grid line.
-    stroke(140);
+    stroke(gridCol);
     strokeWeight(1);
     line(x,
          layout.topMargin,
@@ -185,48 +172,61 @@ function drawXAxisTickLabel(value, layout, mapFunction) {
   }
 }
 
-// --------------------------------------------------------------------
 // Flat 2D chart styling helpers
-// --------------------------------------------------------------------
 
-// Draw a plain flat bar. (x, y) is the top-left of the bar; w/h its size.
+// Draw a plain flat bar.
 function drawBar(x, y, w, h, col) {
   push();
-  stroke(0);
+  stroke(typeof SATheme !== 'undefined' ? SATheme.axis : 80);
   strokeWeight(1);
   fill(col);
   rect(x, y, w, h);
   pop();
 }
 
-// Small canvas tooltip used by the interactive charts.
+var pendingChartTooltip = null;
+
+// Queue the tooltip so it is drawn above every chart mark.
 function drawChartTooltip(label, value, extra) {
+  pendingChartTooltip = { label: label, value: value, extra: extra };
+}
+
+function clearChartTooltip() {
+  pendingChartTooltip = null;
+}
+
+function drawPendingChartTooltip() {
+  if (!pendingChartTooltip) return;
+
+  var label = pendingChartTooltip.label;
+  var value = pendingChartTooltip.value;
+  var extra = pendingChartTooltip.extra;
   var message = label + ': ' + value + (extra ? ' (' + extra + ')' : '');
   textSize(12);
-  var boxWidth = textWidth(message) + 18;
+  var boxWidth = textWidth(message) + 20;
   var boxHeight = 28;
-  var boxX = constrain(mouseX + 12, 4, width - boxWidth - 4);
-  var boxY = constrain(mouseY - 38, 4, height - boxHeight - 4);
+  var pointer = getChartPointer();
+  var boxX = constrain(pointer.x + 14, 6, width - boxWidth - 6);
+  var boxY = constrain(pointer.y - 38, 6, height - boxHeight - 6);
 
   push();
-  stroke(40);
+  stroke(255, 255, 255, 180);
   strokeWeight(1);
-  fill(255, 250);
-  rect(boxX, boxY, boxWidth, boxHeight, 4);
+  fill(18, 18, 20, 240);
+  rect(boxX, boxY, boxWidth, boxHeight, 6);
   noStroke();
-  fill(20);
+  fill(250, 250, 250);
   textAlign(LEFT, CENTER);
-  text(message, boxX + 9, boxY + boxHeight / 2);
+  text(message, boxX + 10, boxY + boxHeight / 2);
   pop();
 }
 
-// Draw a compact crosshair behind the shared tooltip. Line charts pass the
-// nearest point; other charts can omit it and keep the same tooltip style.
+// Draw a compact crosshair behind the shared tooltip.
 function drawChartCrosshair(x, y) {
   if (!isFinite(x) || !isFinite(y)) return;
 
   push();
-  stroke(45, 55, 72, 130);
+  stroke(255, 255, 255, 80);
   strokeWeight(1);
   drawingContext.setLineDash([4, 4]);
   line(x, 0, x, height);
@@ -247,25 +247,26 @@ function drawAnnotationBadge(label, detail, x, y, colour) {
   var main = String(label || '');
   var secondary = detail ? String(detail) : '';
   textSize(11);
-  var boxWidth = Math.max(textWidth(main), secondary ? textWidth(secondary) : 0) + 20;
-  var boxHeight = secondary ? 34 : 22;
+  var boxWidth = Math.max(textWidth(main), secondary ? textWidth(secondary) : 0) + 22;
+  var boxHeight = secondary ? 36 : 24;
   var boxX = constrain(x, 6, width - boxWidth - 6);
   var boxY = constrain(y, 6, height - boxHeight - 6);
 
   push();
-  stroke(colour || color(30, 41, 59));
+  stroke(255, 255, 255, 160);
   strokeWeight(1);
-  fill(255, 248);
-  rect(boxX, boxY, boxWidth, boxHeight, 4);
+  fill(24, 24, 27, 240);
+  rect(boxX, boxY, boxWidth, boxHeight, 6);
   noStroke();
-  fill(colour || color(30, 41, 59));
+  fill(255, 255, 255);
   textAlign(LEFT, TOP);
   textStyle(BOLD);
-  text(main, boxX + 10, boxY + 5);
+  text(main, boxX + 10, boxY + 6);
   if (secondary) {
     textStyle(NORMAL);
     textSize(10);
-    text(secondary, boxX + 10, boxY + 19);
+    fill(212, 212, 216);
+    text(secondary, boxX + 10, boxY + 20);
   }
   pop();
 }
@@ -274,9 +275,9 @@ function drawVerticalReferenceLine(x, top, bottom, colour) {
   if (!annotationsAreVisible()) return;
 
   push();
-  stroke(colour || color(100, 116, 139));
-  strokeWeight(1.5);
-  drawingContext.setLineDash([5, 4]);
+  stroke(255, 255, 255, 140);
+  strokeWeight(1.2);
+  drawingContext.setLineDash([4, 4]);
   line(x, top, x, bottom);
   drawingContext.setLineDash([]);
   pop();
@@ -309,8 +310,16 @@ function drawHorizontalAnnotation(y, label, detail, left, right, colour) {
 }
 
 function mouseIsOverRect(x, y, w, h) {
-  return mouseX >= x && mouseX <= x + w
-      && mouseY >= y && mouseY <= y + h;
+  var pointer = getChartPointer();
+  return pointer.x >= x && pointer.x <= x + w
+      && pointer.y >= y && pointer.y <= y + h;
+}
+
+function getChartPointer() {
+  if (typeof touches !== 'undefined' && touches.length > 0) {
+    return { x: touches[0].x, y: touches[0].y };
+  }
+  return { x: mouseX, y: mouseY };
 }
 
 function tableToExportData(table) {

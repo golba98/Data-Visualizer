@@ -1,6 +1,6 @@
 function SurveyStatusPressure() {
 
-  // ---- State ----
+  // State
 
   this.name = 'Student vs worker';
   this.id = 'survey-status-pressure';
@@ -12,13 +12,13 @@ function SurveyStatusPressure() {
   this.counts = {};
   this.totals = {};
 
-  // ---- Lifecycle ----
+  // Lifecycle
 
   this.preload = function() {
     var self = this;
 
     this.table = loadTable(
-      'data/survey/za_survey_demo.csv',
+      SurveyData.path,
       'csv',
       'header',
       function(table) {
@@ -48,13 +48,14 @@ function SurveyStatusPressure() {
       this.countPressures();
     }
 
-    background(255);
+    this.colours = SATheme.pressure;
+    background(SATheme.bg);
     this.drawTitle();
     this.drawStackedBars();
     this.drawLegend();
   };
 
-  // ---- Data ----
+  // Data
 
   // Count each status group's main-pressure responses and keep per-group totals.
   this.countPressures = function() {
@@ -82,11 +83,11 @@ function SurveyStatusPressure() {
     }
   };
 
-  // ---- Drawing ----
+  // Drawing
 
   this.drawLoading = function() {
-    background(255);
-    fill(0);
+    background(SATheme.bg);
+    fill(SATheme.text);
     noStroke();
     textAlign(CENTER, CENTER);
     text('Loading demo status pressure data...', width / 2, height / 2);
@@ -94,18 +95,18 @@ function SurveyStatusPressure() {
 
   this.drawTitle = function() {
     noStroke();
-    fill(0);
+    fill(SATheme.text);
     textAlign(LEFT, TOP);
     textStyle(BOLD);
-    textSize(17);
-    text('Who feels which pressure most? (demo)', 24, 18);
+    textSize(width < 520 ? 13 : 17);
+    text('Who feels which pressure most?', 24, 18, width - 48, 36);
 
     textStyle(NORMAL);
     textSize(12);
-    fill(80);
-    text('Still running on invented rows — each bar splits a status group by its main cost pressure.',
+    fill(SATheme.textMuted);
+    text(SurveyData.chartLabel,
          24,
-         44,
+         width < 520 ? 54 : 44,
          width - 48,
          32);
   };
@@ -124,7 +125,7 @@ function SurveyStatusPressure() {
       var y = startY + (i * gap);
       var currentX = left;
 
-      fill(0);
+      fill(SATheme.text);
       noStroke();
       textStyle(BOLD);
       textSize(width < 700 ? 10 : 12);
@@ -140,14 +141,14 @@ function SurveyStatusPressure() {
 
         if (segmentWidth > 0) {
           fill(this.colours[pressure]);
-          stroke(0);
+          stroke(SATheme.axis);
           strokeWeight(1);
           rect(currentX, y, segmentWidth, barHeight);
 
           // Only label a segment when it's wide enough to fit the count.
           if (segmentWidth > 24) {
             noStroke();
-            fill(0);
+            fill(SATheme.text);
             textAlign(CENTER, CENTER);
             textStyle(BOLD);
             textSize(11);
@@ -166,7 +167,7 @@ function SurveyStatusPressure() {
       }
 
       noStroke();
-      fill(80);
+      fill(SATheme.textMuted);
       textStyle(NORMAL);
       textSize(11);
       textAlign(LEFT, CENTER);
@@ -175,9 +176,11 @@ function SurveyStatusPressure() {
   };
 
   this.drawLegend = function() {
-    var itemWidth = width < 700 ? 92 : 118;
+    var compact = width < 700;
+    var columns = compact ? 3 : 4;
+    var itemWidth = compact ? (width - 48) / columns : 118;
     var startX = 28;
-    var startY = height - (width < 700 ? 74 : 52);
+    var startY = height - (compact ? 66 : 52);
 
     textSize(11);
     textStyle(NORMAL);
@@ -186,16 +189,17 @@ function SurveyStatusPressure() {
 
     for (var i = 0; i < this.pressures.length; i++) {
       var pressure = this.pressures[i];
-      var x = startX + ((i % 4) * itemWidth);
-      var y = startY + (Math.floor(i / 4) * 24);
+      var x = startX + ((i % columns) * itemWidth);
+      var y = startY + (Math.floor(i / columns) * 20);
 
       fill(this.colours[pressure]);
-      stroke(0);
+      stroke(SATheme.axis);
       strokeWeight(1);
       rect(x, y - 7, 14, 14);
       noStroke();
-      fill(0);
-      text(pressure, x + 20, y);
+      fill(SATheme.text);
+      textSize(compact ? 9 : 11);
+      text(pressure, x + 18, y);
     }
   };
 

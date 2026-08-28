@@ -1,23 +1,9 @@
-// --------------------------------------------------------------------
 // Topic 8 -- software testing for this project.
-//
-// A small dependency-free harness plus unit tests, integration tests, and
-// the written-up manual system test cases. Nothing in here runs on its own
-// during normal use: the suite only executes when it is explicitly asked
-// for, either with ?test=1 in the URL or by calling
-//
-//     window.cm1010Testing.runAll()
-//
-// from the console. It is loaded after every unit it tests so it can call
-// the real application code rather than a copy of it.
-// --------------------------------------------------------------------
 
 (function(global) {
   'use strict';
 
-  // ------------------------------------------------------------------
   // Test harness
-  // ------------------------------------------------------------------
 
   function AssertionError(message) {
     this.name = 'AssertionError';
@@ -37,8 +23,7 @@
     this.currentSuite = name;
   };
 
-  // Run one test. A thrown assertion is recorded as a failure and swallowed
-  // here, so a failing test can never stop the tests that come after it.
+  // Run one test.
   TestRunner.prototype.test = function(name, testFunction) {
     this.total++;
 
@@ -63,10 +48,9 @@
     return record;
   };
 
-  // ---- Assertions ----
+  // Assertions
 
-  // Values are compared after being made printable, so 3 and '3' are not
-  // treated as equal and the failure message shows both types.
+  // Values are compared after being made printable, so 3 and '3' are not treated as equal and the failure message shows both types.
   TestRunner.prototype.assertEqual = function(actual, expected, message) {
     if (actual === expected) {
       return;
@@ -134,7 +118,7 @@
     return String(value);
   }
 
-  // ---- Reporting ----
+  // Reporting
 
   TestRunner.prototype.report = function() {
     var suites = {};
@@ -172,12 +156,9 @@
     console.groupEnd();
   };
 
-  // ------------------------------------------------------------------
   // Test fixtures
-  // ------------------------------------------------------------------
 
-  // Build a real p5.Table so the tests exercise the same table API the
-  // charts use at runtime, instead of a hand-rolled stand-in.
+  // Build a real p5.Table so the tests exercise the same table API the charts use at runtime, instead of a hand-rolled stand-in.
   function makeTable(headers, rows) {
     var table = new p5.Table();
 
@@ -196,8 +177,7 @@
     return table;
   }
 
-  // The first two data rows of data/survey/za_survey_demo.csv, copied
-  // verbatim so the integration test runs on real dataset values.
+  // Use the first two sanitized Survey App rows.
   var SURVEY_HEADERS = ['id', 'age', 'status', 'pressure', 'cost_increased',
                         'work_worry', 'income_keeps_up', 'transport_cost',
                         'food_cost'];
@@ -206,19 +186,14 @@
     [2, '18-21', 'Student', 'Data', 'Yes', 2, 4, 'R0-R300', 'R501-R1000']
   ];
 
-  // The full 2022 column of
-  // data/archive/population_group_census_1996_2022.csv, in file order
-  // (Black African, Coloured, Indian or Asian, White, Other), as the strings
-  // a p5 table column actually yields.
+  // The full 2022 column of data/archive/population_group_census_1996_2022.csv, in file order (Black African, Coloured, Indian or Asian, White,...
   var CENSUS_2022_SHARES = ['81.4', '8.2', '2.7', '7.3', '0.4'];
 
-  // ------------------------------------------------------------------
   // Unit tests -- each one calls a real function already used by the app
-  // ------------------------------------------------------------------
 
   function runUnitTests(t) {
 
-    // ---- helper-functions.js : formatThousands ----
+    // helper-functions.js : formatThousands
     t.suite('unit: formatThousands (helper-functions.js)');
 
     t.test('formats a large number with separators', function() {
@@ -246,15 +221,14 @@
     });
 
     t.test('invalid input falls back to an unavailable marker', function() {
-      // Chart labels are built straight from this, so a non-numeric cell
-      // must not end up rendered to the user as "RNaN".
+      // Chart labels are built straight from this, so a non-numeric cell must not end up rendered to the user as "RNaN".
       t.assertEqual(formatThousands('not a number'), '—',
         'non-numeric string');
       t.assertEqual(formatThousands(undefined), '—', 'missing value');
       t.assertEqual(formatThousands(Infinity), '—', 'non-finite value');
     });
 
-    // ---- helper-functions.js : sum / mean / stringsToNumbers ----
+    // helper-functions.js : sum / mean / stringsToNumbers
     t.suite('unit: sum / mean (helper-functions.js)');
 
     t.test('sum adds a list of numbers', function() {
@@ -283,12 +257,11 @@
     });
 
     t.test('invalid input: mean of an empty list is not a number', function() {
-      // Documents the current behaviour so a caller knows it must guard
-      // against an empty column before displaying the result.
+      // Documents the current behaviour so a caller knows it must guard against an empty column before displaying the result.
       t.assertTrue(isNaN(mean([])), 'empty list yields NaN, not 0');
     });
 
-    // ---- survey-pressure-index.js : the three scoring lookups ----
+    // survey-pressure-index.js : the three scoring lookups
     t.suite('unit: SurveyPressureIndex scoring (survey-pressure-index.js)');
 
     var index = new SurveyPressureIndex();
@@ -331,7 +304,7 @@
       t.assertEqual(index.getTransportScore('free'), 0.25, 'band not in table');
     });
 
-    // ---- pie-chart.js : get_radians ----
+    // pie-chart.js : get_radians
     t.suite('unit: PieChart.get_radians (pie-chart.js)');
 
     var pie = new PieChart(0, 0, 100);
@@ -358,7 +331,7 @@
       t.assertClose(sum(angles), TWO_PI, 1e-9, 'sum of all slice angles');
     });
 
-    // ---- gallery.js : registry and catalogue lookups ----
+    // gallery.js : registry and catalogue lookups
     t.suite('unit: Gallery lookups (gallery.js)');
 
     t.test('findVisIndex locates a registered visualisation', function() {
@@ -483,19 +456,34 @@
       t.assertTrue(gallery.annotationsEnabled, 'annotations start visible');
       t.assertTrue(annotationsAreVisible(), 'annotation helper permits drawing');
     });
+
+    t.test('the page uses one fixed dark theme', function() {
+      t.assertEqual(document.getElementById('theme-mode-toggle'), null, 'no theme button');
+      t.assertEqual(SATheme.mode, undefined, 'no theme switch state');
+      t.assertEqual(document.querySelector('meta[name="color-scheme"]').content, 'dark', 'native dark controls');
+    });
+
+    t.test('the chart palette has seven category colours', function() {
+      t.assertEqual(SATheme.categorical.length, 7, 'seven chart colours');
+      t.assertEqual(new Set(SATheme.categorical).size, 7, 'each chart colour is different');
+    });
+
+    t.test('survey provenance is shown honestly', function() {
+      t.assertEqual(SurveyData.totalRows, 48, 'all Survey App rows are included');
+      t.assertEqual(SurveyData.generatedRows, 47, 'generated rows are counted');
+      t.assertEqual(SurveyData.unverifiedRows, 1, 'the unverified test is counted');
+      t.assertEqual(SurveyData.verifiedRows, 0, 'no generated row is called verified');
+    });
   }
 
-  // ------------------------------------------------------------------
   // Integration tests -- output of one real unit fed into another
-  // ------------------------------------------------------------------
 
   function runIntegrationTests(t) {
 
     t.suite('integration: CSV row -> sliceRowNumbers -> mean -> formatThousands');
 
     t.test('a table row is parsed, averaged, and formatted for display', function() {
-      // The chain a chart actually uses: read a row out of a p5 table, slice
-      // its numeric columns, average them, then format for a label.
+      // The chain a chart actually uses: read a row out of a p5 table, slice its numeric columns, average them, then format for a label.
       var table = makeTable(
         ['population_group', '1996', '2001', '2011', '2022'],
         [['Black African', 31127631, 35416166, 41000938, 48000000]]);
@@ -516,8 +504,7 @@
     t.suite('integration: CSV column -> stringsToNumbers -> PieChart.get_radians');
 
     t.test('a string column becomes slice angles that map back to shares', function() {
-      // stringsToNumbers -> PieChart.get_radians -> sum, exactly as
-      // sa-population-group-census.js drives the pie chart.
+      // stringsToNumbers -> PieChart.get_radians -> sum, exactly as sa-population-group-census.js drives the pie chart.
       var values = stringsToNumbers(CENSUS_2022_SHARES);
       t.assertEqual(values[0], 81.4, 'largest share parsed as a number');
 
@@ -536,10 +523,8 @@
 
     t.suite('integration: survey table -> calculateIndex -> components + score');
 
-    t.test('real survey rows produce the expected components and index', function() {
-      // Feeds a real p5 table through calculateIndex(), which internally
-      // calls getPressureScore, getFoodScore and getTransportScore. Expected
-      // values are worked out by hand from the two dataset rows.
+    t.test('survey rows produce the expected components and index', function() {
+      // Feeds a real p5 table through calculateIndex(), which internally calls getPressureScore, getFoodScore and getTransportScore.
       var index = new SurveyPressureIndex();
       index.table = makeTable(SURVEY_HEADERS, SURVEY_ROWS);
       index.loaded = true;
@@ -577,8 +562,7 @@
     t.suite('integration: menu id -> gallery lookup -> chart details in the DOM');
 
     t.test('selecting a catalogue id populates the chart and info panels', function() {
-      // findVisIndex -> getCatalogueItem -> showChartDetails -> DOM, which is
-      // the chain a sidebar button click runs through.
+      // findVisIndex -> getCatalogueItem -> showChartDetails -> DOM, which is the chain a sidebar button click runs through.
       var previous = gallery.selectedVisual;
       var visId = 'za-land-ownership-by-group';
 
@@ -637,8 +621,7 @@
     t.suite('integration: asynchronous load state -> ZAGiniTrend draw branch');
 
     t.test('the chart refuses to derive scales before its data arrives', function() {
-      // Ready-state protection: setup() must be safe to call while the
-      // request is still in flight.
+      // Ready-state protection: setup() must be safe to call while the request is still in flight.
       var chart = new ZAGiniTrend();
 
       t.assertEqual(chart.isReady, false, 'starts not ready');
@@ -681,9 +664,7 @@
     });
   }
 
-  // ------------------------------------------------------------------
   // System test cases -- manual, black-box, run against the whole app
-  // ------------------------------------------------------------------
 
   var systemTestCases = [
     {
@@ -840,9 +821,7 @@
     }
   ];
 
-  // ------------------------------------------------------------------
   // Public API
-  // ------------------------------------------------------------------
 
   function runAll() {
     if (typeof gallery === 'undefined' || gallery === null) {
@@ -853,8 +832,7 @@
 
     var t = new TestRunner();
 
-    // Both suites are run before anything is reported or corrected, so one
-    // failure never hides the results of the tests after it.
+    // Both suites are run before anything is reported or corrected, so one failure never hides the results of the tests after it.
     runUnitTests(t);
     runIntegrationTests(t);
 
@@ -869,8 +847,7 @@
     };
   }
 
-  // Snapshot of the asynchronous load state, used as evidence that the
-  // loading, ready, and error states are real and observable.
+  // Snapshot of the asynchronous load state, used as evidence that the loading, ready, and error states are real and observable.
   function describeLoadState() {
     if (typeof gallery === 'undefined' || gallery === null) {
       return null;
@@ -894,15 +871,24 @@
     };
   }
 
+  function describeRenderState() {
+    var selected = typeof gallery !== 'undefined' && gallery ? gallery.selectedVisual : null;
+    return {
+      selectedId: selected ? selected.id : null,
+      looping: typeof isLooping === 'function' ? isLooping() : null,
+      animating: selected ? chartNeedsMoreFrames(selected) : false
+    };
+  }
+
   global.cm1010Testing = {
     runAll: runAll,
     describeLoadState: describeLoadState,
+    describeRenderState: describeRenderState,
     systemTestCases: systemTestCases,
     TestRunner: TestRunner
   };
 
-  // Only ever runs when ?test=1 is in the URL. Waits for the load event so
-  // the gallery exists and the CSV requests have had a chance to settle.
+  // Only ever runs when ?test=1 is in the URL.
   if (typeof hasQueryFlag === 'function' && hasQueryFlag('test')) {
     global.addEventListener('load', function() {
       global.cm1010TestResults = runAll();

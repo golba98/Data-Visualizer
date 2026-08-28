@@ -81,11 +81,11 @@ function ZAPovertyContext() {
       this.setup();
     }
 
-    // On phones, reserve a narrow strip below the stacked legend so the
-    // single summary badge never covers a data point or reference line.
+    // On phones, reserve a narrow strip below the stacked legend so the single summary badge never covers a data point or reference line.
     this.layout.topMargin = width < 520 ? 180 : 154;
 
-    background(255);
+    this.colours = [SATheme.blue, SATheme.gold, SATheme.red];
+    background(SATheme.bg);
     this.drawTitle();
     drawYAxisTickLabels(this.minValue,
                         this.maxValue,
@@ -101,27 +101,27 @@ function ZAPovertyContext() {
   };
 
   this.drawLoading = function() {
-    background(255);
-    fill(0);
+    background(SATheme.bg);
+    fill(SATheme.text);
     noStroke();
     textAlign(CENTER, CENTER);
     text('Loading poverty context...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
-    fill(0);
+    fill(SATheme.text);
     noStroke();
     textStyle(BOLD);
-    textSize(17);
+    textSize(width < 520 ? 13 : 17);
     textAlign(LEFT, TOP);
-    text('Poverty context', 24, 18);
+    text('Poverty context', 24, 18, width - 48, 36);
 
     textStyle(NORMAL);
     textSize(12);
-    fill(80);
+    fill(SATheme.textMuted);
     text('Different poverty measures are shown separately because each source uses a different definition.',
          24,
-         44,
+         width < 520 ? 54 : 44,
          width - 48,
          36);
   };
@@ -200,13 +200,16 @@ function ZAPovertyContext() {
   };
 
   this.drawYearLabels = function() {
-    var labelYears = [1993, 2000, 2006, 2014, 2023];
+    var labelYears = width < 520
+      ? [1993, 2006, 2014, 2023]
+      : [1993, 2000, 2006, 2014, 2023];
     for (var i = 0; i < labelYears.length; i++) {
       drawXAxisTickLabel(labelYears[i], this.layout, this.mapYearToWidth.bind(this));
     }
   };
 
   this.drawSeries = function() {
+    var pointer = getChartPointer();
     for (var s = 0; s < this.seriesNames.length; s++) {
       var name = this.seriesNames[s];
       var rows = this.series[name];
@@ -223,13 +226,13 @@ function ZAPovertyContext() {
       }
 
       for (var j = 0; j < rows.length; j++) {
-        fill(255);
+        fill(SATheme.bg);
         stroke(this.colours[s]);
         strokeWeight(2);
         var pointX = this.mapYearToWidth(rows[j].year);
         var pointY = this.mapValueToHeight(rows[j].value);
         circle(pointX, pointY, 7);
-        if (dist(mouseX, mouseY, pointX, pointY) < 12) {
+        if (dist(pointer.x, pointer.y, pointX, pointY) < 12) {
           drawChartCrosshair(pointX, pointY);
           drawChartTooltip(String(rows[j].year), rows[j].value.toFixed(1) + '%', name);
         }
@@ -252,7 +255,7 @@ function ZAPovertyContext() {
       strokeWeight(3);
       line(x, rowY, x + 28, rowY);
       noStroke();
-      fill(0);
+      fill(SATheme.text);
       text(this.seriesNames[i], x + 36, rowY);
     }
   };

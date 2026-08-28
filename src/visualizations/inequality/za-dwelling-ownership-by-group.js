@@ -40,7 +40,7 @@ function ZADwellingOwnershipByGroup() {
       this.setup();
     }
 
-    background(255);
+    background(SATheme.bg);
     this.drawTitle();
     this.drawAnnotations();
     this.drawStackedBars();
@@ -48,35 +48,33 @@ function ZADwellingOwnershipByGroup() {
   };
 
   this.drawLoading = function() {
-    background(255);
-    fill(0);
+    background(SATheme.bg);
+    fill(SATheme.text);
     noStroke();
     textAlign(CENTER, CENTER);
     text('Loading dwelling ownership data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
-    fill(0);
+    fill(SATheme.text);
     noStroke();
     textStyle(BOLD);
-    textSize(17);
+    textSize(width < 520 ? 13 : 17);
     textAlign(LEFT, TOP);
-    text('Dwelling tenure by population group', 24, 18);
+    text('Dwelling tenure by population group', 24, 18, width - 48, 36);
 
     textStyle(NORMAL);
     textSize(12);
-    fill(80);
+    fill(SATheme.textMuted);
     text('Stats SA GHS 2024 table by population group of household head. Owned includes fully paid and still being paid off.',
          24,
-         44,
+         width < 520 ? 54 : 44,
          width - 48,
          42);
   };
 
   this.drawAnnotations = function() {
     // On narrow canvases the legend and first bar use all available space.
-    // The limitation remains written below the chart, so omit the duplicate
-    // badge instead of covering data labels.
     if (width < 720) return;
 
     drawAnnotationBadge(
@@ -92,7 +90,7 @@ function ZADwellingOwnershipByGroup() {
     var compact = width < 720;
     var left = compact ? 112 : 156;
     var right = width - 42;
-    var top = 124;
+    var top = compact ? 160 : 124;
     var barHeight = compact ? 30 : 38;
     var gap = compact ? 56 : 70;
     var barWidth = right - left;
@@ -103,18 +101,18 @@ function ZADwellingOwnershipByGroup() {
       { field: 'other', label: 'Other/unknown', colour: SATheme.blueTint }
     ];
 
-    stroke(220);
+    stroke(SATheme.grid);
     strokeWeight(1);
     for (var tick = 0; tick <= 100; tick += 25) {
       var x = map(tick, 0, 100, left, right);
       line(x, top - 12, x, top + (gap * (this.rows.length - 1)) + barHeight + 10);
       noStroke();
-      fill(90);
+      fill(SATheme.textMuted);
       textStyle(NORMAL);
       textSize(11);
       textAlign(CENTER, TOP);
       text(tick + '%', x, top + (gap * (this.rows.length - 1)) + barHeight + 18);
-      stroke(220);
+      stroke(SATheme.grid);
     }
 
     for (var i = 0; i < this.rows.length; i++) {
@@ -123,7 +121,7 @@ function ZADwellingOwnershipByGroup() {
       var currentX = left;
 
       noStroke();
-      fill(0);
+      fill(SATheme.text);
       textStyle(BOLD);
       textSize(compact ? 10 : 12);
       textAlign(RIGHT, CENTER);
@@ -136,13 +134,13 @@ function ZADwellingOwnershipByGroup() {
 
         if (segmentWidth > 0) {
           fill(item.colour);
-          stroke(0);
+          stroke(SATheme.axis);
           strokeWeight(1);
           rect(currentX, y, segmentWidth, barHeight);
 
           if (item.field == 'owned' && segmentWidth > 48) {
             noStroke();
-            fill(0);
+            fill(SATheme.text);
             textStyle(BOLD);
             textSize(11);
             textAlign(CENTER, CENTER);
@@ -159,15 +157,15 @@ function ZADwellingOwnershipByGroup() {
     }
 
     noStroke();
-    fill(90);
+    fill(SATheme.textMuted);
     textStyle(NORMAL);
     textSize(11);
-    textAlign(LEFT, BOTTOM);
+    textAlign(LEFT, width < 520 ? TOP : BOTTOM);
     text('Limitation: this measures household dwelling tenure rates, not total property wealth or individual ownership totals.',
          24,
-         height - 30,
+         width < 520 ? height - 38 : height - 30,
          width - 48,
-         28);
+         width < 520 ? 36 : 28);
   };
 
   this.drawLegend = function() {
@@ -177,23 +175,25 @@ function ZADwellingOwnershipByGroup() {
       { label: 'Rent-free', colour: SATheme.gold },
       { label: 'Other/unknown', colour: SATheme.blueTint }
     ];
-    var startX = width < 720 ? 24 : 42;
-    var y = 92;
-    var gap = width < 720 ? 102 : 126;
+    var compact = width < 720;
+    var startX = compact ? 24 : 42;
+    var y = compact ? 110 : 92;
+    var gap = compact ? (width - 48) / 2 : 126;
 
     textStyle(NORMAL);
     textSize(width < 720 ? 10 : 11);
     textAlign(LEFT, CENTER);
 
     for (var i = 0; i < labels.length; i++) {
-      var x = startX + (i * gap);
+      var x = startX + ((compact ? i % 2 : i) * gap);
+      var itemY = y + (compact ? Math.floor(i / 2) * 24 : 0);
       fill(labels[i].colour);
-      stroke(0);
+      stroke(SATheme.axis);
       strokeWeight(1);
-      rect(x, y - 7, 14, 14);
+      rect(x, itemY - 7, 14, 14);
       noStroke();
-      fill(0);
-      text(labels[i].label, x + 20, y);
+      fill(SATheme.text);
+      text(labels[i].label, x + 20, itemY);
     }
   };
 

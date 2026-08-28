@@ -9,7 +9,7 @@ function Box(x, y, width, height, category, colour) {
 
   // Draw this cell as a filled rectangle with a dark slate border.
   this.draw = function() {
-    stroke(18, 24, 35);   // dark slate border
+    stroke(SATheme.axis);
     strokeWeight(1);
     fill(this.colour);
     rect(this.x, this.y, this.width, this.height);
@@ -17,9 +17,10 @@ function Box(x, y, width, height, category, colour) {
 
   // True when the pointer is inside this cell (used for waffle tooltips).
   this.mouseOver = function() {
-    return mouseX >= this.x
-        && mouseX <= this.x + this.width
-        && mouseY >= this.y
-        && mouseY <= this.y + this.height;
+    var pointer = getChartPointer();
+    return pointer.x >= this.x
+        && pointer.x <= this.x + this.width
+        && pointer.y >= this.y
+        && pointer.y <= this.y + this.height;
   };
 }
