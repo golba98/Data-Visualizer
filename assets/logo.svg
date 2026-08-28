@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
+  <!-- Dark Emblem Background -->
+  <rect width="64" height="64" rx="16" fill="#121316"/>
+  <rect x="1" y="1" width="62" height="62" rx="15" stroke="#27272a" stroke-width="2"/>
+
+  <!-- Chart / Inequality Bars with South African Palette -->
+  <!-- Left Bar (Green) -->
+  <rect x="14" y="32" width="9" height="18" rx="4.5" fill="#007a4d"/>
+  
+  <!-- Middle Bar (Gold) -->
+  <rect x="27.5" y="22" width="9" height="28" rx="4.5" fill="#ffb612"/>
+  
+  <!-- Right Bar (Red / Coral) -->
+  <rect x="41" y="14" width="9" height="36" rx="4.5" fill="#de3831"/>
+
+  <!-- Subtle Accent Horizon Line (Blue) -->
+  <circle cx="18.5" cy="24" r="3" fill="#3b82f6"/>
+</svg>
