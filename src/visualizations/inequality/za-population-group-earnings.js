@@ -57,38 +57,43 @@ function ZAPopulationGroupEarnings() {
       this.setup();
     }
 
-    background(255);
+    background(SATheme.bg);
     this.drawTitle();
     this.drawChart();
   };
 
   this.drawLoading = function() {
-    background(255);
-    fill(0);
+    background(SATheme.bg);
+    fill(SATheme.text);
     noStroke();
     textAlign(CENTER, CENTER);
     text('Loading population-group earnings data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
-    fill(0);
+    fill(SATheme.text);
     noStroke();
     textStyle(BOLD);
-    textSize(17);
+    textSize(width < 520 ? 13 : 17);
     textAlign(LEFT, TOP);
-    text('Population share compared with mean earnings', 24, 18);
+    text('Population share compared with mean earnings', 24, 18, width - 48, 36);
 
     textStyle(NORMAL);
     textSize(12);
-    fill(80);
+    fill(SATheme.textMuted);
     text('Official population-group categories are compared with Stats SA mean monthly real earnings for 2011-2015.',
          24,
-         44,
+         width < 520 ? 54 : 44,
          width - 48,
          40);
   };
 
   this.drawChart = function() {
+    if (width < 520) {
+      this.drawPhoneChart();
+      return;
+    }
+
     var compact = width < 720;
     var left = compact ? 106 : 150;
     var right = width - (compact ? 58 : 52);
@@ -103,21 +108,21 @@ function ZAPopulationGroupEarnings() {
     noStroke();
     textStyle(NORMAL);
     textSize(compact ? 10 : 11);
-    fill(80);
+    fill(SATheme.textMuted);
     textAlign(LEFT, CENTER);
     text('Population share', left, top - 18);
     text('Mean monthly earnings', earningsLeft, top - 18);
 
-    stroke(220);
+    stroke(SATheme.grid);
     strokeWeight(1);
     for (var tick = 0; tick <= maxEarnings; tick += 5000) {
       var x = map(tick, 0, maxEarnings, earningsLeft, earningsLeft + earningsWidth);
       line(x, top - 4, x, top + (rowGap * (this.rows.length - 1)) + barHeight + 22);
       noStroke();
-      fill(100);
+      fill(SATheme.textMuted);
       textAlign(CENTER, TOP);
       text('R' + (tick / 1000) + 'k', x, top + (rowGap * (this.rows.length - 1)) + barHeight + 28);
-      stroke(220);
+      stroke(SATheme.grid);
     }
 
     for (var i = 0; i < this.rows.length; i++) {
@@ -128,7 +133,7 @@ function ZAPopulationGroupEarnings() {
       var colour = row.group == 'White' ? SATheme.red : SATheme.green;
 
       noStroke();
-      fill(0);
+      fill(SATheme.text);
       textStyle(BOLD);
       textSize(compact ? 10 : 12);
       textAlign(RIGHT, CENTER);
@@ -143,7 +148,7 @@ function ZAPopulationGroupEarnings() {
         drawChartTooltip(row.group, 'R' + formatThousands(row.earnings), 'mean monthly earnings');
       }
 
-      fill(0);
+      fill(SATheme.text);
       textStyle(NORMAL);
       textSize(compact ? 10 : 11);
       textAlign(LEFT, CENTER);
@@ -162,7 +167,7 @@ function ZAPopulationGroupEarnings() {
     }
 
     noStroke();
-    fill(90);
+    fill(SATheme.textMuted);
     textStyle(NORMAL);
     textSize(11);
     textAlign(LEFT, BOTTOM);
@@ -171,6 +176,60 @@ function ZAPopulationGroupEarnings() {
          height - 30,
          width - 48,
          28);
+  };
+
+  this.drawPhoneChart = function() {
+    var left = 96;
+    var right = width - 24;
+    var top = 104;
+    var rowGap = 64;
+    var barWidth = right - left;
+    var barHeight = 8;
+    var maxEarnings = 26000;
+
+    for (var i = 0; i < this.rows.length; i++) {
+      var row = this.rows[i];
+      var y = top + (i * rowGap);
+      var shareWidth = map(row.populationShare, 0, 85, 0, barWidth);
+      var earningsWidth = map(row.earnings, 0, maxEarnings, 0, barWidth);
+      var earningsColour = row.group == 'White' ? SATheme.red : SATheme.green;
+
+      noStroke();
+      fill(SATheme.text);
+      textStyle(BOLD);
+      textSize(9);
+      textAlign(RIGHT, TOP);
+      text(row.group, left - 10, y + 1);
+
+      textStyle(NORMAL);
+      textAlign(LEFT, TOP);
+      text('Population', left, y);
+      textAlign(RIGHT, TOP);
+      text(row.populationShare.toFixed(1) + '%', right, y);
+      drawBar(left, y + 13, shareWidth, barHeight, SATheme.blueTint);
+
+      noStroke();
+      fill(SATheme.text);
+      textAlign(LEFT, TOP);
+      text('Earnings', left, y + 28);
+      textAlign(RIGHT, TOP);
+      text('R' + formatThousands(row.earnings), right, y + 28);
+      drawBar(left, y + 41, earningsWidth, barHeight, earningsColour);
+
+      if (mouseIsOverRect(left, y + 13, shareWidth, barHeight)) {
+        drawChartTooltip(row.group, row.populationShare.toFixed(1) + '%', 'population share');
+      } else if (mouseIsOverRect(left, y + 41, earningsWidth, barHeight)) {
+        drawChartTooltip(row.group, 'R' + formatThousands(row.earnings), 'mean monthly earnings');
+      }
+    }
+
+    noStroke();
+    fill(SATheme.textMuted);
+    textStyle(NORMAL);
+    textSize(9);
+    textAlign(LEFT, TOP);
+    text('Note: earnings are not wealth. This chart shows labour-market earnings by official population group.',
+         24, height - 42, width - 48, 36);
   };
 
   this.getExportData = function() {

@@ -1,6 +1,6 @@
 function PieChart(x, y, diameter) {
 
-  // ---- State ----
+  // State
 
   this.x = x;
   this.y = y;
@@ -10,7 +10,11 @@ function PieChart(x, y, diameter) {
   this.targetData = null;
   this.animation = 1;
 
-  // ---- Geometry ----
+  this.isAnimating = function() {
+    return this.animation < 1;
+  };
+
+  // Geometry
 
   // Convert each data value into its slice angle (its share of TWO_PI).
   this.get_radians = function(data) {
@@ -24,12 +28,11 @@ function PieChart(x, y, diameter) {
     return radians;
   };
 
-  // ---- Drawing ----
+  // Drawing
 
   this.draw = function(data, labels, colours, title) {
 
-    // Test that data is not empty and that each input array is the
-    // same length.
+    // Test that data is not empty and that each input array is the same length.
     if (data.length == 0) {
       alert('Data has length zero!');
     } else if (![labels, colours].every((array) => {
@@ -72,11 +75,10 @@ Arrays must be the same length!`);
       }
 
       fill(colour);
-      stroke(0);
+      stroke(SATheme.axis);
       strokeWeight(1);
 
-      // The + 0.001 nudge forces p5 to render a visible slice even when
-      // a category's angle is 0. (Hack for 0!)
+      // The + 0.001 nudge forces p5 to render a visible slice even when a category's angle is 0.
       arc(this.x, this.y,
           this.diameter, this.diameter,
           lastAngle, lastAngle + angles[i] + 0.001);
@@ -89,9 +91,10 @@ Arrays must be the same length!`);
     }
 
     var hovered = null;
-    var distance = dist(mouseX, mouseY, this.x, this.y);
+    var pointer = getChartPointer();
+    var distance = dist(pointer.x, pointer.y, this.x, this.y);
     if (distance <= this.diameter / 2) {
-      var mouseAngle = atan2(mouseY - this.y, mouseX - this.x);
+      var mouseAngle = atan2(pointer.y - this.y, pointer.x - this.x);
       if (mouseAngle < 0) mouseAngle += TWO_PI;
       var testAngle = 0;
       for (var h = 0; h < angles.length; h++) {
@@ -118,18 +121,28 @@ Arrays must be the same length!`);
 
   // Draw one coloured swatch + label for the legend, stacked by index i.
   this.makeLegendItem = function(label, i, colour) {
-    var x = this.x + 50 + this.diameter / 2;
-    var y = this.y + (this.labelSpace * i) - this.diameter / 3;
-    var boxWidth = this.labelSpace / 2;
-    var boxHeight = this.labelSpace / 2;
+    var phoneLayout = width < 520;
+    var x = phoneLayout
+      ? 24 + ((i % 2) * Math.floor((width - 48) / 2))
+      : this.x + 50 + this.diameter / 2;
+    var y = phoneLayout
+      ? this.y + (this.diameter / 2) + 24 + (Math.floor(i / 2) * 30)
+      : this.y + (this.labelSpace * i) - this.diameter / 3;
+    var boxWidth = phoneLayout ? 11 : this.labelSpace / 2;
+    var boxHeight = phoneLayout ? 11 : this.labelSpace / 2;
 
     fill(colour);
     rect(x, y, boxWidth, boxHeight);
 
-    fill('black');
+    fill(SATheme.text);
     noStroke();
     textAlign('left', 'center');
-    textSize(12);
-    text(label, x + boxWidth + 10, y + boxWidth / 2);
+    textSize(phoneLayout ? 9 : 12);
+    if (phoneLayout) {
+      text(label, x + boxWidth + 7, y + boxHeight / 2,
+           Math.floor((width - 70) / 2), 24);
+    } else {
+      text(label, x + boxWidth + 10, y + boxHeight / 2);
+    }
   };
 }

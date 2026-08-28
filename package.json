@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "data:survey": "node scripts/prepare-survey-data.mjs",
+    "test:data": "node --test scripts/prepare-survey-data.test.mjs",
     "start": "vite preview --host 0.0.0.0"
   },
   "devDependencies": {

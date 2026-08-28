@@ -1,6 +1,6 @@
 function SAYouthUnemployment() {
 
-  // ---- State ----
+  // State
 
   this.name = 'Youth unemployment trend';
   this.id = 'sa-youth-unemployment';
@@ -33,7 +33,7 @@ function SAYouthUnemployment() {
 
   this.loaded = false;
 
-  // ---- Lifecycle ----
+  // Lifecycle
 
   this.preload = function() {
     var self = this;
@@ -66,7 +66,7 @@ function SAYouthUnemployment() {
   this.destroy = function() {
   };
 
-  // ---- Drawing ----
+  // Drawing
 
   this.draw = function() {
     if (!this.loaded) {
@@ -125,7 +125,7 @@ function SAYouthUnemployment() {
     }
   };
 
-  // ---- Legend & mapping helpers ----
+  // Legend & mapping helpers
 
   this.drawLegend = function() {
     var x = this.layout.leftMargin + 12;
@@ -135,7 +135,7 @@ function SAYouthUnemployment() {
     strokeWeight(3);
     line(x, y, x + 35, y);
 
-    fill(0);
+    fill(SATheme.text);
     noStroke();
     textSize(13);
     textAlign('left', 'center');

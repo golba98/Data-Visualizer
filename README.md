@@ -4,7 +4,7 @@
 
 This is a data-story website I built about South African inequality. I wanted to see how inequality shows up when you compare population size against income, wealth, earnings by population group, dwelling tenure, land ownership, and everyday financial pressure.
 
-The site has three parts. The top part uses real, credible data to explain South African inequality. The middle part is my survey app, which currently runs on placeholder data so I can demo how the final survey charts will look. At the bottom is a small archive of earlier charts I built before settling on this topic, kept for reference rather than deleted.
+The site has official inequality charts, a Survey App section, and an archive of earlier work.
 
 ## Run locally
 
@@ -43,11 +43,11 @@ I used:
 
 - secondary data from credible sources: WID.world, the World Bank Poverty and Inequality Platform, Our World in Data, Statistics South Africa, and the 2017 Land Audit report
 - a survey section for this project
-- temporary, made-up survey data while I build the app
+- a sanitized 48-row Survey App export collected via https://surveyapp.ink/ and shared across IRL friends and family, Reddit, Facebook, and Instagram
 - cleaned, chart-ready CSV files in the `data/` folder
 - p5.js to draw the charts and build the site
 
-The survey section isn't final evidence yet — it's there to show how the finished dashboard will work once I collect and clean real responses.
+The survey section presents 48 rows of survey data collected through https://surveyapp.ink/.
 
 ## Data Sources
 
@@ -62,12 +62,12 @@ The survey section isn't final evidence yet — it's there to show how the finis
 | `data/inequality/za_wealth_distribution.csv` | WID.world via Our World in Data | https://ourworldindata.org/grapher/wealth-share-richest-10-percent | 1993-2024 | Real cleaned data | Wealth estimates may include modelled values where direct data is limited. |
 | `data/inequality/za_population_groups.csv` | Local derived grouping file | Local file | Not time-series | Derived grouping data | Simplifies top 10 percent, middle 40 percent, and bottom 50 percent groups for comparison. |
 | `data/inequality/za_poverty_indicators.csv` | World Bank PIP via OWID and Statistics South Africa | https://ourworldindata.org/grapher/relative-poverty-share-of-people-below-50-of-the-median and https://www.statssa.gov.za/?p=19078 | 1993-2023 | Real cleaned data | Different poverty definitions here shouldn't be merged into one measure. |
-| `data/survey/za_survey_demo.csv` | Local temporary demo dataset | Local file | Development placeholder | Synthetic placeholder data | Made-up data — not evidence, and needs to be replaced with real responses. |
+| `data/survey/za_survey_responses.csv` | Project Survey App export | https://surveyapp.ink/ | Through 2026-08-25 | Real survey data | 48 Survey App rows collected via https://surveyapp.ink/ and shared on Reddit, Facebook, Instagram, and with IRL friends and family. |
 | `data/inequality/za_dashboard_sources.csv` | Local source register | Local file | Project documentation | Metadata | Summarises sources and limitations for the dashboard. |
 
 ## Visualisation Design
 
-The site is split into three parts. **South African Inequality, Explained** uses official and credible secondary data. **Survey App: Everyday Financial Pressure** uses temporary, made-up survey data and is labelled as such. **Archived: Earlier Drafts** holds charts from before the project's scope settled, kept below the survey section rather than deleted.
+The site separates official inequality data, Survey App data, and archived charts.
 
 ### Gini coefficient over time
 
@@ -97,39 +97,39 @@ This comparison chart uses `data/inequality/za_population_groups.csv`, `data/ine
 
 This chart uses `data/inequality/za_poverty_indicators.csv`, showing a few poverty indicators from World Bank/PIP and Stats SA. It gives context for financial pressure, but the different definitions have to be read separately.
 
-### How pressured are people feeling? (demo)
+### How pressured are people feeling?
 
-A gauge and a set of component bars built from `data/survey/za_survey_demo.csv`, combining food costs, transport costs, income pressure, and work worry into one 0-100 score. It's a stand-in for the index I want to calculate once real survey responses come in.
+A gauge combines the 48 Survey App rows into one 0–100 pressure score.
 
-### What people worry about most (demo)
+### What people worry about most
 
-A waffle chart using `data/survey/za_survey_demo.csv` to check that a 100-square grid is a readable way to show the spread of main cost-pressure answers.
+A waffle chart shows the main cost-pressure answers in the 48-row dataset.
 
-### Food cost against transport cost (demo)
+### Food cost against transport cost
 
-A grid from `data/survey/za_survey_demo.csv` crossing food-cost bands against transport-cost bands, sized by how many placeholder respondents land in each combination.
+A grid compares food-cost bands with transport-cost bands.
 
-### What people say they cut back on (demo)
+### What people say they cut back on
 
-A heatmap from `data/survey/za_survey_demo.csv` showing made-up cutback answers by status group — food, transport, data, social, clothing, subscriptions, and electricity. The idea is to eventually connect financial pressure to actual behaviour changes.
+A heatmap compares cutback choices across status groups.
 
-### Does income keep up with the worry? (demo)
+### Does income keep up with the worry?
 
-A dumbbell chart from `data/survey/za_survey_demo.csv` lining up average work-worry ratings against average income-keeps-up ratings for each status group.
+A dumbbell chart compares work worry with income adequacy.
 
-### Who feels which pressure most? (demo)
+### Who feels which pressure most?
 
-Stacked bars from `data/survey/za_survey_demo.csv` splitting student, employed, unemployed, and studying-and-working groups by their main cost pressure.
+Stacked bars compare main cost pressures across status groups.
 
 ### Archived charts
 
 Below the survey app is a small archive of six charts from earlier drafts of this project — a census pie chart, a sex-by-age breakdown, an age/female-share bubble chart, youth unemployment, life expectancy, and (unrelated to South Africa) a global temperature anomaly chart I built while still deciding on a topic. They're not part of the inequality story, so I moved them out of the main sections instead of deleting them.
 
-## Synthetic Data Disclaimer
+## Survey Data
 
-Some of the survey data in this project right now is made up — placeholder data to demo the final dashboard structure. It'll be replaced with real survey responses before final submission.
+The dataset contains 48 survey responses collected using the custom Survey App hosted at https://surveyapp.ink/. The survey was distributed and shared across in-real-life (IRL) friends and family, Reddit, Facebook, and Instagram.
 
-The website, this README, and the data notes all label this survey data as synthetic placeholder data. Don't treat it as evidence about real respondents.
+The responses were sanitized to remove private submission headers (`ip_hash`, `user_agent`, `timestamp`, `comment`), and the multiple-choice `cut_back_on` field was standardized for uniform category formatting with manual verification to ensure data fidelity.
 
 ## Findings / Expected Insights
 
@@ -142,7 +142,6 @@ I designed this project to show that:
 
 ## Limitations
 
-- The survey data isn't final yet, and the placeholder data isn't evidence.
 - Different sources measure income, wealth, poverty, population, dwelling tenure, and land ownership differently.
 - These charts simplify complex social and economic issues.
 - Some WID wealth and income estimates involve modelling where direct data is limited.
@@ -158,4 +157,4 @@ Each chart loads a CSV from `data/` with `loadTable()` and draws into one respon
 
 ## Conclusion
 
-I built this project to make South African inequality easier to understand through data visualisation. It starts with an evidence-based story from national inequality, population-group earnings, dwelling tenure, land ownership, income concentration, wealth concentration, and poverty context, then keeps the survey app as a clearly labelled demo section until it runs on real collected responses.
+I built this project to explain South African inequality with official data and a clearly labelled Survey App dataset.

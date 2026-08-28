@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="dark">
     <title>South African Inequality, Explained</title>
 
     <script src="lib/p5.min.js"></script>
@@ -12,6 +13,7 @@
 
     <script src="src/helper-functions.js"></script>
     <script src="src/sa-theme.js"></script>
+    <script src="src/survey-data.js"></script>
 
     <script src="src/pie-chart.js"></script>
     <script src="src/visualizations/survey/waffle/box.js"></script>
@@ -34,7 +36,6 @@
     <script src="src/visualizations/survey/survey-income-reality-gap.js"></script>
     <script src="src/visualizations/survey/survey-status-pressure.js"></script>
 
-    <!-- Archived: earlier drafts of the project, kept for reference. -->
     <script src="src/visualizations/archive/sa-population-group-census.js"></script>
     <script src="src/visualizations/archive/sa-sex-age-2022.js"></script>
     <script src="src/visualizations/archive/sa-age-sex-bubble-2022.js"></script>
@@ -44,8 +45,6 @@
 
     <script src="src/sketch.js"></script>
 
-    <!-- Topic 8 test suite. Loaded last so it can call the real units above.
-         Dormant unless ?test=1 is set or window.cm1010Testing.runAll() is called. -->
     <script src="src/topic8-testing.js"></script>
   </head>
 
@@ -66,13 +65,16 @@
 
       <main class="main-content">
         <header class="page-header">
-          <h1>South African Inequality, Explained</h1>
+          <div class="page-title-group">
+            <span class="academic-tag">[Stats SA & World Bank Series]</span>
+            <h1>South African Inequality, Explained</h1>
+          </div>
         </header>
 
         <section id="overview" class="overview" aria-labelledby="overview-title">
           <div class="section-heading">
             <h2 id="overview-title">Overview</h2>
-            <p>Interactive data visualisations exploring economic inequality in South Africa and everyday financial pressures.</p>
+            <p>Explore South African inequality and everyday financial pressure.</p>
             <button id="start-tour-button" class="start-tour-button" type="button">Start guided story</button>
           </div>
           <div id="overview-cards" class="overview-groups"></div>

@@ -1,6 +1,6 @@
 function SurveyCutbackHeatmap() {
 
-  // ---- State ----
+  // State
 
   this.name = 'Cutback heatmap';
   this.id = 'survey-cutback-heatmap';
@@ -20,13 +20,13 @@ function SurveyCutbackHeatmap() {
   this.counts = {};
   this.maxCount = 0;   // highest single cell count, used to scale colour intensity
 
-  // ---- Lifecycle ----
+  // Lifecycle
 
   this.preload = function() {
     var self = this;
 
     this.table = loadTable(
-      'data/survey/za_survey_demo.csv',
+      SurveyData.path,
       'csv',
       'header',
       function(table) {
@@ -56,16 +56,15 @@ function SurveyCutbackHeatmap() {
       this.countCutbacks();
     }
 
-    background(255);
+    background(SATheme.bg);
     this.drawTitle();
     this.drawHeatmap();
     this.drawLegend();
   };
 
-  // ---- Data ----
+  // Data
 
-  // Tally, per cutback item and status group, how many respondents mentioned
-  // that item; also track the largest count for colour scaling.
+  // Tally, per cutback item and status group, how many respondents mentioned that item; also track the largest count for colour scaling.
   this.countCutbacks = function() {
     this.counts = {};
     this.maxCount = 0;
@@ -94,11 +93,11 @@ function SurveyCutbackHeatmap() {
     }
   };
 
-  // ---- Drawing ----
+  // Drawing
 
   this.drawLoading = function() {
-    background(255);
-    fill(0);
+    background(SATheme.bg);
+    fill(SATheme.text);
     noStroke();
     textAlign(CENTER, CENTER);
     text('Loading demo cutback data...', width / 2, height / 2);
@@ -106,18 +105,18 @@ function SurveyCutbackHeatmap() {
 
   this.drawTitle = function() {
     noStroke();
-    fill(0);
+    fill(SATheme.text);
     textAlign(LEFT, TOP);
     textStyle(BOLD);
-    textSize(17);
-    text('What people say they cut back on (demo)', 24, 18);
+    textSize(width < 520 ? 13 : 17);
+    text('What people say they cut back on', 24, 18, width - 48, 36);
 
     textStyle(NORMAL);
     textSize(12);
-    fill(90);
-    text('Made-up answers for now — darker cells just mean more fake rows picked that item.',
+    fill(SATheme.textMuted);
+    text(SurveyData.chartLabel,
          24,
-         44,
+         width < 520 ? 54 : 44,
          width - 48,
          32);
   };
@@ -125,7 +124,7 @@ function SurveyCutbackHeatmap() {
   this.drawHeatmap = function() {
     // width < 620 => narrow / mobile layout (tighter left margin and top).
     var left = width < 620 ? 92 : 148;
-    var top = width < 620 ? 100 : 112;
+    var top = width < 520 ? 108 : (width < 620 ? 100 : 112);
     var rightPad = 24;
     var bottomPad = 62;
     var cellWidth = (width - left - rightPad) / this.statuses.length;
@@ -134,14 +133,14 @@ function SurveyCutbackHeatmap() {
     cellHeight = max(30, min(58, cellHeight));
 
     textStyle(NORMAL);
-    textSize(width < 620 ? 10 : 12);
+    textSize(width < 520 ? 8 : (width < 620 ? 10 : 12));
     noStroke();
 
     for (var s = 0; s < this.statuses.length; s++) {
       var statusLabel = width < 620
           ? this.getShortStatus(this.statuses[s])
           : this.statuses[s];
-      fill(0);
+      fill(SATheme.text);
       textAlign(CENTER, BOTTOM);
       text(statusLabel, left + (s * cellWidth) + (cellWidth / 2), top - 10);
     }
@@ -150,7 +149,7 @@ function SurveyCutbackHeatmap() {
       var cutback = this.cutbacks[c];
       var y = top + (c * cellHeight);
 
-      fill(0);
+      fill(SATheme.text);
       textAlign(RIGHT, CENTER);
       text(cutback, left - 12, y + (cellHeight / 2));
 
@@ -162,12 +161,12 @@ function SurveyCutbackHeatmap() {
 
         // Red cell with alpha scaled by this group's count (darker = more people).
         fill(SATheme.withAlpha(SATheme.redRGB, strength * 255));
-        stroke(0);
+        stroke(SATheme.axis);
         strokeWeight(1);
         rect(x, y, cellWidth - 4, cellHeight - 4);
 
         noStroke();
-        fill(0);
+        fill(SATheme.text);
         textAlign(CENTER, CENTER);
         text(count, x + ((cellWidth - 4) / 2), y + ((cellHeight - 4) / 2));
 
@@ -185,13 +184,13 @@ function SurveyCutbackHeatmap() {
     noStroke();
     textAlign(LEFT, CENTER);
     textSize(11);
-    fill(90);
+    fill(SATheme.textMuted);
     text('Count per group', x, y);
 
     for (var i = 0; i < 5; i++) {
       var strength = i / 4;
       fill(SATheme.withAlpha(SATheme.redRGB, strength * 255));
-      stroke(0);
+      stroke(SATheme.axis);
       strokeWeight(1);
       rect(x + 92 + (i * 22), y - 8, 20, 16);
       noStroke();
@@ -199,6 +198,13 @@ function SurveyCutbackHeatmap() {
   };
 
   this.getShortStatus = function(status) {
+    if (width < 520) {
+      if (status == 'Student') return 'Stud.';
+      if (status == 'Employed') return 'Emp.';
+      if (status == 'Unemployed') return 'Unemp.';
+      if (status == 'Studying and working') return 'Study+';
+    }
+
     if (status == 'Studying and working') {
       return 'Study+work';
     }

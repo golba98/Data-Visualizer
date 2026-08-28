@@ -5,12 +5,9 @@ function ZAGiniTrend() {
   this.xAxisLabel = 'year';
   this.yAxisLabel = 'Gini';
 
-  // ---- Asynchronous load state ----
+  // Asynchronous load state
 
-  // The CSV arrives over the network, so nothing in here may assume the
-  // table exists. Every branch of setup()/draw() keys off these flags
-  // instead of off this.data, and this.data is only assigned once the
-  // success callback has actually run.
+  // The CSV arrives over the network, so nothing in here may assume the table exists.
   this.dataPath = 'data/inequality/za_gini_trend.csv';
   this.data = null;
   this.isLoading = false;    // request in flight
@@ -43,17 +40,13 @@ function ZAGiniTrend() {
     numYTickLabels: 5
   };
 
-  // ---- Asynchronous loading ----
+  // Asynchronous loading
 
-  // Start the request and hand both outcomes to their own callback. The
-  // return value of loadTable() is deliberately ignored: at this point it is
-  // still an empty table, and treating it as data is what lets a chart draw
-  // itself before its data exists.
+  // Start the request and hand both outcomes to their own callback.
   this.preload = function() {
     var self = this;
 
-    // Drop anything from a previous attempt, so a retry can never draw a
-    // stale table while its replacement is still in flight.
+    // Drop anything from a previous attempt, so a retry can never draw a stale table while its replacement is still in flight.
     this.data = null;
     this.startYear = undefined;
     this.endYear = undefined;
@@ -88,8 +81,7 @@ function ZAGiniTrend() {
     this.deriveScales();
   };
 
-  // Failure callback. The raw error stays behind the debug flag; what the
-  // user sees is a plain sentence telling them what to do about it.
+  // Failure callback.
   this.handleDataError = function(error) {
     this.data = null;
     this.isLoading = false;
@@ -107,7 +99,7 @@ function ZAGiniTrend() {
     this.preload();
   };
 
-  // ---- Scales ----
+  // Scales
 
   // Derived from the table, so it may only run once the data is ready.
   this.deriveScales = function() {
@@ -122,8 +114,7 @@ function ZAGiniTrend() {
   };
 
   this.setup = function() {
-    // Ready-state protection: if the data has not arrived, leave the scales
-    // alone and let draw() show the loading or error state instead.
+    // Ready-state protection: if the data has not arrived, leave the scales alone and let draw() show the loading or error state instead.
     this.deriveScales();
   };
 
@@ -142,7 +133,7 @@ function ZAGiniTrend() {
       this.deriveScales();
     }
 
-    background(255);
+    background(SATheme.bg);
     this.drawTitle();
     drawYAxisTickLabels(this.minValue,
                         this.maxValue,
@@ -157,18 +148,15 @@ function ZAGiniTrend() {
   };
 
   this.drawLoading = function() {
-    background(255);
+    background(SATheme.bg);
     noStroke();
-    fill(0);
+    fill(SATheme.text);
     textAlign(CENTER, CENTER);
     textStyle(NORMAL);
     textSize(14);
     text('Loading inequality data...', width / 2, (height / 2) - 16);
 
-    // p5 0.10.2's loadTable gives no byte-level progress event, so the bar
-    // shows the two states the loader genuinely knows about -- requested and
-    // parsed -- rather than an invented percentage. The 0.08 floor is only
-    // so the "requested" state is visible at all.
+    // p5 0.10.2's loadTable gives no byte-level progress event, so the bar shows the two states the loader genuinely knows about -- requested and parsed...
     var barWidth = Math.min(220, width * 0.4);
     var barX = (width - barWidth) / 2;
     var barY = (height / 2) + 8;
@@ -184,7 +172,7 @@ function ZAGiniTrend() {
   };
 
   this.drawLoadError = function() {
-    background(255);
+    background(SATheme.bg);
     noStroke();
     textAlign(CENTER, CENTER);
 
@@ -193,32 +181,34 @@ function ZAGiniTrend() {
     textSize(16);
     text('This chart is unavailable', width / 2, (height / 2) - 22);
 
-    fill(60);
+    fill(SATheme.textMuted);
     textStyle(NORMAL);
     textSize(13);
     text(this.loadError, width * 0.1, (height / 2) + 4, width * 0.8, 60);
   };
 
   this.drawTitle = function() {
-    fill(0);
+    fill(SATheme.text);
     noStroke();
     textStyle(BOLD);
-    textSize(17);
+    textSize(width < 520 ? 13 : 17);
     textAlign(LEFT, TOP);
-    text('National inequality context', 24, 18);
+    text('National inequality context', 24, 18, width - 48, 36);
 
     textStyle(NORMAL);
     textSize(12);
-    fill(80);
+    fill(SATheme.textMuted);
     text('Available World Bank/PIP Gini estimates for South Africa. Higher values mean higher inequality.',
          24,
-         44,
+         width < 520 ? 54 : 44,
          width - 48,
          36);
   };
 
   this.drawYearLabels = function() {
-    var labelYears = [1993, 2000, 2005, 2010, 2014, 2022];
+    var labelYears = width < 520
+      ? [1993, 2005, 2014, 2022]
+      : [1993, 2000, 2005, 2010, 2014, 2022];
 
     for (var i = 0; i < labelYears.length; i++) {
       drawXAxisTickLabel(labelYears[i], this.layout, this.mapYearToWidth.bind(this));
@@ -271,6 +261,7 @@ function ZAGiniTrend() {
 
     var previous = null;
     var hovered = null;
+    var pointer = getChartPointer();
 
     for (var i = 0; i < this.data.getRowCount(); i++) {
       var current = {
@@ -285,11 +276,11 @@ function ZAGiniTrend() {
              this.mapValueToHeight(current.value));
       }
 
-      fill(255);
+      fill(SATheme.bg);
       stroke(SATheme.blue);
       strokeWeight(2);
       circle(this.mapYearToWidth(current.year), this.mapValueToHeight(current.value), 7);
-      if (dist(mouseX, mouseY,
+      if (dist(pointer.x, pointer.y,
                this.mapYearToWidth(current.year),
                this.mapValueToHeight(current.value)) < 12) {
         hovered = current;
@@ -307,7 +298,7 @@ function ZAGiniTrend() {
     var last = previous;
     if (last) {
       noStroke();
-      fill(0);
+      fill(SATheme.text);
       textStyle(BOLD);
       textSize(12);
       textAlign(RIGHT, CENTER);

@@ -1,6 +1,6 @@
 function Gallery() {
 
-  // ---- State ----
+  // Store the current view and controls.
 
   this.visuals = [];
   this.selectedVisual = null;
@@ -17,7 +17,7 @@ function Gallery() {
 
   var self = this;
 
-  // ---- Catalogue (menu + overview metadata for every visualisation) ----
+  // Keep the menu and chart text together.
 
   this.catalogue = [
     {
@@ -27,8 +27,8 @@ function Gallery() {
           id: 'za-gini-trend',
           name: 'National inequality',
           title: 'South African Gini coefficient over time',
-          shows: 'The Gini coefficient in South Africa from 1993 to 2022, measuring overall income inequality.',
-          finding: 'National inequality has remained consistently high over the past three decades.',
+          shows: 'South Africa’s Gini coefficient from 1993 to 2022.',
+          finding: 'Income inequality stayed high across the period.',
           source: 'World Bank Poverty and Inequality Platform via Our World in Data, 1993-2022.',
           chartSource: 'Source: World Bank PIP via Our World in Data, 1993-2022'
         },
@@ -36,8 +36,8 @@ function Gallery() {
           id: 'za-population-group-earnings',
           name: 'Population earnings',
           title: 'Population share compared with mean earnings',
-          shows: 'Population-group size is compared with average monthly earnings.',
-          finding: 'Average earnings differ greatly between population groups.',
+          shows: 'Population share compared with average monthly earnings.',
+          finding: 'Average earnings differ across population groups.',
           source: 'Stats SA Census 2022 and Stats SA earnings data, 2011–2015.',
           chartSource: 'Sources: Stats SA population table, 2022; Stats SA earnings article, 2011-2015'
         },
@@ -45,8 +45,8 @@ function Gallery() {
           id: 'za-dwelling-ownership-by-group',
           name: 'Dwelling ownership',
           title: 'Dwelling tenure by population group',
-          shows: 'Household dwelling tenure split into owned, rented, and rent-free housing by population group.',
-          finding: 'Housing tenure rates vary across population groups.',
+          shows: 'Owned, rented, and rent-free homes by population group.',
+          finding: 'Housing tenure differs across population groups.',
           source: 'Stats SA General Household Survey 2024.',
           chartSource: 'Source: Stats SA General Household Survey 2024, Table 8.6'
         },
@@ -54,8 +54,8 @@ function Gallery() {
           id: 'za-land-ownership-by-group',
           name: 'Land ownership',
           title: 'Agricultural land ownership by population group',
-          shows: 'Individual ownership shares of farms and agricultural land by population group.',
-          finding: 'Individual agricultural land ownership is concentrated within specific population groups.',
+          shows: 'Farm and agricultural land ownership by population group.',
+          finding: 'Agricultural land ownership is highly concentrated.',
           source: 'Department of Rural Development and Land Reform Land Audit Report 2017.',
           chartSource: 'Source: Land Audit Report 2017, farms and agricultural holdings owned by individuals'
         },
@@ -63,8 +63,8 @@ function Gallery() {
           id: 'za-income-share-trend',
           name: 'Top income share',
           title: 'Top 10 percent share of before-tax income',
-          shows: 'The share of total before-tax national income received by the top 10 percent of income earners.',
-          finding: 'The top 10 percent consistently receives more than half of all national income.',
+          shows: 'The top 10 percent share of before-tax income.',
+          finding: 'The top 10 percent receives over half of national income.',
           source: 'WID.world via Our World in Data, 1993-2014.',
           chartSource: 'Source: WID.world via Our World in Data, 1993-2014'
         },
@@ -72,8 +72,8 @@ function Gallery() {
           id: 'za-ownership-comparison',
           name: 'Top 10 concentration',
           title: 'Top 10 percent population share versus income and wealth share',
-          shows: 'A 10 percent population reference group compared with its share of national income and wealth.',
-          finding: 'A small percentage of the population holds a disproportionately large share of income and wealth.',
+          shows: 'A 10 percent population share compared with income and wealth.',
+          finding: 'Income and wealth are concentrated at the top.',
           source: 'WID.world via Our World in Data.',
           chartSource: 'Source: WID.world via Our World in Data'
         },
@@ -81,8 +81,8 @@ function Gallery() {
           id: 'za-poverty-context',
           name: 'Poverty indicators',
           title: 'Poverty indicators as financial-pressure context',
-          shows: 'Different poverty measures tracking relative and absolute poverty levels over time.',
-          finding: 'Poverty rates vary depending on the specific poverty line applied.',
+          shows: 'Several South African poverty measures over time.',
+          finding: 'The result changes with the poverty line used.',
           source: 'World Bank PIP via OWID and Stats SA Poverty Trends, 1993-2023.',
           chartSource: 'Sources: World Bank PIP via OWID and Stats SA Poverty Trends, 1993-2023'
         }
@@ -94,56 +94,56 @@ function Gallery() {
         {
           id: 'survey-pressure-index',
           name: 'Pressure index',
-          title: 'How pressured are people feeling? (demo)',
-          shows: 'A combined 0-100 financial pressure score calculated from survey response categories.',
-          finding: 'Demonstrates how multiple financial pressures can be combined into a single score.',
-          source: 'Project survey responses (synthetic placeholder data).',
-          chartSource: 'Placeholder demo data.'
+          title: 'How pressured are people feeling?',
+          shows: 'A 0–100 score built from the Survey App dataset.',
+          finding: SurveyData.note,
+          source: SurveyData.source,
+          chartSource: SurveyData.note
         },
         {
           id: 'survey-pressure-waffle',
           name: 'Cost pressure mix',
-          title: 'What people worry about most (demo)',
-          shows: 'A 100-square grid showing the distribution of primary cost pressures reported by respondents.',
-          finding: 'Displays the relative proportion of main cost concerns across respondents.',
-          source: 'Project survey responses (synthetic placeholder data).',
-          chartSource: 'Placeholder demo data.'
+          title: 'What people worry about most',
+          shows: 'A 100-square view of the main cost pressures.',
+          finding: SurveyData.note,
+          source: SurveyData.source,
+          chartSource: SurveyData.note
         },
         {
           id: 'survey-food-transport-burden',
           name: 'Food & transport',
-          title: 'Food cost against transport cost (demo)',
-          shows: 'A cross-tabulation grid comparing monthly food cost bands against transport cost bands.',
-          finding: 'Shows the combined weight of essential food and transport costs on household budgets.',
-          source: 'Project survey responses (synthetic placeholder data).',
-          chartSource: 'Placeholder demo data.'
+          title: 'Food cost against transport cost',
+          shows: 'Food-cost bands compared with transport-cost bands.',
+          finding: SurveyData.note,
+          source: SurveyData.source,
+          chartSource: SurveyData.note
         },
         {
           id: 'survey-cutback-heatmap',
           name: 'What gets cut',
-          title: 'What people say they cut back on (demo)',
-          shows: 'A heatmap showing expenditure cutback categories across different employment status groups.',
-          finding: 'Highlights which spending categories households reduce first under financial pressure.',
-          source: 'Project survey responses (synthetic placeholder data).',
-          chartSource: 'Placeholder demo data.'
+          title: 'What people say they cut back on',
+          shows: 'Cutback choices compared across status groups.',
+          finding: SurveyData.note,
+          source: SurveyData.source,
+          chartSource: SurveyData.note
         },
         {
           id: 'survey-income-reality-gap',
           name: 'Worry vs. income',
-          title: 'Does income keep up with the worry? (demo)',
-          shows: 'A comparison between work worry ratings and income adequacy ratings across status groups.',
-          finding: 'Shows the gap between financial worry levels and income adequacy across employment statuses.',
-          source: 'Project survey responses (synthetic placeholder data).',
-          chartSource: 'Placeholder demo data.'
+          title: 'Does income keep up with the worry?',
+          shows: 'Work worry compared with income adequacy.',
+          finding: SurveyData.note,
+          source: SurveyData.source,
+          chartSource: SurveyData.note
         },
         {
           id: 'survey-status-pressure',
           name: 'Pressure by status',
-          title: 'Who feels which pressure most? (demo)',
-          shows: 'Stacked bars showing primary cost pressures by student, employed, unemployed, and working student groups.',
-          finding: 'Displays how primary financial stressors differ across employment and study statuses.',
-          source: 'Project survey responses (synthetic placeholder data).',
-          chartSource: 'Placeholder demo data.'
+          title: 'Who feels which pressure most?',
+          shows: 'Main cost pressures compared across status groups.',
+          finding: SurveyData.note,
+          source: SurveyData.source,
+          chartSource: SurveyData.note
         }
       ]
     },
@@ -260,7 +260,7 @@ function Gallery() {
     }
   ];
 
-  // ---- Menu & navigation ----
+  // Menu & navigation
 
   this.getSectionGroups = function() {
     return [
@@ -469,7 +469,7 @@ function Gallery() {
     menu.innerHTML = '';
     var groups = this.getSectionGroups();
 
-    // 1. Four short section selector tabs
+    // 1.
     var tabsNav = document.createElement('div');
     tabsNav.className = 'section-tabs';
     tabsNav.setAttribute('role', 'tablist');
@@ -497,7 +497,7 @@ function Gallery() {
 
     menu.appendChild(tabsNav);
 
-    // 2. Links container for the selected section only
+    // 2.
     var linksContainer = document.createElement('div');
     linksContainer.id = 'section-links-container';
     linksContainer.className = 'section-links-container';
@@ -603,6 +603,7 @@ function Gallery() {
       document.body.classList.remove('mobile-menu-open');
       if (toggleBtn) {
         toggleBtn.setAttribute('aria-expanded', 'false');
+        toggleBtn.setAttribute('aria-label', 'Open navigation menu');
         toggleBtn.focus();
       }
     }
@@ -621,10 +622,12 @@ function Gallery() {
           sidebar.classList.remove('open');
           document.body.classList.remove('mobile-menu-open');
           toggleBtn.setAttribute('aria-expanded', 'false');
+          toggleBtn.setAttribute('aria-label', 'Open navigation menu');
         } else {
           sidebar.classList.add('open');
           document.body.classList.add('mobile-menu-open');
           toggleBtn.setAttribute('aria-expanded', 'true');
+          toggleBtn.setAttribute('aria-label', 'Close navigation menu');
           if (closeBtn) closeBtn.focus();
         }
       });
@@ -647,7 +650,7 @@ function Gallery() {
     }
   };
 
-  // ---- About this chart panel logic ----
+  // Open or close the chart notes.
 
   this.initAboutPanel = function() {
     var toggleBtn = document.getElementById('about-chart-toggle');
@@ -698,14 +701,12 @@ function Gallery() {
       chartLayout.classList.toggle('about-open', this.isAboutOpen);
     }
 
-    if (typeof resizeChartCanvas === 'function') {
-      setTimeout(function() {
-        resizeChartCanvas();
-      }, 50);
+    if (typeof queueChartResize === 'function') {
+      queueChartResize();
     }
   };
 
-  // ---- Overview cards ----
+  // Overview cards
 
   this.buildOverviewCards = function() {
     var cards = document.getElementById('overview-cards');
@@ -746,6 +747,7 @@ function Gallery() {
         button.dataset.visualId = item.id;
         button.addEventListener('click', function() {
           self.selectVisual(this.dataset.visualId);
+          self.scrollMobileViewToTop();
         });
 
         card.appendChild(title);
@@ -785,21 +787,28 @@ function Gallery() {
         }
       }
       this.renderSectionLinks(parentSectionId);
-    } else {
-      var buttons = document.querySelectorAll('.menu-button');
-      for (var b = 0; b < buttons.length; b++) {
-        var isSelected = buttons[b].dataset.visualId == visId;
-        buttons[b].classList.toggle('selected', isSelected);
-        if (isSelected) {
-          buttons[b].setAttribute('aria-current', 'page');
-        } else {
-          buttons[b].removeAttribute('aria-current');
-        }
+    }
+
+    // Mark from the requested id instead of relying on selectedVisual.
+    var buttons = document.querySelectorAll('.menu-button');
+    for (var b = 0; b < buttons.length; b++) {
+      var isSelected = buttons[b].dataset.visualId == visId;
+      buttons[b].classList.toggle('selected', isSelected);
+      if (isSelected) {
+        buttons[b].setAttribute('aria-current', 'page');
+      } else {
+        buttons[b].removeAttribute('aria-current');
       }
     }
   };
 
-  // ---- View switching (overview <-> chart) ----
+  this.scrollMobileViewToTop = function() {
+    if (window.matchMedia && window.matchMedia('(max-width: 820px)').matches) {
+      window.scrollTo(0, 0);
+    }
+  };
+
+  // View switching (overview <-> chart)
 
   this.showOverview = function() {
     if (this.selectedVisual != null
@@ -822,6 +831,7 @@ function Gallery() {
     this.setTourLayoutActive(false);
     this.updateSelectedMenu('overview');
     if (!this.isEmbedded) this.updateHash('overview');
+    this.scrollMobileViewToTop();
   };
 
   this.clearChartControls = function() {
@@ -941,6 +951,7 @@ function Gallery() {
     this.renderComparisonControls(leftId, rightId);
     this.renderComparisonPanes(leftId, rightId);
     if (!fromHash) this.updateHash('compare/' + leftId + '/' + rightId);
+    this.scrollMobileViewToTop();
   };
 
   this.renderComparisonControls = function(leftId, rightId) {
@@ -948,8 +959,8 @@ function Gallery() {
     controls.innerHTML = '';
     var selfGallery = this;
     [
-      { label: 'Left chart', value: leftId },
-      { label: 'Right chart', value: rightId }
+      { label: 'Chart 1', value: leftId },
+      { label: 'Chart 2', value: rightId }
     ].forEach(function(item) {
       var label = document.createElement('label');
       label.textContent = item.label;
@@ -982,7 +993,7 @@ function Gallery() {
       var pane = document.createElement('article');
       pane.className = 'comparison-pane';
       var title = document.createElement('h3');
-      title.textContent = index === 0 ? 'Left visualisation' : 'Right visualisation';
+      title.textContent = index === 0 ? 'Chart 1' : 'Chart 2';
       var frame = document.createElement('iframe');
       frame.title = 'Live ' + (index === 0 ? 'left' : 'right') + ' comparison chart';
       frame.src = window.location.pathname + '?embedded=1&vis=' + encodeURIComponent(id);
@@ -1014,7 +1025,7 @@ function Gallery() {
     });
   };
 
-  // ---- Visualisation registry ----
+  // Visualisation registry
 
   // Add a new visualisation to the gallery.
   this.addVisual = function(vis) {
@@ -1039,8 +1050,7 @@ function Gallery() {
   };
 
   this.findVisIndex = function(visId) {
-    // Search through the visualisations looking for one with the id
-    // matching visId.
+    // Search through the visualisations looking for one with the id matching visId.
     for (var i = 0; i < this.visuals.length; i++) {
       if (this.visuals[i].id == visId) {
         return i;
@@ -1072,8 +1082,8 @@ function Gallery() {
       this.selectedVisual = this.visuals[visIndex];
       this.showChartDetails(this.selectedVisual);
 
-      if (!keepTour && typeof resizeChartCanvas == 'function') {
-        resizeChartCanvas();
+      if (!keepTour && typeof queueChartResize == 'function') {
+        queueChartResize();
       }
 
       // Initialise visualisation if necessary.
@@ -1081,10 +1091,9 @@ function Gallery() {
         this.selectedVisual.setup();
       }
 
-      // Enable animation in case it has been paused by the current
-      // visualisation.
-      loop();
+      requestChartRender(true);
       if (!this.isEmbedded && !fromHash) this.updateHash(visId);
+      if (!keepTour) this.scrollMobileViewToTop();
     }
   };
 

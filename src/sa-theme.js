@@ -1,37 +1,37 @@
-// South African flag-inspired palette, applied to all charts. A restrained
-// set of flat colours -- green, gold, red, blue, black (plus white from the
-// page background) -- used consistently so a category keeps the same colour
-// wherever it appears.
-//
-// Hex strings can be passed straight to fill()/stroke(); the *RGB triplets
-// are for the alpha ramps (heatmap cells, semi-transparent bubbles/circles).
+// One dark palette keeps every chart readable and consistent.
 var SATheme = {
-  green: '#007A4D',  greenRGB: [0, 122, 77],
-  gold:  '#FFB612',  goldRGB:  [255, 182, 18],
-  red:   '#DE3831',  redRGB:   [222, 56, 49],
-  blue:  '#002395',  blueRGB:  [0, 35, 149],
-  black: '#1A1A1A',
-  greenTint: '#59A07F',
-  blueTint:  '#6E8FD8',
+  bg: '#121316',
+  bgRGB: [18, 19, 22],
+  text: '#F5F7FA',
+  textMuted: '#B8BDC8',
+  axis: '#687180',
+  grid: '#303640',
+  green: '#22C55E',
+  greenRGB: [34, 197, 94],
+  gold: '#F5C451',
+  goldRGB: [245, 196, 81],
+  red: '#F87171',
+  redRGB: [248, 113, 113],
+  blue: '#60A5FA',
+  blueRGB: [96, 165, 250],
+  violet: '#A78BFA',
+  cyan: '#22D3EE',
+  orange: '#FB923C',
+  greenTint: '#86EFAC',
+  blueTint: '#93C5FD',
+  categorical: ['#60A5FA', '#F5C451', '#22C55E', '#F87171', '#A78BFA', '#22D3EE', '#FB923C'],
 
-  // p5 color() with alpha, for the heatmap / bubble ramps (called at draw time).
-  withAlpha: function(rgb, a) {
-    return color(rgb[0], rgb[1], rgb[2], a);
+  withAlpha: function(rgb, alpha) {
+    return color(rgb[0], rgb[1], rgb[2], alpha);
   },
 
-  // Ordered palette for categorical charts (pie slices, line series, bar components).
-  categorical: ['#007A4D', '#FFB612', '#DE3831', '#002395', '#1A1A1A'],
-
-  // Shared mapping for the 7 survey pressure categories, used by both the
-  // stacked-bar and waffle charts so a category keeps the same colour in each.
-  // Ordered so neighbouring bars avoid similar hues.
   pressure: {
-    Food: '#007A4D',
-    Transport: '#DE3831',
-    Data: '#002395',
-    Rent: '#FFB612',
-    Tuition: '#1A1A1A',
-    Debt: '#6E8FD8',
-    Electricity: '#59A07F'
+    Food: '#F5C451',
+    Transport: '#60A5FA',
+    Data: '#22D3EE',
+    Rent: '#A78BFA',
+    Tuition: '#F87171',
+    Debt: '#FB923C',
+    Electricity: '#22C55E'
   }
 };

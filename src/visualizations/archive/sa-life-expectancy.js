@@ -1,6 +1,6 @@
 function SALifeExpectancy() {
 
-  // ---- State ----
+  // State
 
   this.name = 'Life expectancy by sex';
   this.id = 'sa-life-expectancy';
@@ -40,7 +40,7 @@ function SALifeExpectancy() {
     'Total': SATheme.green
   };
 
-  // ---- Lifecycle ----
+  // Lifecycle
 
   this.preload = function() {
     var self = this;
@@ -77,12 +77,11 @@ function SALifeExpectancy() {
       this.series.push({
         label: label,
         values: values,
-        colour: this.seriesColours[label] || SATheme.black
+        colour: this.seriesColours[label] || SATheme.orange
       });
     }
 
-    // Add ~8% headroom above and below the data so the lines don't touch the
-    // axes, then round the y-axis bounds to one decimal place.
+    // Add ~8% headroom above and below the data so the lines don't touch the axes, then round the y-axis bounds to one decimal place.
     var minValue = min(allValues);
     var maxValue = max(allValues);
     var padding = max(1, (maxValue - minValue) * 0.08);
@@ -94,7 +93,7 @@ function SALifeExpectancy() {
   this.destroy = function() {
   };
 
-  // ---- Drawing ----
+  // Drawing
 
   this.draw = function() {
     if (!this.loaded) {
@@ -141,6 +140,9 @@ function SALifeExpectancy() {
 
     for (var i = 0; i < this.series.length; i++) {
       var series = this.series[i];
+      series.colour = series.label == 'Female'
+        ? SATheme.red
+        : (series.label == 'Male' ? SATheme.blue : SATheme.green);
       var previous = null;
 
       stroke(series.colour);
@@ -174,7 +176,7 @@ function SALifeExpectancy() {
     var labelWidth = textWidth(series.label) + 12;
 
     noStroke();
-    fill(255, 245);
+    fill(SATheme.bg);
     rect(labelX - labelWidth,
          labelY - 10,
          labelWidth,
@@ -190,7 +192,7 @@ function SALifeExpectancy() {
   };
 
   this.drawInsight = function() {
-    fill(60);
+    fill(SATheme.textMuted);
     noStroke();
     textSize(12);
     textAlign('left', 'top');
@@ -199,7 +201,7 @@ function SALifeExpectancy() {
          this.layout.topMargin + 6);
   };
 
-  // ---- Mapping helpers ----
+  // Mapping helpers
 
   this.mapYearToWidth = function(value) {
     return map(value,

@@ -1,6 +1,6 @@
 function SurveyFoodTransportBurden() {
 
-  // ---- State ----
+  // State
 
   this.name = 'Food vs transport';
   this.id = 'survey-food-transport-burden';
@@ -11,13 +11,13 @@ function SurveyFoodTransportBurden() {
   this.counts = {};
   this.maxCount = 0;   // busiest cell, used to scale circle size
 
-  // ---- Lifecycle ----
+  // Lifecycle
 
   this.preload = function() {
     var self = this;
 
     this.table = loadTable(
-      'data/survey/za_survey_demo.csv',
+      SurveyData.path,
       'csv',
       'header',
       function(table) {
@@ -47,15 +47,14 @@ function SurveyFoodTransportBurden() {
       this.countBurden();
     }
 
-    background(250, 250, 247);
+    background(SATheme.bg);
     this.drawTitle();
     this.drawGrid();
   };
 
-  // ---- Data ----
+  // Data
 
-  // Count respondents in each (food band x transport band) cell and track the
-  // busiest cell for circle scaling.
+  // Count respondents in each (food band x transport band) cell and track the busiest cell for circle scaling.
   this.countBurden = function() {
     this.counts = {};
     this.maxCount = 0;
@@ -79,11 +78,11 @@ function SurveyFoodTransportBurden() {
     }
   };
 
-  // ---- Drawing ----
+  // Drawing
 
   this.drawLoading = function() {
-    background(250, 250, 247);
-    fill(31, 41, 55);
+    background(SATheme.bg);
+    fill(SATheme.text);
     noStroke();
     textAlign(CENTER, CENTER);
     text('Loading burden data...', width / 2, height / 2);
@@ -91,18 +90,18 @@ function SurveyFoodTransportBurden() {
 
   this.drawTitle = function() {
     noStroke();
-    fill(0);
+    fill(SATheme.text);
     textAlign(LEFT, TOP);
     textStyle(BOLD);
-    textSize(17);
-    text('Food cost against transport cost (demo)', 24, 18);
+    textSize(width < 520 ? 13 : 17);
+    text('Food cost against transport cost', 24, 18, width - 48, 36);
 
     textStyle(NORMAL);
     textSize(12);
-    fill(90);
-    text('Invented rows, not real respondents. Each circle counts how many land in that food/transport combination.',
+    fill(SATheme.textMuted);
+    text(SurveyData.chartLabel,
          24,
-         44,
+         width < 520 ? 54 : 44,
          width - 48,
          32);
   };
@@ -110,17 +109,19 @@ function SurveyFoodTransportBurden() {
   this.drawGrid = function() {
     // width < 680 => narrow / mobile layout (tighter left margin).
     var left = width < 680 ? 94 : 130;
-    var top = 96;
+    var phoneLayout = width < 520;
+    var top = phoneLayout ? 108 : 96;
     var right = width - 28;
     var bottom = height - 72;
     var plotWidth = right - left;
     var plotHeight = bottom - top;
     var cellWidth = plotWidth / this.transportBands.length;
     var cellHeight = plotHeight / this.foodBands.length;
+    var pointer = getChartPointer();
 
-    stroke(200);
+    stroke(SATheme.grid);
     strokeWeight(1);
-    fill(240);
+    fill(SATheme.bg);
 
     for (var f = 0; f < this.foodBands.length; f++) {
       for (var t = 0; t < this.transportBands.length; t++) {
@@ -134,15 +135,22 @@ function SurveyFoodTransportBurden() {
     noStroke();
     textStyle(NORMAL);
     textSize(width < 680 ? 9 : 11);
-    fill(55, 65, 81);
+    fill(SATheme.textMuted);
 
     for (var x = 0; x < this.transportBands.length; x++) {
-      textAlign(CENTER, TOP);
-      text(this.transportBands[x],
-           left + (x * cellWidth) + (cellWidth / 2),
-           bottom + 10,
-           cellWidth,
-           28);
+      var labelX = left + (x * cellWidth) + (cellWidth / 2);
+      if (phoneLayout) {
+        push();
+        translate(labelX, bottom + 8);
+        rotate(-PI / 4);
+        textAlign(RIGHT, CENTER);
+        textSize(8);
+        text(this.transportBands[x].replace(/R/g, ''), 0, 0);
+        pop();
+      } else {
+        textAlign(CENTER, TOP);
+        text(this.transportBands[x], labelX, bottom + 10, cellWidth, 28);
+      }
     }
 
     for (var y = 0; y < this.foodBands.length; y++) {
@@ -154,7 +162,7 @@ function SurveyFoodTransportBurden() {
 
     textAlign(CENTER, CENTER);
     textStyle(BOLD);
-    fill(31, 41, 55);
+    fill(SATheme.text);
     text('Transport cost', left + (plotWidth / 2), height - 20);
 
     push();
@@ -179,19 +187,19 @@ function SurveyFoodTransportBurden() {
         var cx = left + (tIndex * cellWidth) + (cellWidth / 2);
         var cy = top + (fIndex * cellHeight) + (cellHeight / 2);
 
-        stroke(0);
+        stroke(SATheme.axis);
         strokeWeight(1);
         fill(SATheme.withAlpha(SATheme.blueRGB, 150));
         circle(cx, cy, size);
 
         noStroke();
-        fill(0);
+        fill(SATheme.text);
         textAlign(CENTER, CENTER);
         textStyle(BOLD);
         textSize(12);
         text(count, cx, cy);
 
-        if (dist(mouseX, mouseY, cx, cy) < Math.max(size / 2, 14)) {
+        if (dist(pointer.x, pointer.y, cx, cy) < Math.max(size / 2, 14)) {
           drawChartTooltip(food + ' / ' + transport, String(count), 'responses');
         }
       }

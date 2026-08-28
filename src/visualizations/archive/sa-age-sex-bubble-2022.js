@@ -1,6 +1,6 @@
 function SAAgeSexBubble2022() {
 
-  // ---- State ----
+  // State
 
   this.name = 'Age group size and female share';
   this.id = 'sa-age-sex-bubble-2022';
@@ -12,7 +12,7 @@ function SAAgeSexBubble2022() {
   this.yMin = 45;         // female-% axis range (minimum)
   this.yMax = 75;         // female-% axis range (maximum)
 
-  // ---- Lifecycle ----
+  // Lifecycle
 
   this.preload = function() {
     var self = this;
@@ -30,7 +30,7 @@ function SAAgeSexBubble2022() {
   this.destroy = function() {
   };
 
-  // ---- Drawing ----
+  // Drawing
 
   this.draw = function() {
     if (!this.loaded) {
@@ -50,7 +50,7 @@ function SAAgeSexBubble2022() {
     var totalMax = max(totals);
 
     fill(SATheme.withAlpha(SATheme.blueRGB, 140));
-    stroke(0);
+    stroke(SATheme.axis);
     strokeWeight(1);
 
     for (var i = 0; i < this.data.getRowCount(); i++) {
@@ -68,20 +68,20 @@ function SAAgeSexBubble2022() {
 
       // Label every other bubble (plus the 85+ group) to avoid crowding.
       if (i % 2 == 0 || ageGroup == '85+') {
-        fill(0);
+        fill(SATheme.text);
         noStroke();
         textAlign('center', 'bottom');
         text(ageGroup, x, y - (size / 2) - 3);
         fill(SATheme.withAlpha(SATheme.blueRGB, 140));
-        stroke(0);
+        stroke(SATheme.axis);
       }
     }
   };
 
-  // ---- Axes & annotations ----
+  // Axes & annotations
 
   this.addAxes = function() {
-    stroke(200);
+    stroke(SATheme.axis);
     strokeWeight(1);
 
     line(this.pad,
@@ -94,7 +94,7 @@ function SAAgeSexBubble2022() {
          this.pad,
          height - this.pad);
 
-    fill(0);
+    fill(SATheme.text);
     noStroke();
     textSize(12);
     textAlign('right', 'center');
@@ -106,12 +106,12 @@ function SAAgeSexBubble2022() {
                   height - this.pad,
                   this.pad);
       text(value + '%', this.pad - 8, y);
-      stroke(230);
+      stroke(SATheme.grid);
       line(this.pad, y, width - this.pad, y);
       noStroke();
     }
 
-    fill(0);
+    fill(SATheme.text);
     noStroke();
     textAlign('center', 'center');
     text('Age group midpoint',

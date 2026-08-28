@@ -1,6 +1,6 @@
 function SAPopulationSexAge2022() {
 
-  // ---- State ----
+  // State
 
   this.name = 'Population by sex and age';
   this.id = 'sa-sex-age-2022';
@@ -26,7 +26,7 @@ function SAPopulationSexAge2022() {
   this.maleColour = color(SATheme.blue);
   this.loaded = false;
 
-  // ---- Lifecycle ----
+  // Lifecycle
 
   this.preload = function() {
     var self = this;
@@ -44,7 +44,7 @@ function SAPopulationSexAge2022() {
   this.destroy = function() {
   };
 
-  // ---- Drawing ----
+  // Drawing
 
   this.draw = function() {
     if (!this.loaded) {
@@ -52,6 +52,8 @@ function SAPopulationSexAge2022() {
       return;
     }
 
+    this.femaleColour = color(SATheme.red);
+    this.maleColour = color(SATheme.blue);
     this.drawCategoryLabels();
 
     // One horizontal row per age group, filling the canvas height.
@@ -67,15 +69,14 @@ function SAPopulationSexAge2022() {
         male: this.data.getNum(i, 'Male')
       };
 
-      fill(0);
+      fill(SATheme.text);
       noStroke();
       textAlign('right', 'top');
       text(ageGroup.label,
            this.layout.leftMargin - this.layout.pad,
            lineY);
 
-      // Female bar starts at the left margin; the male bar is stacked
-      // immediately to its right so each row sums to 100%.
+      // Female bar starts at the left margin; the male bar is stacked immediately to its right so each row sums to 100%.
       fill(this.femaleColour);
       rect(this.layout.leftMargin,
            lineY,
@@ -89,7 +90,7 @@ function SAPopulationSexAge2022() {
            lineHeight - this.layout.pad);
     }
 
-    stroke(150);
+    stroke(SATheme.axis);
     strokeWeight(1);
     line(this.midX,
          this.layout.topMargin,
@@ -98,7 +99,7 @@ function SAPopulationSexAge2022() {
   };
 
   this.drawCategoryLabels = function() {
-    fill(0);
+    fill(SATheme.text);
     noStroke();
     textAlign('left', 'top');
     text('Female', this.layout.leftMargin, this.layout.pad);

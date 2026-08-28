@@ -38,34 +38,34 @@ function ZALandOwnershipByGroup() {
       this.setup();
     }
 
-    background(255);
+    background(SATheme.bg);
     this.drawTitle();
     this.drawAnnotations();
     this.drawBars();
   };
 
   this.drawLoading = function() {
-    background(255);
-    fill(0);
+    background(SATheme.bg);
+    fill(SATheme.text);
     noStroke();
     textAlign(CENTER, CENTER);
     text('Loading land ownership data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
-    fill(0);
+    fill(SATheme.text);
     noStroke();
     textStyle(BOLD);
-    textSize(17);
+    textSize(width < 520 ? 13 : 17);
     textAlign(LEFT, TOP);
-    text('Agricultural land ownership by population group', 24, 18);
+    text('Agricultural land ownership by population group', 24, 18, width - 48, 36);
 
     textStyle(NORMAL);
     textSize(12);
-    fill(80);
+    fill(SATheme.textMuted);
     text('2017 Land Audit shares for farms and agricultural holdings owned by individual landowners.',
          24,
-         44,
+         width < 520 ? 54 : 44,
          width - 48,
          38);
   };
@@ -77,8 +77,8 @@ function ZALandOwnershipByGroup() {
     var bottom = Math.min(height - 64, 118 + (this.rows.length * this.getBarGap()));
 
     if (width < 520) {
-      drawVerticalReferenceLine(referenceX, 106, bottom, SATheme.red);
-      drawAnnotationBadge('50% reference', '', width - 150, 78, SATheme.red);
+      drawVerticalReferenceLine(referenceX, 126, bottom, SATheme.red);
+      drawAnnotationBadge('50% reference', '', width - 150, 94, SATheme.red);
       return;
     }
 
@@ -104,23 +104,25 @@ function ZALandOwnershipByGroup() {
     var compact = width < 720;
     var left = compact ? 98 : 142;
     var right = width - 54;
-    var top = 118;
+    var top = width < 520 ? 134 : 118;
     var barHeight = compact ? 24 : 30;
     var gap = this.getBarGap();
     var barWidth = right - left;
 
-    stroke(220);
+    stroke(SATheme.grid);
     strokeWeight(1);
     for (var tick = 0; tick <= 80; tick += 20) {
       var x = map(tick, 0, 80, left, right);
       line(x, top - 12, x, top + (gap * (this.rows.length - 1)) + barHeight + 10);
-      noStroke();
-      fill(90);
-      textStyle(NORMAL);
-      textSize(11);
-      textAlign(CENTER, TOP);
-      text(tick + '%', x, top + (gap * (this.rows.length - 1)) + barHeight + 18);
-      stroke(220);
+      if (width >= 520) {
+        noStroke();
+        fill(SATheme.textMuted);
+        textStyle(NORMAL);
+        textSize(11);
+        textAlign(CENTER, TOP);
+        text(tick + '%', x, top + (gap * (this.rows.length - 1)) + barHeight + 18);
+      }
+      stroke(SATheme.grid);
     }
 
     for (var i = 0; i < this.rows.length; i++) {
@@ -130,7 +132,7 @@ function ZALandOwnershipByGroup() {
       var colour = row.group == 'White' ? SATheme.red : SATheme.green;
 
       noStroke();
-      fill(0);
+      fill(SATheme.text);
       textStyle(BOLD);
       textSize(compact ? 10 : 12);
       textAlign(RIGHT, CENTER);
@@ -142,7 +144,7 @@ function ZALandOwnershipByGroup() {
         drawChartTooltip(row.group, row.share.toFixed(1) + '%', formatThousands(row.hectares) + ' ha');
       }
 
-      fill(0);
+      fill(SATheme.text);
       textStyle(BOLD);
       textSize(12);
       textAlign(LEFT, CENTER);
@@ -150,20 +152,20 @@ function ZALandOwnershipByGroup() {
 
       textStyle(NORMAL);
       textSize(compact ? 9 : 10);
-      fill(90);
+      fill(SATheme.textMuted);
       text(formatThousands(row.hectares) + ' ha', left, y + barHeight + (compact ? 8 : 12));
     }
 
     noStroke();
-    fill(90);
+    fill(SATheme.textMuted);
     textStyle(NORMAL);
     textSize(11);
-    textAlign(LEFT, BOTTOM);
+    textAlign(LEFT, width < 520 ? TOP : BOTTOM);
     text('Limitation: this is a land-audit measure for individually owned farms/agricultural holdings, not all homes or all wealth.',
          24,
-         height - 30,
+         width < 520 ? height - 38 : height - 30,
          width - 48,
-         28);
+         width < 520 ? 36 : 28);
   };
 
   this.getExportData = function() {

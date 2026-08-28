@@ -42,7 +42,7 @@ function ZAOwnershipComparison() {
       {
         label: 'Population share',
         value: 10,
-        colour: SATheme.black,
+        colour: SATheme.orange,
         note: 'Top 10 percent of people'
       },
       {
@@ -70,41 +70,46 @@ function ZAOwnershipComparison() {
       this.setup();
     }
 
-    background(255);
+    this.rows[0].colour = SATheme.orange;
+    this.rows[1].colour = SATheme.green;
+    this.rows[2].colour = SATheme.red;
+
+    background(SATheme.bg);
     this.drawTitle();
     this.drawAnnotations();
     this.drawBars();
   };
 
   this.drawLoading = function() {
-    background(255);
-    fill(0);
+    background(SATheme.bg);
+    fill(SATheme.text);
     noStroke();
     textAlign(CENTER, CENTER);
     text('Loading ownership comparison...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
-    fill(0);
+    fill(SATheme.text);
     noStroke();
     textStyle(BOLD);
-    textSize(17);
+    textSize(width < 520 ? 13 : 17);
     textAlign(LEFT, TOP);
-    text('Population size compared with resource share', 24, 18);
+    text('Population size compared with resource share', 24, 18, width - 48, 36);
 
     textStyle(NORMAL);
     textSize(12);
-    fill(80);
+    fill(SATheme.textMuted);
     text('The same top 10 percent income-ranked reference group is compared with latest available income and wealth shares.',
          24,
-         44,
+         width < 520 ? 54 : 44,
          width - 48,
          40);
   };
 
   this.drawAnnotations = function() {
-    var left = width < 680 ? 136 : 190;
-    var right = width - 48;
+    var phoneLayout = width < 520;
+    var left = phoneLayout ? 110 : (width < 680 ? 136 : 190);
+    var right = width - (phoneLayout ? 36 : 48);
     var referenceX = map(10, 0, 100, left, right);
     var referenceBottom = Math.min(
       height - 66,
@@ -120,7 +125,6 @@ function ZAOwnershipComparison() {
     pop();
 
     // Keep the explanatory badge away from the 10.0% value and first bar.
-    // Compact charts already label that bar, so the reference line is enough.
     if (width >= 680) {
       drawAnnotationBadge(
         '10% reference',
@@ -133,24 +137,25 @@ function ZAOwnershipComparison() {
   };
 
   this.drawBars = function() {
-    var left = width < 680 ? 136 : 190;
-    var right = width - 48;
+    var phoneLayout = width < 520;
+    var left = phoneLayout ? 110 : (width < 680 ? 136 : 190);
+    var right = width - (phoneLayout ? 36 : 48);
     var top = 128;
     var barHeight = width < 680 ? 34 : 42;
     var gap = width < 680 ? 68 : 82;
     var barWidth = right - left;
 
-    stroke(210);
+    stroke(SATheme.grid);
     strokeWeight(1);
-    for (var tick = 0; tick <= 100; tick += 25) {
+    for (var tick = 0; tick <= 100; tick += phoneLayout ? 50 : 25) {
       var x = map(tick, 0, 100, left, right);
       line(x, top - 18, x, top + (gap * (this.rows.length - 1)) + barHeight + 18);
       noStroke();
-      fill(90);
-      textSize(11);
+      fill(SATheme.textMuted);
+      textSize(phoneLayout ? 9 : 11);
       textAlign(CENTER, TOP);
       text(tick + '%', x, top + (gap * (this.rows.length - 1)) + barHeight + 24);
-      stroke(210);
+      stroke(SATheme.grid);
     }
 
     for (var i = 0; i < this.rows.length; i++) {
@@ -159,9 +164,9 @@ function ZAOwnershipComparison() {
       var currentWidth = map(row.value, 0, 100, 0, barWidth);
 
       noStroke();
-      fill(0);
+      fill(SATheme.text);
       textStyle(BOLD);
-      textSize(width < 680 ? 11 : 13);
+      textSize(phoneLayout ? 9 : (width < 680 ? 11 : 13));
       textAlign(RIGHT, CENTER);
       text(row.label, left - 12, y + (barHeight / 2));
 
@@ -171,15 +176,16 @@ function ZAOwnershipComparison() {
         drawChartTooltip(row.label, row.value.toFixed(1) + '%', row.note);
       }
 
-      fill(0);
+      fill(SATheme.text);
       textAlign(LEFT, CENTER);
       textStyle(BOLD);
-      textSize(13);
+      textSize(phoneLayout ? 10 : 13);
       text(row.value.toFixed(1) + '%', left + currentWidth + 10, y + (barHeight / 2));
 
       textStyle(NORMAL);
       textSize(11);
-      fill(85);
+      fill(SATheme.textMuted);
+      textSize(phoneLayout ? 9 : 11);
       text(row.note, left, y + barHeight + 17);
     }
   };

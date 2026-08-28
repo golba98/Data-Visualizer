@@ -1,6 +1,6 @@
 function SurveyPressureIndex() {
 
-  // ---- State ----
+  // State
 
   this.name = 'Pressure index';
   this.id = 'survey-pressure-index';
@@ -9,13 +9,13 @@ function SurveyPressureIndex() {
   this.index = 0;          // overall 0-100 pressure score
   this.components = [];     // per-factor averages that make up the index
 
-  // ---- Lifecycle ----
+  // Lifecycle
 
   this.preload = function() {
     var self = this;
 
     this.table = loadTable(
-      'data/survey/za_survey_demo.csv',
+      SurveyData.path,
       'csv',
       'header',
       function(table) {
@@ -45,16 +45,20 @@ function SurveyPressureIndex() {
       this.calculateIndex();
     }
 
-    background(255);
+    var themeColours = [SATheme.green, SATheme.red, SATheme.gold, SATheme.blue, SATheme.orange];
+    for (var colourIndex = 0; colourIndex < this.components.length; colourIndex++) {
+      this.components[colourIndex].colour = themeColours[colourIndex];
+    }
+
+    background(SATheme.bg);
     this.drawTitle();
     this.drawGauge();
     this.drawComponentBars();
   };
 
-  // ---- Data ----
+  // Data
 
-  // Average each pressure factor across all responses (every factor is
-  // normalised to 0-1) and combine them into a single 0-100 index.
+  // Average each pressure factor across all responses (every factor is normalised to 0-1) and combine them into a single 0-100 index.
   this.calculateIndex = function() {
     var totals = {
       pressure: 0,
@@ -85,7 +89,7 @@ function SurveyPressureIndex() {
       { label: 'Work worry', value: totals.worry / count, colour: SATheme.red },
       { label: 'Income gap', value: totals.incomeGap / count, colour: SATheme.gold },
       { label: 'Food cost', value: totals.food / count, colour: SATheme.blue },
-      { label: 'Transport cost', value: totals.transport / count, colour: SATheme.black }
+      { label: 'Transport cost', value: totals.transport / count, colour: SATheme.orange }
     ];
 
     var total = 0;
@@ -96,10 +100,9 @@ function SurveyPressureIndex() {
     this.index = Math.round((total / this.components.length) * 100);
   };
 
-  // ---- Scoring / lookups ----
+  // Scoring / lookups
 
   // Weight tables (0-1) mapping each survey answer to a pressure score.
-  // Unknown answers fall back to the default returned at the end.
   this.getPressureScore = function(value) {
     var scores = {
       Food: 0.90,
@@ -137,11 +140,11 @@ function SurveyPressureIndex() {
     return scores[value] || 0.25;
   };
 
-  // ---- Drawing ----
+  // Drawing
 
   this.drawLoading = function() {
-    background(255);
-    fill(0);
+    background(SATheme.bg);
+    fill(SATheme.text);
     noStroke();
     textAlign(CENTER, CENTER);
     textSize(14);
@@ -150,18 +153,18 @@ function SurveyPressureIndex() {
 
   this.drawTitle = function() {
     noStroke();
-    fill(0);
+    fill(SATheme.text);
     textAlign(LEFT, TOP);
     textStyle(BOLD);
-    textSize(17);
-    text('How pressured are people feeling? (demo)', 24, 18);
+    textSize(width < 520 ? 13 : 17);
+    text('How pressured are people feeling?', 24, 18, width - 48, 36);
 
     textStyle(NORMAL);
     textSize(12);
-    fill(90);
-    text("Built from made-up survey answers while I wait on the real thing.",
+    fill(SATheme.textMuted);
+    text(SurveyData.chartLabel,
          24,
-         44,
+         width < 520 ? 54 : 44,
          width - 48,
          36);
   };
@@ -179,8 +182,7 @@ function SurveyPressureIndex() {
     strokeWeight(compact ? 14 : 18);
     strokeCap(ROUND);
 
-    // Semicircular gauge split into three equal thirds using SA flag colours:
-    // green (low), gold (medium), red (high). Angles sweep from PI to TWO_PI.
+    // Semicircular gauge split into three equal thirds using SA flag colours: green (low), gold (medium), red (high).
     stroke(SATheme.green);
     arc(centerX, centerY, radius * 2, radius * 2, PI, PI + (PI * 0.33));
     stroke(SATheme.gold);
@@ -191,7 +193,7 @@ function SurveyPressureIndex() {
     // Needle angle maps the 0-100 index onto the gauge's PI..TWO_PI sweep.
     var needleAngle = map(this.index, 0, 100, PI, TWO_PI);
     var needleLength = radius * 0.78;
-    stroke(0);
+    stroke(SATheme.axis);
     strokeWeight(4);
     line(centerX,
          centerY,
@@ -199,18 +201,18 @@ function SurveyPressureIndex() {
          centerY + sin(needleAngle) * needleLength);
 
     noStroke();
-    fill(0);
+    fill(SATheme.text);
     circle(centerX, centerY, 12);
 
     textAlign(CENTER, CENTER);
     textStyle(BOLD);
     textSize(compact ? 36 : 46);
-    fill(0);
+    fill(SATheme.text);
     text(this.index, centerX, centerY + (compact ? 26 : 34));
 
     textStyle(NORMAL);
     textSize(compact ? 11 : 13);
-    fill(90);
+    fill(SATheme.textMuted);
     text('out of 100', centerX, centerY + (compact ? 54 : 70));
   };
 
@@ -230,11 +232,11 @@ function SurveyPressureIndex() {
       var component = this.components[i];
       var y = startY + (i * rowGap);
 
-      fill(0);
+      fill(SATheme.text);
       noStroke();
       text(component.label, startX, y - 10);
 
-      fill(220);
+      fill(SATheme.grid);
       rect(startX, y + 3, barWidth, barHeight);
       fill(component.colour);
       rect(startX, y + 3, barWidth * component.value, barHeight);
@@ -243,7 +245,7 @@ function SurveyPressureIndex() {
         drawChartTooltip(component.label, Math.round(component.value * 100) + '%', 'component score');
       }
 
-      fill(90);
+      fill(SATheme.textMuted);
       textAlign(RIGHT, CENTER);
       text(Math.round(component.value * 100), startX + barWidth, y - 10);
       textAlign(LEFT, CENTER);

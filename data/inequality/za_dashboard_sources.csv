@@ -8,4 +8,4 @@ za_income_distribution.csv,WID.world via Our World in Data,https://ourworldindat
 za_wealth_distribution.csv,WID.world via Our World in Data,https://ourworldindata.org/grapher/wealth-share-richest-10-percent,1993-2024,real cleaned,"Wealth estimates may include modeled values where direct data is limited."
 za_population_groups.csv,Derived grouping file for dashboard comparisons,local derived file,not time-series,derived grouping,"Population groups are simplified into top 10 percent middle 40 percent and bottom 50 percent for chart comparison."
 za_poverty_indicators.csv,World Bank PIP via OWID and Statistics South Africa,https://www.statssa.gov.za/?p=19078,1993-2023,real cleaned,"Different poverty indicators use different definitions and should not be merged into one measure."
-za_survey_demo.csv,Temporary synthetic survey demo data,local synthetic placeholder,development placeholder,synthetic placeholder,"Synthetic data is not evidence and must be replaced with real collected survey responses before final submission."
+za_survey_responses.csv,Project Survey App export,local sanitized file,through 2026-08-25,48 survey rows,"Real survey data."
