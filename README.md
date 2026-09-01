@@ -27,6 +27,27 @@ npm run build
 npm run start
 ```
 
+Two other scripts are available:
+
+```bash
+npm run data:survey   # rebuild src/survey-data.js from the survey CSV
+npm run test:data     # run the survey data-preparation tests
+```
+
+## Query string options
+
+Append these to the URL to change what the page does:
+
+| Flag | Effect |
+| --- | --- |
+| `?test=1` | Runs the in-browser test suite (`src/topic8-testing.js`) on load and leaves the results in `window.cm1010TestResults`. |
+| `?debug=1` | Turns on the `debugLog()` console output, which is silent otherwise. |
+| `?failData=1` | Makes every CSV path point at a missing file, so the loading and error states can be checked. |
+| `?embedded=1` | Chrome-free single-chart view. Used by the comparison panes. |
+| `?vis=<id>` | Opens a specific chart, e.g. `?vis=za-gini-trend`. |
+| `?section=<id>` | Opens a section of the menu. |
+| `?about=1` | Opens the "About this chart" panel with the chart. |
+
 ## Research Question
 
 How can data visualisation help explain South African inequality — income, wealth, population-group differences, dwelling tenure, land ownership, and everyday financial pressure?
