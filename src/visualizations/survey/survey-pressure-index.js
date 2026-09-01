@@ -1,6 +1,6 @@
+// A single 0-100 pressure score built from five survey components, shown as a gauge.
+// Source: project survey, 48 responses.
 function SurveyPressureIndex() {
-
-  // State
 
   this.name = 'Pressure index';
   this.id = 'survey-pressure-index';
@@ -8,8 +8,6 @@ function SurveyPressureIndex() {
   this.loaded = false;
   this.index = 0;          // overall 0-100 pressure score
   this.components = [];     // per-factor averages that make up the index
-
-  // Lifecycle
 
   this.preload = function() {
     var self = this;
@@ -34,29 +32,6 @@ function SurveyPressureIndex() {
 
     this.calculateIndex();
   };
-
-  this.draw = function() {
-    if (!this.loaded || !this.table) {
-      this.drawLoading();
-      return;
-    }
-
-    if (this.components.length == 0) {
-      this.calculateIndex();
-    }
-
-    var themeColours = [SATheme.green, SATheme.red, SATheme.gold, SATheme.blue, SATheme.orange];
-    for (var colourIndex = 0; colourIndex < this.components.length; colourIndex++) {
-      this.components[colourIndex].colour = themeColours[colourIndex];
-    }
-
-    background(SATheme.bg);
-    this.drawTitle();
-    this.drawGauge();
-    this.drawComponentBars();
-  };
-
-  // Data
 
   // Average each pressure factor across all responses (every factor is normalised to 0-1) and combine them into a single 0-100 index.
   this.calculateIndex = function() {
@@ -100,8 +75,6 @@ function SurveyPressureIndex() {
     this.index = Math.round((total / this.components.length) * 100);
   };
 
-  // Scoring / lookups
-
   // Weight tables (0-1) mapping each survey answer to a pressure score.
   this.getPressureScore = function(value) {
     var scores = {
@@ -140,14 +113,35 @@ function SurveyPressureIndex() {
     return scores[value] || 0.25;
   };
 
-  // Drawing
+  this.draw = function() {
+    if (!this.loaded || !this.table) {
+      this.drawLoading();
+      return;
+    }
+
+    if (this.components.length == 0) {
+      this.calculateIndex();
+    }
+
+    var themeColours = [SATheme.green, SATheme.red, SATheme.gold, SATheme.blue, SATheme.orange];
+    for (var colourIndex = 0; colourIndex < this.components.length; colourIndex++) {
+      this.components[colourIndex].colour = themeColours[colourIndex];
+    }
+
+    background(SATheme.bg);
+    this.drawTitle();
+    this.drawGauge();
+    this.drawComponentBars();
+  };
+
+  // Scoring / lookups
 
   this.drawLoading = function() {
     background(SATheme.bg);
     fill(SATheme.text);
     noStroke();
     textAlign(CENTER, CENTER);
-    textSize(14);
+    chartTextSize(14);
     text('Loading survey data...', width / 2, height / 2);
   };
 
@@ -156,27 +150,42 @@ function SurveyPressureIndex() {
     fill(SATheme.text);
     textAlign(LEFT, TOP);
     textStyle(BOLD);
-    textSize(width < 520 ? 13 : 17);
-    text('How pressured are people feeling?', 24, 18, width - 48, 36);
+    chartTextSize(isPhoneChart() ? 13 : 17);
+    text('How pressured are people feeling?', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
 
     textStyle(NORMAL);
-    textSize(12);
+    chartTextSize(12);
     fill(SATheme.textMuted);
     text(SurveyData.chartLabel,
          24,
-         width < 520 ? 54 : 44,
+         isPhoneChart() ? 54 : 44,
          width - 48,
-         36);
+         isPhoneChart() ? 50 : 36);
   };
 
-  this.drawGauge = function() {
-    var compact = width < 720;   // narrow / mobile layout
-    var centerX = compact ? width / 2 : width * 0.34;
-    var centerY = compact ? Math.min(height * 0.43, 218) : height * 0.56;
+  // Gauge geometry, shared with drawComponentBars so the two never collide.
+  this.gaugeCenterY = function() {
+    return isCompactChart() ? Math.min(height * 0.43, 218) : height * 0.56;
+  };
+
+  this.gaugeRadius = function() {
+    var compact = isCompactChart();
     var radius = compact
         ? Math.min(width * 0.24, height * 0.21, 116)
         : Math.min(width * 0.22, height * 0.28, 150);
-    radius = Math.max(compact ? 72 : 96, radius);
+    return Math.max(compact ? 72 : 96, radius);
+  };
+
+  // Bottom of the gauge including the value and "out of 100" text beneath it.
+  this.gaugeBottom = function() {
+    return this.gaugeCenterY() + (isCompactChart() ? 66 : 84);
+  };
+
+  this.drawGauge = function() {
+    var compact = isCompactChart();
+    var centerX = compact ? width / 2 : width * 0.34;
+    var centerY = this.gaugeCenterY();
+    var radius = this.gaugeRadius();
 
     noFill();
     strokeWeight(compact ? 14 : 18);
@@ -206,26 +215,35 @@ function SurveyPressureIndex() {
 
     textAlign(CENTER, CENTER);
     textStyle(BOLD);
-    textSize(compact ? 36 : 46);
+    chartTextSize(compact ? 36 : 46);
     fill(SATheme.text);
     text(this.index, centerX, centerY + (compact ? 26 : 34));
 
     textStyle(NORMAL);
-    textSize(compact ? 11 : 13);
+    chartTextSize(compact ? 11 : 13);
     fill(SATheme.textMuted);
     text('out of 100', centerX, centerY + (compact ? 54 : 70));
   };
 
   this.drawComponentBars = function() {
-    var compact = width < 720;   // narrow / mobile layout
+    var compact = isCompactChart();
     var startX = compact ? 28 : width * 0.58;
-    var startY = compact ? Math.max(310, height - 160) : 118;
     var barWidth = compact ? width - 56 : width * 0.32;
-    var rowGap = compact ? 30 : 38;
     var barHeight = compact ? 10 : 12;
 
+    // Stacked under the gauge on a narrow canvas, so the rows have to fit whatever
+    // height is left rather than starting at a fixed offset.
+    var rows = this.components.length;
+    var startY = 118;
+    var rowGap = 38;
+    if (compact) {
+      var available = height - 26 - this.gaugeBottom();
+      rowGap = Math.max(22, Math.min(30, available / rows));
+      startY = this.gaugeBottom() + rowGap;
+    }
+
     textAlign(LEFT, CENTER);
-    textSize(compact ? 11 : 12);
+    chartTextSize(compact ? 11 : 12);
     textStyle(NORMAL);
 
     for (var i = 0; i < this.components.length; i++) {

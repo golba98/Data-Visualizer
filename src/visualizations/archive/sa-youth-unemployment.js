@@ -1,6 +1,6 @@
+// Youth unemployment rate, 1991-2025.
+// Source: World Bank / Statistics South Africa.
 function SAYouthUnemployment() {
-
-  // State
 
   this.name = 'Youth unemployment trend';
   this.id = 'sa-youth-unemployment';
@@ -33,8 +33,6 @@ function SAYouthUnemployment() {
 
   this.loaded = false;
 
-  // Lifecycle
-
   this.preload = function() {
     var self = this;
     this.data = loadTable(
@@ -52,7 +50,7 @@ function SAYouthUnemployment() {
       return;
     }
 
-    textSize(16);
+    chartTextSize(16);
 
     this.startYear = this.data.getNum(0, 'year');
     this.endYear = this.data.getNum(this.data.getRowCount() - 1, 'year');
@@ -62,11 +60,6 @@ function SAYouthUnemployment() {
     this.minRate = 0;
     this.maxRate = ceil(max(youthRates));
   };
-
-  this.destroy = function() {
-  };
-
-  // Drawing
 
   this.draw = function() {
     if (!this.loaded) {
@@ -81,7 +74,7 @@ function SAYouthUnemployment() {
     drawYAxisTickLabels(this.minRate,
                         this.maxRate,
                         this.layout,
-                        this.mapRateToHeight.bind(this),
+                        this.mapValueToHeight.bind(this),
                         0);
 
     drawAxis(this.layout);
@@ -116,16 +109,14 @@ function SAYouthUnemployment() {
 
       if (previous != null) {
         line(this.mapYearToWidth(previous.year),
-             this.mapRateToHeight(previous.rate),
+             this.mapValueToHeight(previous.rate),
              this.mapYearToWidth(current.year),
-             this.mapRateToHeight(current.rate));
+             this.mapValueToHeight(current.rate));
       }
 
       previous = current;
     }
   };
-
-  // Legend & mapping helpers
 
   this.drawLegend = function() {
     var x = this.layout.leftMargin + 12;
@@ -137,7 +128,7 @@ function SAYouthUnemployment() {
 
     fill(SATheme.text);
     noStroke();
-    textSize(13);
+    chartTextSize(13);
     textAlign('left', 'center');
     text('Youth unemployment (%)', x + 43, y);
   };
@@ -150,11 +141,15 @@ function SAYouthUnemployment() {
                this.layout.rightMargin);
   };
 
-  this.mapRateToHeight = function(value) {
+  this.mapValueToHeight = function(value) {
     return map(value,
                this.minRate,
                this.maxRate,
                this.layout.bottomMargin,
                this.layout.topMargin);
+  };
+
+  this.getExportData = function() {
+    return tableToExportData(this.data);
   };
 }

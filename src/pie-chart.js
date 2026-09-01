@@ -1,6 +1,5 @@
+// Reusable animated pie chart with a legend that reflows into two columns on a phone.
 function PieChart(x, y, diameter) {
-
-  // State
 
   this.x = x;
   this.y = y;
@@ -14,8 +13,6 @@ function PieChart(x, y, diameter) {
     return this.animation < 1;
   };
 
-  // Geometry
-
   // Convert each data value into its slice angle (its share of TWO_PI).
   this.get_radians = function(data) {
     var total = sum(data);
@@ -28,23 +25,18 @@ function PieChart(x, y, diameter) {
     return radians;
   };
 
-  // Drawing
+  this.draw = function(data, labels, colours) {
 
-  this.draw = function(data, labels, colours, title) {
-
-    // Test that data is not empty and that each input array is the same length.
+    // Data, labels and colours have to line up one-to-one.
     if (data.length == 0) {
-      alert('Data has length zero!');
-    } else if (![labels, colours].every((array) => {
-      return array.length == data.length;
-    })) {
-      alert(`Data (length: ${data.length})
-Labels (length: ${labels.length})
-Colours (length: ${colours.length})
-Arrays must be the same length!`);
+      debugLog('PieChart: no data to draw');
+      return;
     }
-
-    // https://p5js.org/examples/form-pie-chart.html
+    if (![labels, colours].every(function(array) { return array.length == data.length; })) {
+      debugLog('PieChart: data, labels and colours must be the same length',
+               data.length, labels.length, colours.length);
+      return;
+    }
 
     if (!this.targetData || this.targetData.length != data.length) {
       this.currentData = data.slice();
@@ -110,38 +102,39 @@ Arrays must be the same length!`);
       var percent = (shownData[hovered] / sum(shownData) * 100).toFixed(1) + '%';
       drawChartTooltip(labels[hovered], shownData[hovered].toFixed(1) + '%', percent + ' of total');
     }
+  };
 
-    if (title) {
-      noStroke();
-      textAlign('center', 'center');
-      textSize(24);
-      text(title, this.x, this.y - this.diameter * 0.6);
-    }
+  // Height of one phone legend row. Labels wrap inside a fixed-width column, so the
+  // row pitch has to allow for the tallest label rather than assume a single line.
+  this.phoneRowHeight = function() {
+    return 34;
   };
 
   // Draw one coloured swatch + label for the legend, stacked by index i.
   this.makeLegendItem = function(label, i, colour) {
-    var phoneLayout = width < 520;
+    var phoneLayout = isPhoneChart();
+    var columnWidth = Math.floor((width - 48) / 2);
     var x = phoneLayout
-      ? 24 + ((i % 2) * Math.floor((width - 48) / 2))
+      ? 24 + ((i % 2) * columnWidth)
       : this.x + 50 + this.diameter / 2;
     var y = phoneLayout
-      ? this.y + (this.diameter / 2) + 24 + (Math.floor(i / 2) * 30)
+      ? this.y + (this.diameter / 2) + 24 + (Math.floor(i / 2) * this.phoneRowHeight())
       : this.y + (this.labelSpace * i) - this.diameter / 3;
     var boxWidth = phoneLayout ? 11 : this.labelSpace / 2;
     var boxHeight = phoneLayout ? 11 : this.labelSpace / 2;
 
     fill(colour);
+    noStroke();
     rect(x, y, boxWidth, boxHeight);
 
     fill(SATheme.text);
-    noStroke();
-    textAlign('left', 'center');
-    textSize(phoneLayout ? 9 : 12);
+    textAlign('left', 'top');
+    chartTextSize(phoneLayout ? 10 : 12);
     if (phoneLayout) {
-      text(label, x + boxWidth + 7, y + boxHeight / 2,
-           Math.floor((width - 70) / 2), 24);
+      text(label, x + boxWidth + 7, y - 1,
+           columnWidth - boxWidth - 16, this.phoneRowHeight() - 4);
     } else {
+      textAlign('left', 'center');
       text(label, x + boxWidth + 10, y + boxHeight / 2);
     }
   };

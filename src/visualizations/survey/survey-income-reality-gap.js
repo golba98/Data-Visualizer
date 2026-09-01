@@ -1,6 +1,6 @@
+// Reported income set against reported financial worry.
+// Source: project survey, 48 responses.
 function SurveyIncomeRealityGap() {
-
-  // State
 
   this.name = 'Income reality gap';
   this.id = 'survey-income-reality-gap';
@@ -8,8 +8,6 @@ function SurveyIncomeRealityGap() {
   this.loaded = false;
   this.statuses = ['Overall', 'Student', 'Employed', 'Unemployed', 'Studying and working'];
   this.rows = [];   // per-status average worry vs income ratings
-
-  // Lifecycle
 
   this.preload = function() {
     var self = this;
@@ -34,24 +32,6 @@ function SurveyIncomeRealityGap() {
 
     this.calculateRows();
   };
-
-  this.draw = function() {
-    if (!this.loaded || !this.table) {
-      this.drawLoading();
-      return;
-    }
-
-    if (this.rows.length == 0) {
-      this.calculateRows();
-    }
-
-    background(SATheme.bg);
-    this.drawTitle();
-    this.drawScale();
-    this.drawGapRows();
-  };
-
-  // Data
 
   // For each status group (plus an 'Overall' pass over everyone), average the work-worry and income-keeps-up ratings.
   this.calculateRows = function() {
@@ -84,7 +64,21 @@ function SurveyIncomeRealityGap() {
     }
   };
 
-  // Drawing
+  this.draw = function() {
+    if (!this.loaded || !this.table) {
+      this.drawLoading();
+      return;
+    }
+
+    if (this.rows.length == 0) {
+      this.calculateRows();
+    }
+
+    background(SATheme.bg);
+    this.drawTitle();
+    this.drawScale();
+    this.drawGapRows();
+  };
 
   this.drawLoading = function() {
     background(SATheme.bg);
@@ -99,22 +93,21 @@ function SurveyIncomeRealityGap() {
     fill(SATheme.text);
     textAlign(LEFT, TOP);
     textStyle(BOLD);
-    textSize(width < 520 ? 13 : 17);
-    text('Does income keep up with the worry?', 24, 18, width - 48, 36);
+    chartTextSize(isPhoneChart() ? 13 : 17);
+    text('Does income keep up with the worry?', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
 
     textStyle(NORMAL);
-    textSize(12);
+    chartTextSize(12);
     fill(SATheme.textMuted);
     text(SurveyData.chartLabel,
          24,
-         width < 520 ? 54 : 44,
+         isPhoneChart() ? 54 : 44,
          width - 48,
-         32);
+         isPhoneChart() ? 46 : 32);
   };
 
   this.drawScale = function() {
-    // width < 680 => narrow / mobile layout (tighter left margin).
-    var left = width < 680 ? 122 : 172;
+    var left = isCompactChart() ? 122 : 172;
     var right = width - 54;
     var top = 124;
 
@@ -124,7 +117,7 @@ function SurveyIncomeRealityGap() {
 
     noStroke();
     fill(SATheme.textMuted);
-    textSize(11);
+    chartTextSize(11);
     textStyle(NORMAL);
     textAlign(CENTER, TOP);
 
@@ -142,7 +135,7 @@ function SurveyIncomeRealityGap() {
   };
 
   this.drawGapRows = function() {
-    var left = width < 680 ? 122 : 172;
+    var left = isCompactChart() ? 122 : 172;
     var right = width - 54;
     var startY = 156;
     var rowGap = min(54, (height - startY - 40) / this.rows.length);
@@ -173,7 +166,7 @@ function SurveyIncomeRealityGap() {
 
       fill(SATheme.text);
       textStyle(BOLD);
-      textSize(width < 680 ? 10 : 12);
+      chartTextSize(isCompactChart() ? 10 : 12);
       textAlign(RIGHT, CENTER);
       text(this.getShortLabel(item.label), left - 12, y);
 
@@ -188,7 +181,7 @@ function SurveyIncomeRealityGap() {
 
   this.drawLegend = function(x, y) {
     noStroke();
-    textSize(11);
+    chartTextSize(11);
     textAlign(LEFT, CENTER);
     textStyle(NORMAL);
 
@@ -205,7 +198,7 @@ function SurveyIncomeRealityGap() {
 
   this.getShortLabel = function(label) {
     if (label == 'Studying and working') {
-      return width < 680 ? 'Study+work' : label;
+      return isCompactChart() ? 'Study+work' : label;
     }
 
     return label;

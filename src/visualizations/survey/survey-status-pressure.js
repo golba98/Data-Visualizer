@@ -1,6 +1,6 @@
+// Which pressure each employment-status group reports most, as stacked bars.
+// Source: project survey, 48 responses.
 function SurveyStatusPressure() {
-
-  // State
 
   this.name = 'Student vs worker';
   this.id = 'survey-status-pressure';
@@ -11,8 +11,6 @@ function SurveyStatusPressure() {
   this.colours = SATheme.pressure;   // SA flag colours, shared with the waffle chart
   this.counts = {};
   this.totals = {};
-
-  // Lifecycle
 
   this.preload = function() {
     var self = this;
@@ -37,25 +35,6 @@ function SurveyStatusPressure() {
 
     this.countPressures();
   };
-
-  this.draw = function() {
-    if (!this.loaded || !this.table) {
-      this.drawLoading();
-      return;
-    }
-
-    if (!this.counts.Student) {
-      this.countPressures();
-    }
-
-    this.colours = SATheme.pressure;
-    background(SATheme.bg);
-    this.drawTitle();
-    this.drawStackedBars();
-    this.drawLegend();
-  };
-
-  // Data
 
   // Count each status group's main-pressure responses and keep per-group totals.
   this.countPressures = function() {
@@ -83,7 +62,22 @@ function SurveyStatusPressure() {
     }
   };
 
-  // Drawing
+  this.draw = function() {
+    if (!this.loaded || !this.table) {
+      this.drawLoading();
+      return;
+    }
+
+    if (!this.counts.Student) {
+      this.countPressures();
+    }
+
+    this.colours = SATheme.pressure;
+    background(SATheme.bg);
+    this.drawTitle();
+    this.drawStackedBars();
+    this.drawLegend();
+  };
 
   this.drawLoading = function() {
     background(SATheme.bg);
@@ -98,26 +92,26 @@ function SurveyStatusPressure() {
     fill(SATheme.text);
     textAlign(LEFT, TOP);
     textStyle(BOLD);
-    textSize(width < 520 ? 13 : 17);
-    text('Who feels which pressure most?', 24, 18, width - 48, 36);
+    chartTextSize(isPhoneChart() ? 13 : 17);
+    text('Who feels which pressure most?', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
 
     textStyle(NORMAL);
-    textSize(12);
+    chartTextSize(12);
     fill(SATheme.textMuted);
     text(SurveyData.chartLabel,
          24,
-         width < 520 ? 54 : 44,
+         isPhoneChart() ? 54 : 44,
          width - 48,
-         32);
+         isPhoneChart() ? 46 : 32);
   };
 
   this.drawStackedBars = function() {
-    // width < 700 => narrow / mobile layout (smaller bars and margins).
-    var left = width < 700 ? 118 : 174;
-    var right = width - 32;
+    var left = isCompactChart() ? 118 : 174;
+    // Reserve a gutter on the right for the "n=" totals drawn after each bar.
+    var right = width - (isCompactChart() ? 46 : 56);
     var startY = 112;
-    var barHeight = width < 700 ? 28 : 34;
-    var gap = width < 700 ? 42 : 54;
+    var barHeight = isCompactChart() ? 28 : 34;
+    var gap = isCompactChart() ? 42 : 54;
     var barWidth = right - left;
 
     for (var i = 0; i < this.statuses.length; i++) {
@@ -128,7 +122,7 @@ function SurveyStatusPressure() {
       fill(SATheme.text);
       noStroke();
       textStyle(BOLD);
-      textSize(width < 700 ? 10 : 12);
+      chartTextSize(isCompactChart() ? 10 : 12);
       textAlign(RIGHT, CENTER);
       text(this.getShortStatus(status), left - 12, y + (barHeight / 2));
 
@@ -151,7 +145,7 @@ function SurveyStatusPressure() {
             fill(SATheme.text);
             textAlign(CENTER, CENTER);
             textStyle(BOLD);
-            textSize(11);
+            chartTextSize(11);
             text(count, currentX + (segmentWidth / 2), y + (barHeight / 2));
           }
 
@@ -169,20 +163,20 @@ function SurveyStatusPressure() {
       noStroke();
       fill(SATheme.textMuted);
       textStyle(NORMAL);
-      textSize(11);
+      chartTextSize(11);
       textAlign(LEFT, CENTER);
-      text('n=' + this.totals[status], right + 6, y + (barHeight / 2));
+      text('n=' + this.totals[status], right + 8, y + (barHeight / 2));
     }
   };
 
   this.drawLegend = function() {
-    var compact = width < 700;
+    var compact = isCompactChart();
     var columns = compact ? 3 : 4;
     var itemWidth = compact ? (width - 48) / columns : 118;
     var startX = 28;
     var startY = height - (compact ? 66 : 52);
 
-    textSize(11);
+    chartTextSize(11);
     textStyle(NORMAL);
     textAlign(LEFT, CENTER);
     noStroke();
@@ -198,14 +192,14 @@ function SurveyStatusPressure() {
       rect(x, y - 7, 14, 14);
       noStroke();
       fill(SATheme.text);
-      textSize(compact ? 9 : 11);
+      chartTextSize(compact ? 9 : 11);
       text(pressure, x + 18, y);
     }
   };
 
   this.getShortStatus = function(status) {
     if (status == 'Studying and working') {
-      return width < 700 ? 'Study+work' : status;
+      return isCompactChart() ? 'Study+work' : status;
     }
 
     return status;

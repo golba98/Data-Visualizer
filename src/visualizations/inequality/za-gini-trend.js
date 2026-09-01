@@ -1,3 +1,5 @@
+// South Africa's Gini coefficient over time, with markers for 1994 and the peak year.
+// Source: World Bank Poverty and Inequality Platform via Our World in Data, 1993-2022.
 function ZAGiniTrend() {
 
   this.name = 'Gini trend';
@@ -153,7 +155,7 @@ function ZAGiniTrend() {
     fill(SATheme.text);
     textAlign(CENTER, CENTER);
     textStyle(NORMAL);
-    textSize(14);
+    chartTextSize(14);
     text('Loading inequality data...', width / 2, (height / 2) - 16);
 
     // p5 0.10.2's loadTable gives no byte-level progress event, so the bar shows the two states the loader genuinely knows about -- requested and parsed...
@@ -178,12 +180,12 @@ function ZAGiniTrend() {
 
     fill(SATheme.red);
     textStyle(BOLD);
-    textSize(16);
+    chartTextSize(16);
     text('This chart is unavailable', width / 2, (height / 2) - 22);
 
     fill(SATheme.textMuted);
     textStyle(NORMAL);
-    textSize(13);
+    chartTextSize(13);
     text(this.loadError, width * 0.1, (height / 2) + 4, width * 0.8, 60);
   };
 
@@ -191,22 +193,22 @@ function ZAGiniTrend() {
     fill(SATheme.text);
     noStroke();
     textStyle(BOLD);
-    textSize(width < 520 ? 13 : 17);
+    chartTextSize(isPhoneChart() ? 13 : 17);
     textAlign(LEFT, TOP);
-    text('National inequality context', 24, 18, width - 48, 36);
+    text('National inequality context', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
 
     textStyle(NORMAL);
-    textSize(12);
+    chartTextSize(12);
     fill(SATheme.textMuted);
     text('Available World Bank/PIP Gini estimates for South Africa. Higher values mean higher inequality.',
          24,
-         width < 520 ? 54 : 44,
+         isPhoneChart() ? 54 : 44,
          width - 48,
-         36);
+         isPhoneChart() ? 50 : 36);
   };
 
   this.drawYearLabels = function() {
-    var labelYears = width < 520
+    var labelYears = isPhoneChart()
       ? [1993, 2005, 2014, 2022]
       : [1993, 2000, 2005, 2010, 2014, 2022];
 
@@ -219,7 +221,7 @@ function ZAGiniTrend() {
     var contextX = this.mapYearToWidth(1994);
     var peakX = this.mapYearToWidth(2005);
 
-    if (width < 520) {
+    if (isPhoneChart()) {
       drawVerticalReferenceLine(
         contextX,
         this.layout.topMargin,
@@ -300,16 +302,12 @@ function ZAGiniTrend() {
       noStroke();
       fill(SATheme.text);
       textStyle(BOLD);
-      textSize(12);
+      chartTextSize(12);
       textAlign(RIGHT, CENTER);
       text(last.year + ': ' + last.value.toFixed(2),
            this.layout.rightMargin - 8,
            this.mapValueToHeight(last.value));
     }
-  };
-
-  this.getExportData = function() {
-    return tableToExportData(this.data);
   };
 
   this.mapYearToWidth = function(value) {
@@ -318,5 +316,9 @@ function ZAGiniTrend() {
 
   this.mapValueToHeight = function(value) {
     return map(value, this.minValue, this.maxValue, this.layout.bottomMargin, this.layout.topMargin);
+  };
+
+  this.getExportData = function() {
+    return tableToExportData(this.data);
   };
 }

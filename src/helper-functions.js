@@ -18,13 +18,40 @@ function debugLog() {
   console.log.apply(console, arguments);
 }
 
-// Returns the path unchanged in normal use.
+// Returns the path unchanged, unless ?failData=1 is set -- then it points at a
+// missing file so the error path can be exercised on purpose.
 function resolveDataPath(path) {
   if (hasQueryFlag('failData')) {
     return path + '.missing';
   }
 
   return path;
+}
+
+// Chart breakpoints. These read the p5 canvas size, not the window -- the canvas
+// is a good deal narrower than the viewport once the card padding is taken off.
+var CHART_PHONE_WIDTH = 520;
+var CHART_COMPACT_WIDTH = 720;
+var CHART_SHORT_HEIGHT = 320;
+
+// Smallest text we ever draw on a canvas. Anything under this is unreadable on a phone.
+var CHART_MIN_TEXT_SIZE = 10;
+
+function isPhoneChart() {
+  return width < CHART_PHONE_WIDTH;
+}
+
+function isCompactChart() {
+  return width < CHART_COMPACT_WIDTH;
+}
+
+function isShortChart() {
+  return height < CHART_SHORT_HEIGHT;
+}
+
+// textSize() with the legibility floor applied.
+function chartTextSize(size) {
+  textSize(Math.max(CHART_MIN_TEXT_SIZE, size));
 }
 
 // Data processing helper functions.
@@ -94,6 +121,10 @@ function drawAxis(layout, colour) {
 }
 
 function drawAxisLabels(xLabel, yLabel, layout) {
+  // On a very short canvas the tick labels already carry the units, and the axis
+  // captions would be drawn past the bottom edge.
+  if (isShortChart()) return;
+
   push();
   var textCol = typeof SATheme !== 'undefined' ? SATheme.text : 245;
   fill(textCol);
@@ -202,12 +233,39 @@ function drawPendingChartTooltip() {
   var value = pendingChartTooltip.value;
   var extra = pendingChartTooltip.extra;
   var message = label + ': ' + value + (extra ? ' (' + extra + ')' : '');
+
   textSize(12);
-  var boxWidth = textWidth(message) + 20;
+  var maxWidth = width - 12;
+  var boxWidth = Math.min(textWidth(message) + 20, maxWidth);
+
+  // Drop the bracketed extra, then ellipsise, rather than letting the box
+  // overflow a narrow canvas.
+  if (textWidth(message) + 20 > maxWidth && extra) {
+    message = label + ': ' + value;
+    boxWidth = Math.min(textWidth(message) + 20, maxWidth);
+  }
+  while (message.length > 4 && textWidth(message) + 20 > maxWidth) {
+    message = message.slice(0, -2) + '\u2026';
+  }
+
   var boxHeight = 28;
   var pointer = getChartPointer();
-  var boxX = constrain(pointer.x + 14, 6, width - boxWidth - 6);
-  var boxY = constrain(pointer.y - 38, 6, height - boxHeight - 6);
+  var onTouch = typeof touches !== 'undefined' && touches.length > 0;
+
+  // A fingertip covers roughly 45px, so on touch the box has to clear it --
+  // above the pointer when there is room, below it when there is not.
+  var lift = onTouch ? 58 : 38;
+  var boxY = pointer.y - lift;
+  if (boxY < 6) {
+    boxY = pointer.y + (onTouch ? 30 : 16);
+  }
+
+  var boxX = pointer.x + 14;
+  if (boxX + boxWidth > width - 6) {
+    boxX = pointer.x - 14 - boxWidth;
+  }
+  boxX = Math.max(6, Math.min(boxX, width - boxWidth - 6));
+  boxY = Math.max(6, Math.min(boxY, height - boxHeight - 6));
 
   push();
   stroke(255, 255, 255, 180);
@@ -246,14 +304,14 @@ function drawAnnotationBadge(label, detail, x, y, colour) {
 
   var main = String(label || '');
   var secondary = detail ? String(detail) : '';
-  textSize(11);
+  chartTextSize(11);
   var boxWidth = Math.max(textWidth(main), secondary ? textWidth(secondary) : 0) + 22;
   var boxHeight = secondary ? 36 : 24;
-  var boxX = constrain(x, 6, width - boxWidth - 6);
-  var boxY = constrain(y, 6, height - boxHeight - 6);
+  var boxX = Math.max(6, Math.min(x, width - boxWidth - 6));
+  var boxY = Math.max(6, Math.min(y, height - boxHeight - 6));
 
   push();
-  stroke(255, 255, 255, 160);
+  stroke(colour || color(255, 255, 255, 160));
   strokeWeight(1);
   fill(24, 24, 27, 240);
   rect(boxX, boxY, boxWidth, boxHeight, 6);
@@ -264,7 +322,7 @@ function drawAnnotationBadge(label, detail, x, y, colour) {
   text(main, boxX + 10, boxY + 6);
   if (secondary) {
     textStyle(NORMAL);
-    textSize(10);
+    chartTextSize(10);
     fill(212, 212, 216);
     text(secondary, boxX + 10, boxY + 20);
   }
@@ -275,7 +333,7 @@ function drawVerticalReferenceLine(x, top, bottom, colour) {
   if (!annotationsAreVisible()) return;
 
   push();
-  stroke(255, 255, 255, 140);
+  stroke(colour || color(255, 255, 255, 140));
   strokeWeight(1.2);
   drawingContext.setLineDash([4, 4]);
   line(x, top, x, bottom);

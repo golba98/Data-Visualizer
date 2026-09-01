@@ -301,17 +301,13 @@ function Gallery() {
   this.setTourLayoutActive = function(active) {
     var main = document.querySelector('.main-content');
     var app = document.getElementById('app');
-    var sidebar = document.getElementById('sidebar');
-    var menuToggle = document.getElementById('mobile-menu-toggle');
 
     if (main) main.classList.toggle('tour-active', active);
     if (app) app.classList.toggle('story-mode', active);
     document.body.classList.toggle('story-mode', active);
 
     if (active) {
-      if (sidebar) sidebar.classList.remove('open');
-      document.body.classList.remove('mobile-menu-open');
-      if (menuToggle) menuToggle.setAttribute('aria-expanded', 'false');
+      this.closeMobileMenu(false);
       if (this.isAboutOpen) this.toggleAboutPanel(false);
     }
   };
@@ -585,7 +581,7 @@ function Gallery() {
         } else {
           self.selectVisual(visualId);
         }
-        self.closeMobileMenu();
+        self.closeMobileMenu(false);
       });
 
       listItem.appendChild(button);
@@ -595,40 +591,87 @@ function Gallery() {
     container.appendChild(list);
   };
 
-  this.closeMobileMenu = function() {
-    var sidebar = document.querySelector('.sidebar');
+  this.isMobileViewport = function() {
+    return !!window.matchMedia && window.matchMedia('(max-width: 820px)').matches;
+  };
+
+  this.mobileMenuIsOpen = function() {
+    var sidebar = document.getElementById('sidebar');
+    return !!sidebar && sidebar.classList.contains('open');
+  };
+
+  this.openMobileMenu = function() {
+    var sidebar = document.getElementById('sidebar');
     var toggleBtn = document.getElementById('mobile-menu-toggle');
-    if (sidebar && sidebar.classList.contains('open')) {
-      sidebar.classList.remove('open');
-      document.body.classList.remove('mobile-menu-open');
-      if (toggleBtn) {
-        toggleBtn.setAttribute('aria-expanded', 'false');
-        toggleBtn.setAttribute('aria-label', 'Open navigation menu');
-        toggleBtn.focus();
-      }
+    var closeBtn = document.getElementById('mobile-menu-close');
+    var backdrop = document.getElementById('sidebar-backdrop');
+    var main = document.querySelector('.main-content');
+    if (!sidebar || sidebar.classList.contains('open')) return;
+
+    sidebar.classList.add('open');
+    document.body.classList.add('mobile-menu-open');
+    if (backdrop) backdrop.hidden = false;
+    if (main) main.setAttribute('aria-hidden', 'true');
+    if (toggleBtn) {
+      toggleBtn.setAttribute('aria-expanded', 'true');
+      toggleBtn.setAttribute('aria-label', 'Close navigation menu');
+    }
+    if (closeBtn) closeBtn.focus();
+  };
+
+  // returnFocus is false when the drawer closes because a chart was picked -- moving
+  // focus back to the toggle would scroll the phone away from the chart.
+  this.closeMobileMenu = function(returnFocus) {
+    var sidebar = document.getElementById('sidebar');
+    var toggleBtn = document.getElementById('mobile-menu-toggle');
+    var backdrop = document.getElementById('sidebar-backdrop');
+    var main = document.querySelector('.main-content');
+    if (!sidebar || !sidebar.classList.contains('open')) return;
+
+    sidebar.classList.remove('open');
+    document.body.classList.remove('mobile-menu-open');
+    if (backdrop) backdrop.hidden = true;
+    if (main) main.removeAttribute('aria-hidden');
+    if (toggleBtn) {
+      toggleBtn.setAttribute('aria-expanded', 'false');
+      toggleBtn.setAttribute('aria-label', 'Open navigation menu');
+      if (returnFocus !== false) toggleBtn.focus();
+    }
+  };
+
+  // Keep Tab inside the open drawer -- it covers the page, so tabbing to what is
+  // behind it strands keyboard and screen-reader users on hidden controls.
+  this.trapDrawerFocus = function(e) {
+    if (e.key !== 'Tab' || !this.mobileMenuIsOpen()) return;
+
+    var sidebar = document.getElementById('sidebar');
+    var focusable = sidebar.querySelectorAll('button, [href], select, input, [tabindex]:not([tabindex="-1"])');
+    if (!focusable.length) return;
+
+    var first = focusable[0];
+    var last = focusable[focusable.length - 1];
+
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
     }
   };
 
   this.initMobileMenu = function() {
     var toggleBtn = document.getElementById('mobile-menu-toggle');
     var closeBtn = document.getElementById('mobile-menu-close');
-    var sidebar = document.querySelector('.sidebar');
+    var backdrop = document.getElementById('sidebar-backdrop');
 
     if (toggleBtn && !toggleBtn.dataset.bound) {
       toggleBtn.dataset.bound = 'true';
       toggleBtn.addEventListener('click', function() {
-        var isOpen = sidebar.classList.contains('open');
-        if (isOpen) {
-          sidebar.classList.remove('open');
-          document.body.classList.remove('mobile-menu-open');
-          toggleBtn.setAttribute('aria-expanded', 'false');
-          toggleBtn.setAttribute('aria-label', 'Open navigation menu');
+        if (self.mobileMenuIsOpen()) {
+          self.closeMobileMenu();
         } else {
-          sidebar.classList.add('open');
-          document.body.classList.add('mobile-menu-open');
-          toggleBtn.setAttribute('aria-expanded', 'true');
-          toggleBtn.setAttribute('aria-label', 'Close navigation menu');
-          if (closeBtn) closeBtn.focus();
+          self.openMobileMenu();
         }
       });
     }
@@ -640,12 +683,20 @@ function Gallery() {
       });
     }
 
-    if (!document.datasetMobileBound) {
-      document.datasetMobileBound = true;
+    if (backdrop && !backdrop.dataset.bound) {
+      backdrop.dataset.bound = 'true';
+      backdrop.addEventListener('click', function() {
+        self.closeMobileMenu();
+      });
+    }
+
+    if (!document.mobileMenuKeysBound) {
+      document.mobileMenuKeysBound = true;
       document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape' && sidebar && sidebar.classList.contains('open')) {
+        if (e.key === 'Escape' && self.mobileMenuIsOpen()) {
           self.closeMobileMenu();
         }
+        self.trapDrawerFocus(e);
       });
     }
   };
@@ -703,6 +754,15 @@ function Gallery() {
 
     if (typeof queueChartResize === 'function') {
       queueChartResize();
+    }
+
+    // On a phone the panel stacks below the chart, off screen, so opening it looks
+    // like nothing happened unless we scroll to it.
+    if (this.isAboutOpen && infoPanel && this.isMobileViewport()) {
+      infoPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      var infoTitle = document.getElementById('info-title');
+      if (infoTitle) infoTitle.setAttribute('tabindex', '-1');
+      if (infoTitle) infoTitle.focus({ preventScroll: true });
     }
   };
 
@@ -803,7 +863,7 @@ function Gallery() {
   };
 
   this.scrollMobileViewToTop = function() {
-    if (window.matchMedia && window.matchMedia('(max-width: 820px)').matches) {
+    if (this.isMobileViewport()) {
       window.scrollTo(0, 0);
     }
   };
@@ -958,6 +1018,15 @@ function Gallery() {
     var controls = document.getElementById('comparison-controls');
     controls.innerHTML = '';
     var selfGallery = this;
+    // Archived charts stay out of the comparison selectors.
+    var archiveIds = [
+      'sa-population-group-census',
+      'sa-sex-age-2022',
+      'sa-age-sex-bubble-2022',
+      'sa-youth-unemployment',
+      'sa-life-expectancy',
+      'climate-change'
+    ];
     [
       { label: 'Chart 1', value: leftId },
       { label: 'Chart 2', value: rightId }
@@ -967,11 +1036,11 @@ function Gallery() {
       var select = document.createElement('select');
       select.className = 'comparison-select';
       selfGallery.visuals.forEach(function(vis) {
-        if (selfGallery.getCatalogueItem(vis.id) && selfGallery.getCatalogueItem(vis.id).id === vis.id
-            && ['sa-population-group-census','sa-sex-age-2022','sa-age-sex-bubble-2022','sa-youth-unemployment','sa-life-expectancy','climate-change'].indexOf(vis.id) === -1) {
+        var catalogueItem = selfGallery.getCatalogueItem(vis.id);
+        if (catalogueItem && catalogueItem.id === vis.id && archiveIds.indexOf(vis.id) === -1) {
           var option = document.createElement('option');
           option.value = vis.id;
-          option.textContent = selfGallery.getCatalogueItem(vis.id).name;
+          option.textContent = catalogueItem.name;
           option.selected = vis.id === item.value;
           select.appendChild(option);
         }
@@ -986,9 +1055,13 @@ function Gallery() {
     });
   };
 
+  // Each pane is a full copy of the app in an iframe. On a phone the panes stack, so
+  // the second one is loaded lazily rather than running a second p5 sketch off screen.
   this.renderComparisonPanes = function(leftId, rightId) {
     var panes = document.getElementById('comparison-panes');
+    var lazy = this.isMobileViewport();
     panes.innerHTML = '';
+
     [leftId, rightId].forEach(function(id, index) {
       var pane = document.createElement('article');
       pane.className = 'comparison-pane';
@@ -997,7 +1070,7 @@ function Gallery() {
       var frame = document.createElement('iframe');
       frame.title = 'Live ' + (index === 0 ? 'left' : 'right') + ' comparison chart';
       frame.src = window.location.pathname + '?embedded=1&vis=' + encodeURIComponent(id);
-      frame.loading = 'eager';
+      frame.loading = (lazy && index === 1) ? 'lazy' : 'eager';
       pane.appendChild(title);
       pane.appendChild(frame);
       panes.appendChild(pane);

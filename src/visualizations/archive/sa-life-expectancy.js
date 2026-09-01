@@ -1,6 +1,6 @@
+// Life expectancy at birth for women and men, 1960-2024.
+// Source: World Bank / Our World in Data.
 function SALifeExpectancy() {
-
-  // State
 
   this.name = 'Life expectancy by sex';
   this.id = 'sa-life-expectancy';
@@ -40,8 +40,6 @@ function SALifeExpectancy() {
     'Total': SATheme.green
   };
 
-  // Lifecycle
-
   this.preload = function() {
     var self = this;
     this.data = loadTable(
@@ -59,7 +57,7 @@ function SALifeExpectancy() {
       return;
     }
 
-    textSize(16);
+    chartTextSize(16);
 
     this.years = this.data.columns.slice(1).map(Number);
     this.startYear = this.years[0];
@@ -90,11 +88,6 @@ function SALifeExpectancy() {
     this.maxLife = ceil((maxValue + padding) * 10) / 10;
   };
 
-  this.destroy = function() {
-  };
-
-  // Drawing
-
   this.draw = function() {
     if (!this.loaded) {
       debugLog('Data not yet loaded');
@@ -108,7 +101,7 @@ function SALifeExpectancy() {
     drawYAxisTickLabels(this.minLife,
                         this.maxLife,
                         this.layout,
-                        this.mapLifeToHeight.bind(this),
+                        this.mapValueToHeight.bind(this),
                         1);
 
     drawAxis(this.layout);
@@ -136,7 +129,7 @@ function SALifeExpectancy() {
   };
 
   this.drawSeriesLines = function() {
-    textSize(12);
+    chartTextSize(12);
 
     for (var i = 0; i < this.series.length; i++) {
       var series = this.series[i];
@@ -157,9 +150,9 @@ function SALifeExpectancy() {
 
         if (previous != null) {
           line(this.mapYearToWidth(previous.year),
-               this.mapLifeToHeight(previous.value),
+               this.mapValueToHeight(previous.value),
                this.mapYearToWidth(current.year),
-               this.mapLifeToHeight(current.value));
+               this.mapValueToHeight(current.value));
         }
 
         previous = current;
@@ -172,7 +165,7 @@ function SALifeExpectancy() {
   // Draw an end-of-line label (series name + dot) at the series' final value.
   this.drawSeriesLabel = function(series, finalValue) {
     var labelX = this.layout.rightMargin - 4;
-    var labelY = this.mapLifeToHeight(finalValue);
+    var labelY = this.mapValueToHeight(finalValue);
     var labelWidth = textWidth(series.label) + 12;
 
     noStroke();
@@ -194,14 +187,12 @@ function SALifeExpectancy() {
   this.drawInsight = function() {
     fill(SATheme.textMuted);
     noStroke();
-    textSize(12);
+    chartTextSize(12);
     textAlign('left', 'top');
     text('Female life expectancy stays highest across the full period, and all three series recover strongly after the 2000s decline.',
          this.layout.leftMargin,
          this.layout.topMargin + 6);
   };
-
-  // Mapping helpers
 
   this.mapYearToWidth = function(value) {
     return map(value,
@@ -211,11 +202,15 @@ function SALifeExpectancy() {
                this.layout.rightMargin);
   };
 
-  this.mapLifeToHeight = function(value) {
+  this.mapValueToHeight = function(value) {
     return map(value,
                this.minLife,
                this.maxLife,
                this.layout.bottomMargin,
                this.layout.topMargin);
+  };
+
+  this.getExportData = function() {
+    return tableToExportData(this.data);
   };
 }

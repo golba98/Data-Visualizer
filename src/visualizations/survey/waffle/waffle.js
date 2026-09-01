@@ -1,8 +1,6 @@
 // Waffle chart: a boxesAcross x boxesDown grid of Box cells whose colours show each category's share of the values in table[columnName].
 function Waffle(x, y, width, height, boxesAcross, boxesDown, table, columnName, categories, colours) {
 
-  // State
-
   this.x = x;
   this.y = y;
   this.width = width;

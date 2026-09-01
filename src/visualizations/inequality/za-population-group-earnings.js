@@ -1,3 +1,5 @@
+// Each population group's share of the population set against its mean monthly earnings.
+// Source: Stats SA Census 2022 and Stats SA earnings data, 2011-2015.
 function ZAPopulationGroupEarnings() {
 
   this.name = 'Population group earnings';
@@ -74,27 +76,27 @@ function ZAPopulationGroupEarnings() {
     fill(SATheme.text);
     noStroke();
     textStyle(BOLD);
-    textSize(width < 520 ? 13 : 17);
+    chartTextSize(isPhoneChart() ? 13 : 17);
     textAlign(LEFT, TOP);
-    text('Population share compared with mean earnings', 24, 18, width - 48, 36);
+    text('Population share compared with mean earnings', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
 
     textStyle(NORMAL);
-    textSize(12);
+    chartTextSize(12);
     fill(SATheme.textMuted);
     text('Official population-group categories are compared with Stats SA mean monthly real earnings for 2011-2015.',
          24,
-         width < 520 ? 54 : 44,
+         isPhoneChart() ? 54 : 44,
          width - 48,
-         40);
+         isPhoneChart() ? 54 : 40);
   };
 
   this.drawChart = function() {
-    if (width < 520) {
+    if (isPhoneChart()) {
       this.drawPhoneChart();
       return;
     }
 
-    var compact = width < 720;
+    var compact = isCompactChart();
     var left = compact ? 106 : 150;
     var right = width - (compact ? 58 : 52);
     var top = 118;
@@ -107,7 +109,7 @@ function ZAPopulationGroupEarnings() {
 
     noStroke();
     textStyle(NORMAL);
-    textSize(compact ? 10 : 11);
+    chartTextSize(compact ? 10 : 11);
     fill(SATheme.textMuted);
     textAlign(LEFT, CENTER);
     text('Population share', left, top - 18);
@@ -135,7 +137,7 @@ function ZAPopulationGroupEarnings() {
       noStroke();
       fill(SATheme.text);
       textStyle(BOLD);
-      textSize(compact ? 10 : 12);
+      chartTextSize(compact ? 10 : 12);
       textAlign(RIGHT, CENTER);
       text(row.group, left - 12, y + (barHeight / 2));
 
@@ -150,12 +152,12 @@ function ZAPopulationGroupEarnings() {
 
       fill(SATheme.text);
       textStyle(NORMAL);
-      textSize(compact ? 10 : 11);
+      chartTextSize(compact ? 10 : 11);
       textAlign(LEFT, CENTER);
       text(row.populationShare.toFixed(1) + '%', left + shareBarWidth + 6, y + (barHeight / 2));
       text('R' + formatThousands(row.earnings), earningsLeft + earningsBarWidth + 6, y + (barHeight / 2));
 
-      if (row.group == 'White' && width >= 680) {
+      if (row.group == 'White' && !isCompactChart()) {
         drawAnnotationBadge(
           'Highest shown mean',
           'R' + formatThousands(row.earnings),
@@ -169,13 +171,13 @@ function ZAPopulationGroupEarnings() {
     noStroke();
     fill(SATheme.textMuted);
     textStyle(NORMAL);
-    textSize(11);
+    chartTextSize(11);
     textAlign(LEFT, BOTTOM);
     text('Note: earnings are not wealth. This chart shows labour-market earnings by official population group.',
          24,
-         height - 30,
+         isPhoneChart() ? height - 46 : height - 30,
          width - 48,
-         28);
+         isPhoneChart() ? 42 : 28);
   };
 
   this.drawPhoneChart = function() {
@@ -197,7 +199,7 @@ function ZAPopulationGroupEarnings() {
       noStroke();
       fill(SATheme.text);
       textStyle(BOLD);
-      textSize(9);
+      chartTextSize(9);
       textAlign(RIGHT, TOP);
       text(row.group, left - 10, y + 1);
 
@@ -226,10 +228,10 @@ function ZAPopulationGroupEarnings() {
     noStroke();
     fill(SATheme.textMuted);
     textStyle(NORMAL);
-    textSize(9);
+    chartTextSize(9);
     textAlign(LEFT, TOP);
     text('Note: earnings are not wealth. This chart shows labour-market earnings by official population group.',
-         24, height - 42, width - 48, 36);
+         24, isPhoneChart() ? height - 54 : height - 42, width - 48, isPhoneChart() ? 50 : 36);
   };
 
   this.getExportData = function() {

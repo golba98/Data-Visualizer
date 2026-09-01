@@ -1,6 +1,6 @@
+// What people cut back on, crossed with their employment status.
+// Source: project survey, 48 responses.
 function SurveyCutbackHeatmap() {
-
-  // State
 
   this.name = 'Cutback heatmap';
   this.id = 'survey-cutback-heatmap';
@@ -19,8 +19,6 @@ function SurveyCutbackHeatmap() {
   this.statuses = ['Student', 'Employed', 'Unemployed', 'Studying and working'];   // heatmap columns
   this.counts = {};
   this.maxCount = 0;   // highest single cell count, used to scale colour intensity
-
-  // Lifecycle
 
   this.preload = function() {
     var self = this;
@@ -45,24 +43,6 @@ function SurveyCutbackHeatmap() {
 
     this.countCutbacks();
   };
-
-  this.draw = function() {
-    if (!this.loaded || !this.table) {
-      this.drawLoading();
-      return;
-    }
-
-    if (this.maxCount == 0) {
-      this.countCutbacks();
-    }
-
-    background(SATheme.bg);
-    this.drawTitle();
-    this.drawHeatmap();
-    this.drawLegend();
-  };
-
-  // Data
 
   // Tally, per cutback item and status group, how many respondents mentioned that item; also track the largest count for colour scaling.
   this.countCutbacks = function() {
@@ -93,7 +73,21 @@ function SurveyCutbackHeatmap() {
     }
   };
 
-  // Drawing
+  this.draw = function() {
+    if (!this.loaded || !this.table) {
+      this.drawLoading();
+      return;
+    }
+
+    if (this.maxCount == 0) {
+      this.countCutbacks();
+    }
+
+    background(SATheme.bg);
+    this.drawTitle();
+    this.drawHeatmap();
+    this.drawLegend();
+  };
 
   this.drawLoading = function() {
     background(SATheme.bg);
@@ -108,36 +102,38 @@ function SurveyCutbackHeatmap() {
     fill(SATheme.text);
     textAlign(LEFT, TOP);
     textStyle(BOLD);
-    textSize(width < 520 ? 13 : 17);
-    text('What people say they cut back on', 24, 18, width - 48, 36);
+    chartTextSize(isPhoneChart() ? 13 : 17);
+    text('What people say they cut back on', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
 
     textStyle(NORMAL);
-    textSize(12);
+    chartTextSize(12);
     fill(SATheme.textMuted);
     text(SurveyData.chartLabel,
          24,
-         width < 520 ? 54 : 44,
+         isPhoneChart() ? 54 : 44,
          width - 48,
-         32);
+         isPhoneChart() ? 46 : 32);
   };
 
   this.drawHeatmap = function() {
-    // width < 620 => narrow / mobile layout (tighter left margin and top).
-    var left = width < 620 ? 92 : 148;
-    var top = width < 520 ? 108 : (width < 620 ? 100 : 112);
-    var rightPad = 24;
+    // The row labels need less room than the grid does, so on a very narrow canvas
+    // the left margin gives way first -- the grid must never run off the edge.
+    var rightPad = isPhoneChart() ? 12 : 24;
+    var left = isCompactChart() ? 92 : 148;
+    var minGrid = this.statuses.length * 30;
+    left = Math.min(left, Math.max(52, width - rightPad - minGrid));
+
+    var top = isPhoneChart() ? 108 : (isCompactChart() ? 100 : 112);
     var bottomPad = 62;
     var cellWidth = (width - left - rightPad) / this.statuses.length;
-    var cellHeight = (height - top - bottomPad) / this.cutbacks.length;
-    cellWidth = max(44, cellWidth);
-    cellHeight = max(30, min(58, cellHeight));
+    var cellHeight = max(30, min(58, (height - top - bottomPad) / this.cutbacks.length));
 
     textStyle(NORMAL);
-    textSize(width < 520 ? 8 : (width < 620 ? 10 : 12));
+    chartTextSize(isCompactChart() ? 10 : 12);
     noStroke();
 
     for (var s = 0; s < this.statuses.length; s++) {
-      var statusLabel = width < 620
+      var statusLabel = isCompactChart()
           ? this.getShortStatus(this.statuses[s])
           : this.statuses[s];
       fill(SATheme.text);
@@ -183,7 +179,7 @@ function SurveyCutbackHeatmap() {
 
     noStroke();
     textAlign(LEFT, CENTER);
-    textSize(11);
+    chartTextSize(11);
     fill(SATheme.textMuted);
     text('Count per group', x, y);
 
@@ -198,7 +194,7 @@ function SurveyCutbackHeatmap() {
   };
 
   this.getShortStatus = function(status) {
-    if (width < 520) {
+    if (isPhoneChart()) {
       if (status == 'Student') return 'Stud.';
       if (status == 'Employed') return 'Emp.';
       if (status == 'Unemployed') return 'Unemp.';
