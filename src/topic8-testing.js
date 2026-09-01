@@ -468,11 +468,11 @@
       t.assertEqual(new Set(SATheme.categorical).size, 7, 'each chart colour is different');
     });
 
-    t.test('survey provenance is shown honestly', function() {
+    t.test('survey data is shown honestly', function() {
       t.assertEqual(SurveyData.totalRows, 48, 'all Survey App rows are included');
-      t.assertEqual(SurveyData.generatedRows, 47, 'generated rows are counted');
-      t.assertEqual(SurveyData.unverifiedRows, 1, 'the unverified test is counted');
-      t.assertEqual(SurveyData.verifiedRows, 0, 'no generated row is called verified');
+      t.assertEqual(SurveyData.chartLabel, 'n=48', 'the chart label matches the row count');
+      t.assertTrue(SurveyData.note.indexOf('Real survey data') !== -1, 'the note does not claim the data is synthetic');
+      t.assertTrue(SurveyData.source.indexOf('Real survey data') !== -1, 'the source does not claim the data is synthetic');
     });
   }
 

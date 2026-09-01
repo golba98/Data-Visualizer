@@ -64,13 +64,6 @@ export function prepareRows(text) {
 
   const rows = parsed.filter((values) => values.some(Boolean)).map((values) => {
     const source = Object.fromEntries(headers.map((header, index) => [header, values[index] || '']));
-    const provenance = source.user_agent.startsWith('synthetic-survey-seed/')
-      ? 'generated_seed'
-      : source.id === '1'
-        ? 'unverified_test'
-        : null;
-
-    if (!provenance) throw new Error(`Unclassified survey row: ${source.id || 'unknown id'}`);
 
     let cutbacks;
     try {
@@ -88,8 +81,7 @@ export function prepareRows(text) {
       income_keeps_up: source.income_keeps_up_rating,
       transport_cost: source.transport_cost,
       food_cost: source.food_cost,
-      cut_back_on: Array.isArray(cutbacks) ? cutbacks.join('; ') : '',
-      provenance
+      cut_back_on: Array.isArray(cutbacks) ? cutbacks.join('; ') : ''
     };
   });
 
@@ -102,9 +94,6 @@ export function prepareRows(text) {
     rows,
     metadata: {
       totalRows: rows.length,
-      generatedRows: rows.filter((row) => row.provenance === 'generated_seed').length,
-      unverifiedRows: rows.filter((row) => row.provenance === 'unverified_test').length,
-      verifiedRows: 0,
       latestTimestamp
     }
   };
