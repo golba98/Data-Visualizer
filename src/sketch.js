@@ -1,6 +1,4 @@
 
-// State
-
 // Global variable to store the gallery object.
 var gallery;
 var chartCanvas;
@@ -9,19 +7,21 @@ var chartLoopStartedAt = 0;
 
 // Canvas sizing & layout
 
-// Measure the chart card so the canvas fills it, with sensible fallbacks (window size minus the sidebar / header) and minimum dimensions.
+// Measure the chart card so the canvas fills it. The card is display:none until a
+// chart is picked, so the fallbacks have to cope with a zero-sized container: on a
+// phone the sidebar is a drawer and takes no width, hence the two subtractions.
 function getChartCanvasSize() {
   var chartContainer = document.getElementById('chart-container');
+  var sidebarWidth = windowWidth < 820 ? 40 : 320;
   var width = chartContainer && chartContainer.clientWidth
       ? chartContainer.clientWidth
-      : windowWidth - 320;   // fallback: window minus sidebar width
+      : windowWidth - sidebarWidth;
   var height = chartContainer && chartContainer.clientHeight
       ? chartContainer.clientHeight
-      : windowHeight - 140;  // fallback: window minus header height
+      : windowHeight - 140;
 
   return {
-    // On very small phones the old 300px minimum could make the canvas wider than its card.
-    width: Math.max(1, Math.floor(width)),
+    width: Math.max(280, Math.floor(width)),
     height: Math.max(240, Math.floor(height))
   };
 }
@@ -71,6 +71,7 @@ function refreshVisualLayout(vis) {
       vis.layout.responsiveDefaults = {
         marginSize: vis.layout.marginSize,
         leftMargin: vis.layout.leftMargin,
+        topMargin: vis.layout.topMargin,
         rightPadding: vis.layout.rightPadding,
         bottomPadding: vis.layout.bottomPadding,
         numXTickLabels: vis.layout.numXTickLabels,
@@ -79,7 +80,7 @@ function refreshVisualLayout(vis) {
     }
 
     var defaults = vis.layout.responsiveDefaults;
-    var phoneLayout = width < 520;
+    var phoneLayout = isPhoneChart();
     if (phoneLayout) {
       if (vis.layout.hasOwnProperty('marginSize')) vis.layout.marginSize = 28;
       if (vis.layout.hasOwnProperty('leftMargin')) {
@@ -98,40 +99,39 @@ function refreshVisualLayout(vis) {
       if (defaults.numYTickLabels !== undefined) vis.layout.numYTickLabels = defaults.numYTickLabels;
     }
 
+    // A landscape phone, or the guided story's 240px floor, leaves so little height
+    // that a default top margin of ~118px would squeeze the plot down to nothing.
+    if (isShortChart()) {
+      if (vis.layout.hasOwnProperty('topMargin')) {
+        vis.layout.topMargin = Math.min(defaults.topMargin || 88, 88);
+      }
+      if (vis.layout.hasOwnProperty('marginSize')) {
+        vis.layout.marginSize = Math.min(defaults.marginSize || 24, 24);
+      }
+      if (vis.layout.hasOwnProperty('numYTickLabels')) {
+        vis.layout.numYTickLabels = Math.min(vis.layout.numYTickLabels || 4, 4);
+      }
+    } else if (vis.layout.hasOwnProperty('topMargin') && defaults.topMargin !== undefined) {
+      vis.layout.topMargin = defaults.topMargin;
+    }
+
     if (vis.layout.hasOwnProperty('rightMargin')) {
       vis.layout.rightMargin = width - (phoneLayout
         ? 18
         : (defaults.rightPadding || vis.layout.marginSize || 0));
     }
     if (vis.layout.hasOwnProperty('bottomMargin')) {
-      vis.layout.bottomMargin = height - (phoneLayout
+      vis.layout.bottomMargin = height - (isShortChart()
+        ? 52
+        : phoneLayout
         ? 58
         : (defaults.bottomPadding || ((vis.layout.marginSize || 0) * 2)));
     }
   }
 
-  // sa-sex-age-2022 spans the full canvas width, so override the shared margins.
-  if (vis.id == 'sa-sex-age-2022') {
-    vis.layout.leftMargin = width < 520 ? 62 : 130;
-    vis.layout.rightMargin = width - 12;
-    vis.layout.bottomMargin = height - (width < 520 ? 12 : 0);
-    vis.midX = (vis.layout.plotWidth() / 2) + vis.layout.leftMargin;
-  }
-
-  if (vis.id == 'sa-age-sex-bubble-2022') {
-    vis.pad = width < 520 ? 48 : 58;
-    vis.dotSizeMax = width < 520 ? 34 : 42;
-  }
-
-  // Pie-chart visualisations recentre and rescale their pie on resize.
-  if (vis.pie) {
-    var phonePie = width < 520;
-    var diameter = phonePie
-      ? Math.min(width - 64, height * 0.46)
-      : Math.min(width * 0.34, height * 0.68);
-    vis.pie.x = phonePie ? width / 2 : Math.max((diameter / 2) + 20, width * 0.34);
-    vis.pie.y = phonePie ? Math.max((diameter / 2) + 24, height * 0.32) : height / 2;
-    vis.pie.diameter = diameter;
+  // Charts with layout needs the shared margins can't express handle it themselves.
+  if (typeof vis.onResize === 'function') {
+    vis.onResize();
   }
 }
 
@@ -219,8 +219,7 @@ function setup() {
   }
 
   if (mobileParam === '1') {
-    var sidebar = document.querySelector('.sidebar');
-    if (sidebar) sidebar.classList.add('open');
+    gallery.openMobileMenu();
   }
 
   if (focusParam === '1') {
@@ -248,6 +247,12 @@ function mouseDragged() {
 }
 
 function touchStarted() {
+  if (gallery && gallery.selectedVisual) requestChartRender();
+}
+
+// p5 0.10.2 has no mouseReleased fallback for touchend, so without this the last
+// tooltip stays painted on the canvas after the finger lifts.
+function touchEnded() {
   if (gallery && gallery.selectedVisual) requestChartRender();
 }
 

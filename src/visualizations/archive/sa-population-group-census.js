@@ -1,14 +1,13 @@
+// Share of the population by group for each census year, drawn as a pie.
+// Source: Statistics South Africa census tables, 1996-2022.
 function SAPopulationGroupCensus() {
-
-  // State
 
   this.name = 'Population group by census year';
   this.id = 'sa-population-group-census';
 
   this.loaded = false;
   this.years = ['1996', '2001', '2011', '2022'];   // census years available in the CSV
-
-  // Lifecycle
+  this.pie = null;
 
   this.preload = function() {
     var self = this;
@@ -37,6 +36,11 @@ function SAPopulationGroupCensus() {
     for (var i = 0; i < this.years.length; i++) {
       this.select.option(this.years[i]);
     }
+
+    if (!this.pie) {
+      this.pie = new PieChart(width / 2, height / 2, width * 0.4);
+    }
+    this.onResize();
   };
 
   this.destroy = function() {
@@ -50,10 +54,28 @@ function SAPopulationGroupCensus() {
     }
   };
 
-  // Pie chart used to render the selected year.
-  this.pie = new PieChart(width / 2, height / 2, width * 0.4);
+  // Recentre and rescale the pie for the current canvas. On a phone it sits at the
+  // top with the legend below it; on a wide canvas it sits left of the legend.
+  this.onResize = function() {
+    if (!this.pie) return;
 
-  // Drawing
+    if (!isPhoneChart()) {
+      this.pie.diameter = Math.min(width * 0.34, height * 0.68);
+      this.pie.x = Math.max((this.pie.diameter / 2) + 20, width * 0.34);
+      this.pie.y = height / 2;
+      return;
+    }
+
+    // On a phone the legend sits under the pie in two columns, so the pie can only
+    // have whatever height is left after those rows are accounted for.
+    var rows = Math.ceil(this.years.length / 2) + 1;
+    var legendHeight = 24 + (rows * this.pie.phoneRowHeight());
+    var diameter = Math.max(96, Math.min(width - 64, height - legendHeight - 40));
+
+    this.pie.diameter = diameter;
+    this.pie.x = width / 2;
+    this.pie.y = (diameter / 2) + 24;
+  };
 
   this.draw = function() {
     if (!this.loaded) {
@@ -61,7 +83,7 @@ function SAPopulationGroupCensus() {
       return;
     }
 
-    if (!this.select) {
+    if (!this.select || !this.pie) {
       this.setup();
       requestChartRender(true);
       return;
@@ -78,5 +100,9 @@ function SAPopulationGroupCensus() {
     }
 
     this.pie.draw(values, legendLabels, colours);
+  };
+
+  this.getExportData = function() {
+    return tableToExportData(this.data);
   };
 }

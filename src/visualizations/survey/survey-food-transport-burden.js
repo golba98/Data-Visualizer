@@ -1,6 +1,6 @@
+// Food cost plotted against transport cost, one dot per respondent.
+// Source: project survey, 48 responses.
 function SurveyFoodTransportBurden() {
-
-  // State
 
   this.name = 'Food vs transport';
   this.id = 'survey-food-transport-burden';
@@ -10,8 +10,6 @@ function SurveyFoodTransportBurden() {
   this.transportBands = ['R0-R300', 'R301-R600', 'R601-R1000', 'R1001-R1500', 'R1500+'];   // grid columns (x)
   this.counts = {};
   this.maxCount = 0;   // busiest cell, used to scale circle size
-
-  // Lifecycle
 
   this.preload = function() {
     var self = this;
@@ -37,23 +35,6 @@ function SurveyFoodTransportBurden() {
     this.countBurden();
   };
 
-  this.draw = function() {
-    if (!this.loaded || !this.table) {
-      this.drawLoading();
-      return;
-    }
-
-    if (this.maxCount == 0) {
-      this.countBurden();
-    }
-
-    background(SATheme.bg);
-    this.drawTitle();
-    this.drawGrid();
-  };
-
-  // Data
-
   // Count respondents in each (food band x transport band) cell and track the busiest cell for circle scaling.
   this.countBurden = function() {
     this.counts = {};
@@ -78,7 +59,20 @@ function SurveyFoodTransportBurden() {
     }
   };
 
-  // Drawing
+  this.draw = function() {
+    if (!this.loaded || !this.table) {
+      this.drawLoading();
+      return;
+    }
+
+    if (this.maxCount == 0) {
+      this.countBurden();
+    }
+
+    background(SATheme.bg);
+    this.drawTitle();
+    this.drawGrid();
+  };
 
   this.drawLoading = function() {
     background(SATheme.bg);
@@ -93,23 +87,22 @@ function SurveyFoodTransportBurden() {
     fill(SATheme.text);
     textAlign(LEFT, TOP);
     textStyle(BOLD);
-    textSize(width < 520 ? 13 : 17);
-    text('Food cost against transport cost', 24, 18, width - 48, 36);
+    chartTextSize(isPhoneChart() ? 13 : 17);
+    text('Food cost against transport cost', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
 
     textStyle(NORMAL);
-    textSize(12);
+    chartTextSize(12);
     fill(SATheme.textMuted);
     text(SurveyData.chartLabel,
          24,
-         width < 520 ? 54 : 44,
+         isPhoneChart() ? 54 : 44,
          width - 48,
-         32);
+         isPhoneChart() ? 46 : 32);
   };
 
   this.drawGrid = function() {
-    // width < 680 => narrow / mobile layout (tighter left margin).
-    var left = width < 680 ? 94 : 130;
-    var phoneLayout = width < 520;
+    var left = isCompactChart() ? 94 : 130;
+    var phoneLayout = isPhoneChart();
     var top = phoneLayout ? 108 : 96;
     var right = width - 28;
     var bottom = height - 72;
@@ -134,7 +127,7 @@ function SurveyFoodTransportBurden() {
 
     noStroke();
     textStyle(NORMAL);
-    textSize(width < 680 ? 9 : 11);
+    chartTextSize(isCompactChart() ? 9 : 11);
     fill(SATheme.textMuted);
 
     for (var x = 0; x < this.transportBands.length; x++) {
@@ -144,7 +137,7 @@ function SurveyFoodTransportBurden() {
         translate(labelX, bottom + 8);
         rotate(-PI / 4);
         textAlign(RIGHT, CENTER);
-        textSize(8);
+        chartTextSize(8);
         text(this.transportBands[x].replace(/R/g, ''), 0, 0);
         pop();
       } else {
@@ -196,7 +189,7 @@ function SurveyFoodTransportBurden() {
         fill(SATheme.text);
         textAlign(CENTER, CENTER);
         textStyle(BOLD);
-        textSize(12);
+        chartTextSize(12);
         text(count, cx, cy);
 
         if (dist(pointer.x, pointer.y, cx, cy) < Math.max(size / 2, 14)) {

@@ -1,3 +1,5 @@
+// Poverty headcount against the food-poverty line over time.
+// Source: World Bank PIP via OWID and Stats SA Poverty Trends, 1993-2023.
 function ZAPovertyContext() {
 
   this.name = 'Poverty context';
@@ -82,7 +84,7 @@ function ZAPovertyContext() {
     }
 
     // On phones, reserve a narrow strip below the stacked legend so the single summary badge never covers a data point or reference line.
-    this.layout.topMargin = width < 520 ? 180 : 154;
+    this.layout.topMargin = isPhoneChart() ? 180 : 154;
 
     this.colours = [SATheme.blue, SATheme.gold, SATheme.red];
     background(SATheme.bg);
@@ -112,18 +114,18 @@ function ZAPovertyContext() {
     fill(SATheme.text);
     noStroke();
     textStyle(BOLD);
-    textSize(width < 520 ? 13 : 17);
+    chartTextSize(isPhoneChart() ? 13 : 17);
     textAlign(LEFT, TOP);
-    text('Poverty context', 24, 18, width - 48, 36);
+    text('Poverty context', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
 
     textStyle(NORMAL);
-    textSize(12);
+    chartTextSize(12);
     fill(SATheme.textMuted);
     text('Different poverty measures are shown separately because each source uses a different definition.',
          24,
-         width < 520 ? 54 : 44,
+         isPhoneChart() ? 54 : 44,
          width - 48,
-         36);
+         isPhoneChart() ? 50 : 36);
   };
 
   this.drawAnnotations = function() {
@@ -131,7 +133,7 @@ function ZAPovertyContext() {
     var upper = this.series['Upper-bound poverty line headcount'];
     var food = this.series['Food poverty line headcount'];
 
-    if (width < 520) {
+    if (isPhoneChart()) {
       drawHorizontalReferenceLine(
         referenceY,
         this.layout.leftMargin,
@@ -190,7 +192,7 @@ function ZAPovertyContext() {
     noStroke();
     fill(30);
     textStyle(BOLD);
-    textSize(10);
+    chartTextSize(10);
     textAlign(LEFT, CENTER);
     text(
       point.value.toFixed(1) + '%',
@@ -200,7 +202,7 @@ function ZAPovertyContext() {
   };
 
   this.drawYearLabels = function() {
-    var labelYears = width < 520
+    var labelYears = isPhoneChart()
       ? [1993, 2006, 2014, 2023]
       : [1993, 2000, 2006, 2014, 2023];
     for (var i = 0; i < labelYears.length; i++) {
@@ -243,10 +245,10 @@ function ZAPovertyContext() {
   this.drawLegend = function() {
     var x = this.layout.leftMargin + 10;
     var y = 92;
-    var compact = width < 760;
+    var compact = isCompactChart();
 
     textStyle(NORMAL);
-    textSize(compact ? 10 : 11);
+    chartTextSize(compact ? 10 : 11);
     textAlign(LEFT, CENTER);
 
     for (var i = 0; i < this.seriesNames.length; i++) {

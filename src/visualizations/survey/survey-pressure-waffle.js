@@ -1,6 +1,6 @@
+// Which cost people worry about most, as a 10x10 waffle where each cell is one response.
+// Source: project survey, 48 responses.
 function SurveyPressureWaffle() {
-
-  // State
 
   this.name = 'Survey pressure waffle';
   this.id = 'survey-pressure-waffle';
@@ -14,8 +14,6 @@ function SurveyPressureWaffle() {
   this.layoutWidth = 0;
   this.layoutHeight = 0;
   this.legendBelow = false;
-
-  // Lifecycle
 
   this.preload = function() {
     var self = this;
@@ -38,8 +36,6 @@ function SurveyPressureWaffle() {
     this.buildWaffle();
   };
 
-  // Layout
-
   // (Re)build the waffle sized to the current canvas.
   this.buildWaffle = function() {
     if (!this.loaded || !this.table) {
@@ -50,7 +46,7 @@ function SurveyPressureWaffle() {
     this.layoutHeight = height;
     this.colours = SATheme.pressure;
 
-    this.legendBelow = width < 760;
+    this.legendBelow = isCompactChart();
 
     var waffleSize = this.legendBelow
         ? Math.min(width - 56, height * 0.44, 320)
@@ -78,14 +74,9 @@ function SurveyPressureWaffle() {
     );
   };
 
-  // Drawing
-
   this.draw = function() {
     if (!this.loaded || !this.table) {
-      fill(SATheme.text);
-      noStroke();
-      textAlign(CENTER, CENTER);
-      text('Loading survey data...', width / 2, height / 2);
+      this.drawLoading();
       return;
     }
 
@@ -94,7 +85,7 @@ function SurveyPressureWaffle() {
     }
 
     background(SATheme.bg);
-    this.drawHeading();
+    this.drawTitle();
 
     this.waffle.draw();
     this.drawLegend();
@@ -105,19 +96,27 @@ function SurveyPressureWaffle() {
     }
   };
 
-  this.drawHeading = function() {
+  this.drawLoading = function() {
+    background(SATheme.bg);
+    fill(SATheme.text);
+    noStroke();
+    textAlign(CENTER, CENTER);
+    text('Loading survey data...', width / 2, height / 2);
+  };
+
+  this.drawTitle = function() {
     noStroke();
     fill(SATheme.text);
     textAlign(LEFT, TOP);
-    textSize(width < 520 ? 13 : 16);
+    chartTextSize(isPhoneChart() ? 13 : 16);
     textStyle(BOLD);
-    text('What people worry about most', 24, 18, width - 48, 36);
+    text('What people worry about most', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
 
     textStyle(NORMAL);
     fill(SATheme.textMuted);
-    textSize(12);
+    chartTextSize(12);
     var subtitle = SurveyData.chartLabel;
-    text(subtitle, 24, width < 520 ? 54 : 42, width - 48, 34);
+    text(subtitle, 24, isPhoneChart() ? 54 : 42, width - 48, isPhoneChart() ? 48 : 34);
   };
 
   this.drawLegend = function() {
@@ -128,7 +127,7 @@ function SurveyPressureWaffle() {
     var valueOffset = this.legendBelow ? 78 : 102;
 
     textAlign(LEFT, CENTER);
-    textSize(this.legendBelow ? 11 : 12);
+    chartTextSize(this.legendBelow ? 11 : 12);
     noStroke();
 
     for (var i = 0; i < this.categories.length; i++) {
@@ -158,27 +157,13 @@ function SurveyPressureWaffle() {
     }
   };
 
+  // Queued through the shared tooltip so it is painted above every waffle cell.
   this.drawTooltip = function(category) {
     var count = this.waffle.counts[category] || 0;
     var percent = this.table.getRowCount() > 0
         ? ((count / this.table.getRowCount()) * 100).toFixed(1)
         : '0.0';
-    var label = category + ': ' + count + ' responses (' + percent + '%)';
-    textSize(12);
-    var labelWidth = textWidth(label) + 18;
-    var labelHeight = 24;
-    var pointer = getChartPointer();
-    var x = constrain(pointer.x + 12, 4, width - labelWidth - 4);
-    var y = constrain(pointer.y - 32, 4, height - labelHeight - 4);
-
-    stroke(SATheme.axis);
-    strokeWeight(1);
-    fill(SATheme.bg);
-    rect(x, y, labelWidth, labelHeight);
-    noStroke();
-    fill(SATheme.text);
-    textAlign(LEFT, CENTER);
-    text(label, x + 9, y + (labelHeight / 2));
+    drawChartTooltip(category, count + ' responses', percent + '%');
   };
 
   this.getExportData = function() {

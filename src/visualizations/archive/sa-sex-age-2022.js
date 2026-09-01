@@ -1,6 +1,6 @@
+// Population pyramid: share of each age group that is female vs male, 2022.
+// Source: Statistics South Africa mid-year population estimates.
 function SAPopulationSexAge2022() {
-
-  // State
 
   this.name = 'Population by sex and age';
   this.id = 'sa-sex-age-2022';
@@ -26,8 +26,6 @@ function SAPopulationSexAge2022() {
   this.maleColour = color(SATheme.blue);
   this.loaded = false;
 
-  // Lifecycle
-
   this.preload = function() {
     var self = this;
     this.data = loadTable(
@@ -38,13 +36,17 @@ function SAPopulationSexAge2022() {
   };
 
   this.setup = function() {
-    textSize(16);
+    chartTextSize(16);
+    this.onResize();
   };
 
-  this.destroy = function() {
+  // The pyramid spans the full canvas width, so it overrides the shared margins.
+  this.onResize = function() {
+    this.layout.leftMargin = isPhoneChart() ? 62 : 130;
+    this.layout.rightMargin = width - 12;
+    this.layout.bottomMargin = height - (isPhoneChart() ? 12 : 0);
+    this.midX = (this.layout.plotWidth() / 2) + this.layout.leftMargin;
   };
-
-  // Drawing
 
   this.draw = function() {
     if (!this.loaded) {
@@ -115,5 +117,9 @@ function SAPopulationSexAge2022() {
                100,
                0,
                this.layout.plotWidth());
+  };
+
+  this.getExportData = function() {
+    return tableToExportData(this.data);
   };
 }

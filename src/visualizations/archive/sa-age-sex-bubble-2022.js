@@ -1,6 +1,6 @@
+// One bubble per age group: group size against the share of that group that is female.
+// Source: Statistics South Africa mid-year population estimates, 2022.
 function SAAgeSexBubble2022() {
-
-  // State
 
   this.name = 'Age group size and female share';
   this.id = 'sa-age-sex-bubble-2022';
@@ -12,8 +12,6 @@ function SAAgeSexBubble2022() {
   this.yMin = 45;         // female-% axis range (minimum)
   this.yMax = 75;         // female-% axis range (maximum)
 
-  // Lifecycle
-
   this.preload = function() {
     var self = this;
     this.data = loadTable(
@@ -24,13 +22,14 @@ function SAAgeSexBubble2022() {
   };
 
   this.setup = function() {
-    textSize(14);
+    chartTextSize(14);
+    this.onResize();
   };
 
-  this.destroy = function() {
+  this.onResize = function() {
+    this.pad = isPhoneChart() ? 48 : 58;
+    this.dotSizeMax = isPhoneChart() ? 34 : 42;
   };
-
-  // Drawing
 
   this.draw = function() {
     if (!this.loaded) {
@@ -78,8 +77,6 @@ function SAAgeSexBubble2022() {
     }
   };
 
-  // Axes & annotations
-
   this.addAxes = function() {
     stroke(SATheme.axis);
     strokeWeight(1);
@@ -96,7 +93,7 @@ function SAAgeSexBubble2022() {
 
     fill(SATheme.text);
     noStroke();
-    textSize(12);
+    chartTextSize(12);
     textAlign('right', 'center');
 
     for (var value = this.yMin; value <= this.yMax; value += 5) {
@@ -126,5 +123,9 @@ function SAAgeSexBubble2022() {
 
     textAlign('left', 'top');
     text('Bigger circles = larger age groups', this.pad + 10, this.pad);
+  };
+
+  this.getExportData = function() {
+    return tableToExportData(this.data);
   };
 }

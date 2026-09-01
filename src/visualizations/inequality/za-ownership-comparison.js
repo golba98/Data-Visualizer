@@ -1,3 +1,5 @@
+// Population size next to share of land and wealth, so the gap between the two is visible.
+// Source: WID.world via Our World in Data.
 function ZAOwnershipComparison() {
 
   this.name = 'Population vs ownership';
@@ -92,28 +94,28 @@ function ZAOwnershipComparison() {
     fill(SATheme.text);
     noStroke();
     textStyle(BOLD);
-    textSize(width < 520 ? 13 : 17);
+    chartTextSize(isPhoneChart() ? 13 : 17);
     textAlign(LEFT, TOP);
-    text('Population size compared with resource share', 24, 18, width - 48, 36);
+    text('Population size compared with resource share', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
 
     textStyle(NORMAL);
-    textSize(12);
+    chartTextSize(12);
     fill(SATheme.textMuted);
     text('The same top 10 percent income-ranked reference group is compared with latest available income and wealth shares.',
          24,
-         width < 520 ? 54 : 44,
+         isPhoneChart() ? 54 : 44,
          width - 48,
-         40);
+         isPhoneChart() ? 54 : 40);
   };
 
   this.drawAnnotations = function() {
-    var phoneLayout = width < 520;
-    var left = phoneLayout ? 110 : (width < 680 ? 136 : 190);
+    var phoneLayout = isPhoneChart();
+    var left = phoneLayout ? 110 : (isCompactChart() ? 136 : 190);
     var right = width - (phoneLayout ? 36 : 48);
     var referenceX = map(10, 0, 100, left, right);
     var referenceBottom = Math.min(
-      height - 66,
-      128 + (this.rows.length * (width < 680 ? 68 : 82))
+      isPhoneChart() ? height - 78 : height - 66,
+      128 + (this.rows.length * (isCompactChart() ? 68 : 82))
     );
 
     push();
@@ -125,7 +127,7 @@ function ZAOwnershipComparison() {
     pop();
 
     // Keep the explanatory badge away from the 10.0% value and first bar.
-    if (width >= 680) {
+    if (!isCompactChart()) {
       drawAnnotationBadge(
         '10% reference',
         'Population share',
@@ -137,12 +139,12 @@ function ZAOwnershipComparison() {
   };
 
   this.drawBars = function() {
-    var phoneLayout = width < 520;
-    var left = phoneLayout ? 110 : (width < 680 ? 136 : 190);
+    var phoneLayout = isPhoneChart();
+    var left = phoneLayout ? 110 : (isCompactChart() ? 136 : 190);
     var right = width - (phoneLayout ? 36 : 48);
     var top = 128;
-    var barHeight = width < 680 ? 34 : 42;
-    var gap = width < 680 ? 68 : 82;
+    var barHeight = isCompactChart() ? 34 : 42;
+    var gap = isCompactChart() ? 68 : 82;
     var barWidth = right - left;
 
     stroke(SATheme.grid);
@@ -152,7 +154,7 @@ function ZAOwnershipComparison() {
       line(x, top - 18, x, top + (gap * (this.rows.length - 1)) + barHeight + 18);
       noStroke();
       fill(SATheme.textMuted);
-      textSize(phoneLayout ? 9 : 11);
+      chartTextSize(phoneLayout ? 9 : 11);
       textAlign(CENTER, TOP);
       text(tick + '%', x, top + (gap * (this.rows.length - 1)) + barHeight + 24);
       stroke(SATheme.grid);
@@ -166,7 +168,7 @@ function ZAOwnershipComparison() {
       noStroke();
       fill(SATheme.text);
       textStyle(BOLD);
-      textSize(phoneLayout ? 9 : (width < 680 ? 11 : 13));
+      chartTextSize(phoneLayout ? 9 : (isCompactChart() ? 11 : 13));
       textAlign(RIGHT, CENTER);
       text(row.label, left - 12, y + (barHeight / 2));
 
@@ -179,13 +181,12 @@ function ZAOwnershipComparison() {
       fill(SATheme.text);
       textAlign(LEFT, CENTER);
       textStyle(BOLD);
-      textSize(phoneLayout ? 10 : 13);
+      chartTextSize(phoneLayout ? 10 : 13);
       text(row.value.toFixed(1) + '%', left + currentWidth + 10, y + (barHeight / 2));
 
       textStyle(NORMAL);
-      textSize(11);
       fill(SATheme.textMuted);
-      textSize(phoneLayout ? 9 : 11);
+      chartTextSize(phoneLayout ? 9 : 11);
       text(row.note, left, y + barHeight + 17);
     }
   };
