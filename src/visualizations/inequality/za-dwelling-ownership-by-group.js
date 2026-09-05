@@ -1,5 +1,4 @@
-// Dwelling tenure (owned, rented, occupied rent-free) by population group of the household head.
-// Source: Stats SA General Household Survey 2024, Table 8.6.
+// Shows housing tenure by population group
 function ZADwellingOwnershipByGroup() {
 
   this.name = 'Dwelling ownership';
@@ -76,7 +75,6 @@ function ZADwellingOwnershipByGroup() {
   };
 
   this.drawAnnotations = function() {
-    // On narrow canvases the legend and first bar use all available space.
     if (isCompactChart()) return;
 
     drawAnnotationBadge(
@@ -89,72 +87,73 @@ function ZADwellingOwnershipByGroup() {
   };
 
   this.drawStackedBars = function() {
-    var compact = isCompactChart();
-    var left = compact ? 112 : 156;
-    var right = width - 42;
-    var top = compact ? 160 : 124;
-    var barHeight = compact ? 30 : 38;
-    var gap = compact ? 56 : 70;
-    var barWidth = right - left;
-    var keys = [
-      { field: 'owned', label: 'Owned', colour: SATheme.green },
-      { field: 'rented', label: 'Rented', colour: SATheme.red },
-      { field: 'rentFree', label: 'Rent-free', colour: SATheme.gold },
-      { field: 'other', label: 'Other/unknown', colour: SATheme.blueTint }
+    var isCompact = isCompactChart();
+    var xStart = isCompact ? 112 : 156;
+    var xEnd = width - 42;
+    var yStart = isCompact ? 160 : 124;
+    var rowHeight = isCompact ? 30 : 38;
+    var rowStep = isCompact ? 56 : 70;
+    var totalBarSpan = xEnd - xStart;
+
+    var tenureCategories = [
+      { key: 'owned', title: 'Owned', fill: SATheme.green },
+      { key: 'rented', title: 'Rented', fill: SATheme.red },
+      { key: 'rentFree', title: 'Rent-free', fill: SATheme.gold },
+      { key: 'other', title: 'Other/unknown', fill: SATheme.blueTint }
     ];
 
     stroke(SATheme.grid);
     strokeWeight(1);
-    for (var tick = 0; tick <= 100; tick += 25) {
-      var x = map(tick, 0, 100, left, right);
-      line(x, top - 12, x, top + (gap * (this.rows.length - 1)) + barHeight + 10);
+    for (var pct = 0; pct <= 100; pct += 25) {
+      var gridLineX = map(pct, 0, 100, xStart, xEnd);
+      line(gridLineX, yStart - 12, gridLineX, yStart + (rowStep * (this.rows.length - 1)) + rowHeight + 10);
       noStroke();
       fill(SATheme.textMuted);
       textStyle(NORMAL);
       chartTextSize(11);
       textAlign(CENTER, TOP);
-      text(tick + '%', x, top + (gap * (this.rows.length - 1)) + barHeight + 18);
+      text(pct + '%', gridLineX, yStart + (rowStep * (this.rows.length - 1)) + rowHeight + 18);
       stroke(SATheme.grid);
     }
 
-    for (var i = 0; i < this.rows.length; i++) {
-      var row = this.rows[i];
-      var y = top + (i * gap);
-      var currentX = left;
+    for (var rowIndex = 0; rowIndex < this.rows.length; rowIndex++) {
+      var groupData = this.rows[rowIndex];
+      var rowTop = yStart + (rowIndex * rowStep);
+      var offsetX = xStart;
 
       noStroke();
       fill(SATheme.text);
       textStyle(BOLD);
-      chartTextSize(compact ? 10 : 12);
+      chartTextSize(isCompact ? 10 : 12);
       textAlign(RIGHT, CENTER);
-      text(row.group, left - 12, y + (barHeight / 2));
+      text(groupData.group, xStart - 12, rowTop + (rowHeight / 2));
 
-      for (var k = 0; k < keys.length; k++) {
-        var item = keys[k];
-        var value = row[item.field];
-        var segmentWidth = map(value, 0, 100, 0, barWidth);
+      for (var catIdx = 0; catIdx < tenureCategories.length; catIdx++) {
+        var cat = tenureCategories[catIdx];
+        var pctValue = groupData[cat.key];
+        var blockWidth = map(pctValue, 0, 100, 0, totalBarSpan);
 
-        if (segmentWidth > 0) {
-          fill(item.colour);
+        if (blockWidth > 0) {
+          fill(cat.fill);
           stroke(SATheme.axis);
           strokeWeight(1);
-          rect(currentX, y, segmentWidth, barHeight);
+          rect(offsetX, rowTop, blockWidth, rowHeight);
 
-          if (item.field == 'owned' && segmentWidth > 48) {
+          if (cat.key === 'owned' && blockWidth > 48) {
             noStroke();
             fill(SATheme.text);
             textStyle(BOLD);
             chartTextSize(11);
             textAlign(CENTER, CENTER);
-            text(value.toFixed(1) + '%', currentX + (segmentWidth / 2), y + (barHeight / 2));
+            text(pctValue.toFixed(1) + '%', offsetX + (blockWidth / 2), rowTop + (rowHeight / 2));
           }
 
-          if (mouseIsOverRect(currentX, y, segmentWidth, barHeight)) {
-            drawChartTooltip(row.group, value.toFixed(1) + '%', item.label);
+          if (mouseIsOverRect(offsetX, rowTop, blockWidth, rowHeight)) {
+            drawChartTooltip(groupData.group, pctValue.toFixed(1) + '%', cat.title);
           }
         }
 
-        currentX += segmentWidth;
+        offsetX += blockWidth;
       }
     }
 
@@ -167,7 +166,7 @@ function ZADwellingOwnershipByGroup() {
          24,
          isPhoneChart() ? height - 54 : height - 30,
          width - 48,
-         isPhoneChart() ? 50 : 28);
+         isPhoneChart() ? 46 : 28);
   };
 
   this.drawLegend = function() {

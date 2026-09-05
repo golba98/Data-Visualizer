@@ -1,5 +1,4 @@
-// Each population group's share of the population set against its mean monthly earnings.
-// Source: Stats SA Census 2022 and Stats SA earnings data, 2011-2015.
+// Compares population share and earnings
 function ZAPopulationGroupEarnings() {
 
   this.name = 'Population group earnings';
@@ -97,70 +96,70 @@ function ZAPopulationGroupEarnings() {
     }
 
     var compact = isCompactChart();
-    var left = compact ? 106 : 150;
-    var right = width - (compact ? 58 : 52);
-    var top = 118;
-    var rowGap = compact ? 58 : 70;
-    var shareWidth = (right - left) * (compact ? 0.25 : 0.28);
-    var earningsLeft = left + shareWidth + (compact ? 34 : 54);
-    var earningsWidth = right - earningsLeft;
-    var barHeight = compact ? 16 : 20;
-    var maxEarnings = 26000;
+    var leftEdge = compact ? 106 : 150;
+    var rightEdge = width - (compact ? 58 : 52);
+    var startTop = 118;
+    var rowSpacing = compact ? 58 : 70;
+    var shareColWidth = (rightEdge - leftEdge) * (compact ? 0.25 : 0.28);
+    var earningsColLeft = leftEdge + shareColWidth + (compact ? 34 : 54);
+    var earningsColWidth = rightEdge - earningsColLeft;
+    var barThick = compact ? 16 : 20;
+    var maxEarningScale = 26000;
 
     noStroke();
     textStyle(NORMAL);
     chartTextSize(compact ? 10 : 11);
     fill(SATheme.textMuted);
     textAlign(LEFT, CENTER);
-    text('Population share', left, top - 18);
-    text('Mean monthly earnings', earningsLeft, top - 18);
+    text('Population share', leftEdge, startTop - 18);
+    text('Mean monthly earnings', earningsColLeft, startTop - 18);
 
     stroke(SATheme.grid);
     strokeWeight(1);
-    for (var tick = 0; tick <= maxEarnings; tick += 5000) {
-      var x = map(tick, 0, maxEarnings, earningsLeft, earningsLeft + earningsWidth);
-      line(x, top - 4, x, top + (rowGap * (this.rows.length - 1)) + barHeight + 22);
+    for (var step = 0; step <= maxEarningScale; step += 5000) {
+      var tickX = map(step, 0, maxEarningScale, earningsColLeft, earningsColLeft + earningsColWidth);
+      line(tickX, startTop - 4, tickX, startTop + (rowSpacing * (this.rows.length - 1)) + barThick + 22);
       noStroke();
       fill(SATheme.textMuted);
       textAlign(CENTER, TOP);
-      text('R' + (tick / 1000) + 'k', x, top + (rowGap * (this.rows.length - 1)) + barHeight + 28);
+      text('R' + (step / 1000) + 'k', tickX, startTop + (rowSpacing * (this.rows.length - 1)) + barThick + 28);
       stroke(SATheme.grid);
     }
 
-    for (var i = 0; i < this.rows.length; i++) {
-      var row = this.rows[i];
-      var y = top + (i * rowGap);
-      var shareBarWidth = map(row.populationShare, 0, 85, 0, shareWidth);
-      var earningsBarWidth = map(row.earnings, 0, maxEarnings, 0, earningsWidth);
-      var colour = row.group == 'White' ? SATheme.red : SATheme.green;
+    for (var rIdx = 0; rIdx < this.rows.length; rIdx++) {
+      var entry = this.rows[rIdx];
+      var rowY = startTop + (rIdx * rowSpacing);
+      var popWidth = map(entry.populationShare, 0, 85, 0, shareColWidth);
+      var earnWidth = map(entry.earnings, 0, maxEarningScale, 0, earningsColWidth);
+      var earnColor = entry.group === 'White' ? SATheme.red : SATheme.green;
 
       noStroke();
       fill(SATheme.text);
       textStyle(BOLD);
       chartTextSize(compact ? 10 : 12);
       textAlign(RIGHT, CENTER);
-      text(row.group, left - 12, y + (barHeight / 2));
+      text(entry.group, leftEdge - 12, rowY + (barThick / 2));
 
-      drawBar(left, y, shareBarWidth, barHeight, SATheme.blueTint);
-      drawBar(earningsLeft, y, earningsBarWidth, barHeight, colour);
+      drawBar(leftEdge, rowY, popWidth, barThick, SATheme.blueTint);
+      drawBar(earningsColLeft, rowY, earnWidth, barThick, earnColor);
 
-      if (mouseIsOverRect(left, y, shareBarWidth, barHeight)) {
-        drawChartTooltip(row.group, row.populationShare.toFixed(1) + '%', 'population share');
-      } else if (mouseIsOverRect(earningsLeft, y, earningsBarWidth, barHeight)) {
-        drawChartTooltip(row.group, 'R' + formatThousands(row.earnings), 'mean monthly earnings');
+      if (mouseIsOverRect(leftEdge, rowY, popWidth, barThick)) {
+        drawChartTooltip(entry.group, entry.populationShare.toFixed(1) + '%', 'population share');
+      } else if (mouseIsOverRect(earningsColLeft, rowY, earnWidth, barThick)) {
+        drawChartTooltip(entry.group, 'R' + formatThousands(entry.earnings), 'mean monthly earnings');
       }
 
       fill(SATheme.text);
       textStyle(NORMAL);
       chartTextSize(compact ? 10 : 11);
       textAlign(LEFT, CENTER);
-      text(row.populationShare.toFixed(1) + '%', left + shareBarWidth + 6, y + (barHeight / 2));
-      text('R' + formatThousands(row.earnings), earningsLeft + earningsBarWidth + 6, y + (barHeight / 2));
+      text(entry.populationShare.toFixed(1) + '%', leftEdge + popWidth + 6, rowY + (barThick / 2));
+      text('R' + formatThousands(entry.earnings), earningsColLeft + earnWidth + 6, rowY + (barThick / 2));
 
-      if (row.group == 'White' && !isCompactChart()) {
+      if (entry.group === 'White' && !isCompactChart()) {
         drawAnnotationBadge(
           'Highest shown mean',
-          'R' + formatThousands(row.earnings),
+          'R' + formatThousands(entry.earnings),
           width - 210,
           82,
           SATheme.red

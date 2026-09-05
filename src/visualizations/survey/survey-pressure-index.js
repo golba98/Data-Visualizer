@@ -1,13 +1,12 @@
-// A single 0-100 pressure score built from five survey components, shown as a gauge.
-// Source: project survey, 48 responses.
+// Draws the survey pressure score
 function SurveyPressureIndex() {
 
   this.name = 'Pressure index';
   this.id = 'survey-pressure-index';
   this.table = null;
   this.loaded = false;
-  this.index = 0;          // overall 0-100 pressure score
-  this.components = [];     // per-factor averages that make up the index
+  this.index = 0;
+  this.components = [];
 
   this.preload = function() {
     var self = this;
@@ -33,7 +32,7 @@ function SurveyPressureIndex() {
     this.calculateIndex();
   };
 
-  // Average each pressure factor across all responses (every factor is normalised to 0-1) and combine them into a single 0-100 index.
+  // Calculates the average pressure score
   this.calculateIndex = function() {
     var totals = {
       pressure: 0,
@@ -42,75 +41,79 @@ function SurveyPressureIndex() {
       food: 0,
       transport: 0
     };
-    var count = 0;
+    var validRows = 0;
+    var rowCount = this.table.getRowCount();
 
-    for (var i = 0; i < this.table.getRowCount(); i++) {
-      totals.pressure += this.getPressureScore(this.table.getString(i, 'pressure'));
-      totals.worry += this.table.getNum(i, 'work_worry') / 5;                 // 1-5 rating -> 0-1
-      totals.incomeGap += (6 - this.table.getNum(i, 'income_keeps_up')) / 5;  // reverse 1-5 -> 0-1 (lower income = bigger gap)
-      totals.food += this.getFoodScore(this.table.getString(i, 'food_cost'));
-      totals.transport += this.getTransportScore(this.table.getString(i, 'transport_cost'));
-      count++;
+    for (var r = 0; r < rowCount; r++) {
+      var pScore = this.getPressureScore(this.table.getString(r, 'pressure'));
+      var wScore = this.table.getNum(r, 'work_worry') / 5.0;
+      var gapScore = (6.0 - this.table.getNum(r, 'income_keeps_up')) / 5.0;
+      var fScore = this.getFoodScore(this.table.getString(r, 'food_cost'));
+      var tScore = this.getTransportScore(this.table.getString(r, 'transport_cost'));
+
+      totals.pressure += pScore;
+      totals.worry += wScore;
+      totals.incomeGap += gapScore;
+      totals.food += fScore;
+      totals.transport += tScore;
+      validRows++;
     }
 
-    if (count == 0) {
+    if (validRows === 0) {
       this.index = 0;
       this.components = [];
       return;
     }
 
     this.components = [
-      { label: 'Main pressure', value: totals.pressure / count, colour: SATheme.green },
-      { label: 'Work worry', value: totals.worry / count, colour: SATheme.red },
-      { label: 'Income gap', value: totals.incomeGap / count, colour: SATheme.gold },
-      { label: 'Food cost', value: totals.food / count, colour: SATheme.blue },
-      { label: 'Transport cost', value: totals.transport / count, colour: SATheme.orange }
+      { label: 'Main pressure', value: totals.pressure / validRows, colour: SATheme.green },
+      { label: 'Work worry', value: totals.worry / validRows, colour: SATheme.red },
+      { label: 'Income gap', value: totals.incomeGap / validRows, colour: SATheme.gold },
+      { label: 'Food cost', value: totals.food / validRows, colour: SATheme.blue },
+      { label: 'Transport cost', value: totals.transport / validRows, colour: SATheme.orange }
     ];
 
-    var total = 0;
-    for (var j = 0; j < this.components.length; j++) {
-      total += this.components[j].value;
+    var sumComponents = 0;
+    for (var k = 0; k < this.components.length; k++) {
+      sumComponents += this.components[k].value;
     }
 
-    this.index = Math.round((total / this.components.length) * 100);
+    this.index = Math.round((sumComponents / this.components.length) * 100);
   };
 
-  // Weight tables (0-1) mapping each survey answer to a pressure score.
   this.getPressureScore = function(value) {
-    var scores = {
-      Food: 0.90,
-      Transport: 0.85,
-      Data: 0.70,
-      Rent: 0.95,
-      Tuition: 0.78,
-      Debt: 1.00,
-      Electricity: 0.82
-    };
-
-    return scores[value] || 0.55;
+    switch (value) {
+      case 'Debt': return 1.00;
+      case 'Rent': return 0.95;
+      case 'Food': return 0.90;
+      case 'Transport': return 0.85;
+      case 'Electricity': return 0.82;
+      case 'Tuition': return 0.78;
+      case 'Data': return 0.70;
+      default: return 0.55;
+    }
   };
 
   this.getFoodScore = function(value) {
-    var scores = {
-      'R501-R1000': 0.35,
-      'R1001-R2000': 0.60,
-      'R2001-R3000': 0.82,
-      'R3000+': 1.00
-    };
-
-    return scores[value] || 0.25;
+    switch (value) {
+      case 'R3000+': return 1.00;
+      case 'R2001-R3000': return 0.82;
+      case 'R1001-R2000': return 0.60;
+      case 'R501-R1000': return 0.35;
+      case 'R0-R500': return 0.15;
+      default: return 0.25;
+    }
   };
 
   this.getTransportScore = function(value) {
-    var scores = {
-      'R0-R300': 0.20,
-      'R301-R600': 0.40,
-      'R601-R1000': 0.62,
-      'R1001-R1500': 0.82,
-      'R1500+': 1.00
-    };
-
-    return scores[value] || 0.25;
+    switch (value) {
+      case 'R1500+': return 1.00;
+      case 'R1001-R1500': return 0.82;
+      case 'R601-R1000': return 0.62;
+      case 'R301-R600': return 0.40;
+      case 'R0-R300': return 0.20;
+      default: return 0.25;
+    }
   };
 
   this.draw = function() {
@@ -134,7 +137,6 @@ function SurveyPressureIndex() {
     this.drawComponentBars();
   };
 
-  // Scoring / lookups
 
   this.drawLoading = function() {
     background(SATheme.bg);
@@ -163,7 +165,6 @@ function SurveyPressureIndex() {
          isPhoneChart() ? 50 : 36);
   };
 
-  // Gauge geometry, shared with drawComponentBars so the two never collide.
   this.gaugeCenterY = function() {
     return isCompactChart() ? Math.min(height * 0.43, 218) : height * 0.56;
   };
@@ -176,53 +177,51 @@ function SurveyPressureIndex() {
     return Math.max(compact ? 72 : 96, radius);
   };
 
-  // Bottom of the gauge including the value and "out of 100" text beneath it.
   this.gaugeBottom = function() {
     return this.gaugeCenterY() + (isCompactChart() ? 66 : 84);
   };
 
   this.drawGauge = function() {
-    var compact = isCompactChart();
-    var centerX = compact ? width / 2 : width * 0.34;
-    var centerY = this.gaugeCenterY();
-    var radius = this.gaugeRadius();
+    var isCompact = isCompactChart();
+    var gaugeOriginX = isCompact ? (width / 2) : (width * 0.34);
+    var gaugeOriginY = this.gaugeCenterY();
+    var dialRadius = this.gaugeRadius();
+    var strokeThick = isCompact ? 14 : 18;
 
     noFill();
-    strokeWeight(compact ? 14 : 18);
+    strokeWeight(strokeThick);
     strokeCap(ROUND);
 
-    // Semicircular gauge split into three equal thirds using SA flag colours: green (low), gold (medium), red (high).
+    var spanThird = PI / 3.0;
     stroke(SATheme.green);
-    arc(centerX, centerY, radius * 2, radius * 2, PI, PI + (PI * 0.33));
+    arc(gaugeOriginX, gaugeOriginY, dialRadius * 2, dialRadius * 2, PI, PI + spanThird);
     stroke(SATheme.gold);
-    arc(centerX, centerY, radius * 2, radius * 2, PI + (PI * 0.33), PI + (PI * 0.66));
+    arc(gaugeOriginX, gaugeOriginY, dialRadius * 2, dialRadius * 2, PI + spanThird, PI + (2 * spanThird));
     stroke(SATheme.red);
-    arc(centerX, centerY, radius * 2, radius * 2, PI + (PI * 0.66), TWO_PI);
+    arc(gaugeOriginX, gaugeOriginY, dialRadius * 2, dialRadius * 2, PI + (2 * spanThird), TWO_PI);
 
-    // Needle angle maps the 0-100 index onto the gauge's PI..TWO_PI sweep.
-    var needleAngle = map(this.index, 0, 100, PI, TWO_PI);
-    var needleLength = radius * 0.78;
+    var targetRad = map(this.index, 0, 100, PI, TWO_PI);
+    var pointerLen = dialRadius * 0.78;
     stroke(SATheme.axis);
     strokeWeight(4);
-    line(centerX,
-         centerY,
-         centerX + cos(needleAngle) * needleLength,
-         centerY + sin(needleAngle) * needleLength);
+    var tipX = gaugeOriginX + Math.cos(targetRad) * pointerLen;
+    var tipY = gaugeOriginY + Math.sin(targetRad) * pointerLen;
+    line(gaugeOriginX, gaugeOriginY, tipX, tipY);
 
     noStroke();
     fill(SATheme.text);
-    circle(centerX, centerY, 12);
+    circle(gaugeOriginX, gaugeOriginY, 12);
 
     textAlign(CENTER, CENTER);
     textStyle(BOLD);
-    chartTextSize(compact ? 36 : 46);
+    chartTextSize(isCompact ? 36 : 46);
     fill(SATheme.text);
-    text(this.index, centerX, centerY + (compact ? 26 : 34));
+    text(this.index, gaugeOriginX, gaugeOriginY + (isCompact ? 26 : 34));
 
     textStyle(NORMAL);
-    chartTextSize(compact ? 11 : 13);
+    chartTextSize(isCompact ? 11 : 13);
     fill(SATheme.textMuted);
-    text('out of 100', centerX, centerY + (compact ? 54 : 70));
+    text('out of 100', gaugeOriginX, gaugeOriginY + (isCompact ? 54 : 70));
   };
 
   this.drawComponentBars = function() {
@@ -231,8 +230,6 @@ function SurveyPressureIndex() {
     var barWidth = compact ? width - 56 : width * 0.32;
     var barHeight = compact ? 10 : 12;
 
-    // Stacked under the gauge on a narrow canvas, so the rows have to fit whatever
-    // height is left rather than starting at a fixed offset.
     var rows = this.components.length;
     var startY = 118;
     var rowGap = 38;

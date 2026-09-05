@@ -1,5 +1,4 @@
-// What people cut back on, crossed with their employment status.
-// Source: project survey, 48 responses.
+// Shows cuts by employment status
 function SurveyCutbackHeatmap() {
 
   this.name = 'Cutback heatmap';
@@ -15,10 +14,11 @@ function SurveyCutbackHeatmap() {
     'Social life',
     'Clothing',
     'Electricity'
-  ];   // heatmap rows
-  this.statuses = ['Student', 'Employed', 'Unemployed', 'Studying and working'];   // heatmap columns
+  ];
+  this.statuses = ['Student', 'Employed', 'Unemployed', 'Studying and working'];
   this.counts = {};
-  this.maxCount = 0;   // highest single cell count, used to scale colour intensity
+  this.maxCount = 0;
+  this.representedRows = 0;
 
   this.preload = function() {
     var self = this;
@@ -32,7 +32,7 @@ function SurveyCutbackHeatmap() {
         self.loaded = true;
       },
       function(error) {
-        console.error('Could not load survey demo cutback data', error);
+        console.error('Could not load survey cutback data', error);
       });
   };
 
@@ -44,31 +44,58 @@ function SurveyCutbackHeatmap() {
     this.countCutbacks();
   };
 
-  // Tally, per cutback item and status group, how many respondents mentioned that item; also track the largest count for colour scaling.
-  this.countCutbacks = function() {
-    this.counts = {};
-    this.maxCount = 0;
+  this.parseCutbacks = function(cellText) {
+    var items = String(cellText || '').split(';');
+    var chosen = [];
 
-    for (var c = 0; c < this.cutbacks.length; c++) {
-      this.counts[this.cutbacks[c]] = {};
+    for (var i = 0; i < items.length; i++) {
+      var item = items[i].trim();
 
-      for (var s = 0; s < this.statuses.length; s++) {
-        this.counts[this.cutbacks[c]][this.statuses[s]] = 0;
+      if (item !== '') {
+        chosen.push(item);
       }
     }
 
-    for (var row = 0; row < this.table.getRowCount(); row++) {
-      var status = this.table.getString(row, 'status');
-      var cutbackText = this.table.getString(row, 'cut_back_on');
+    return chosen;
+  };
 
-      for (var i = 0; i < this.cutbacks.length; i++) {
-        var cutback = this.cutbacks[i];
+  // Counts cuts for each status
+  this.countCutbacks = function() {
+    this.counts = {};
+    this.maxCount = 0;
+    this.representedRows = 0;
 
-        if (this.counts[cutback].hasOwnProperty(status)
-            && cutbackText.indexOf(cutback) != -1) {
-          this.counts[cutback][status]++;
-          this.maxCount = max(this.maxCount, this.counts[cutback][status]);
+    for (var c = 0; c < this.cutbacks.length; c++) {
+      var itemKey = this.cutbacks[c];
+      this.counts[itemKey] = {};
+      for (var s = 0; s < this.statuses.length; s++) {
+        this.counts[itemKey][this.statuses[s]] = 0;
+      }
+    }
+
+    var totalRows = this.table.getRowCount();
+    for (var r = 0; r < totalRows; r++) {
+      var respondentStatus = this.table.getString(r, 'status');
+      if (this.statuses.indexOf(respondentStatus) === -1) {
+        continue;
+      }
+
+      var chosenItems = this.parseCutbacks(this.table.getString(r, 'cut_back_on'));
+      var hasMatch = false;
+
+      for (var i = 0; i < chosenItems.length; i++) {
+        var item = chosenItems[i];
+        if (item in this.counts) {
+          this.counts[item][respondentStatus]++;
+          if (this.counts[item][respondentStatus] > this.maxCount) {
+            this.maxCount = this.counts[item][respondentStatus];
+          }
+          hasMatch = true;
         }
+      }
+
+      if (hasMatch) {
+        this.representedRows++;
       }
     }
   };
@@ -94,7 +121,7 @@ function SurveyCutbackHeatmap() {
     fill(SATheme.text);
     noStroke();
     textAlign(CENTER, CENTER);
-    text('Loading demo cutback data...', width / 2, height / 2);
+    text('Loading cutback data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -116,58 +143,57 @@ function SurveyCutbackHeatmap() {
   };
 
   this.drawHeatmap = function() {
-    // The row labels need less room than the grid does, so on a very narrow canvas
-    // the left margin gives way first -- the grid must never run off the edge.
-    var rightPad = isPhoneChart() ? 12 : 24;
-    var left = isCompactChart() ? 92 : 148;
-    var minGrid = this.statuses.length * 30;
-    left = Math.min(left, Math.max(52, width - rightPad - minGrid));
+    var rightPadding = isPhoneChart() ? 12 : 24;
+    var defaultLeft = isCompactChart() ? 92 : 148;
+    var minGridSpan = this.statuses.length * 30;
+    var originX = Math.min(defaultLeft, Math.max(52, width - rightPadding - minGridSpan));
 
-    var top = isPhoneChart() ? 108 : (isCompactChart() ? 100 : 112);
-    var bottomPad = 62;
-    var cellWidth = (width - left - rightPad) / this.statuses.length;
-    var cellHeight = max(30, min(58, (height - top - bottomPad) / this.cutbacks.length));
+    var originY = isPhoneChart() ? 108 : (isCompactChart() ? 100 : 112);
+    var bottomMargin = 62;
+    var cellW = (width - originX - rightPadding) / this.statuses.length;
+    var cellH = Math.max(30, Math.min(58, (height - originY - bottomMargin) / this.cutbacks.length));
 
     textStyle(NORMAL);
     chartTextSize(isCompactChart() ? 10 : 12);
     noStroke();
 
-    for (var s = 0; s < this.statuses.length; s++) {
-      var statusLabel = isCompactChart()
-          ? this.getShortStatus(this.statuses[s])
-          : this.statuses[s];
+    for (var colIdx = 0; colIdx < this.statuses.length; colIdx++) {
+      var statusName = isCompactChart()
+        ? this.getShortStatus(this.statuses[colIdx])
+        : this.statuses[colIdx];
       fill(SATheme.text);
       textAlign(CENTER, BOTTOM);
-      text(statusLabel, left + (s * cellWidth) + (cellWidth / 2), top - 10);
+      text(statusName, originX + (colIdx * cellW) + (cellW / 2), originY - 10);
     }
 
-    for (var c = 0; c < this.cutbacks.length; c++) {
-      var cutback = this.cutbacks[c];
-      var y = top + (c * cellHeight);
+    for (var rowIdx = 0; rowIdx < this.cutbacks.length; rowIdx++) {
+      var cutbackName = this.cutbacks[rowIdx];
+      var blockY = originY + (rowIdx * cellH);
 
       fill(SATheme.text);
       textAlign(RIGHT, CENTER);
-      text(cutback, left - 12, y + (cellHeight / 2));
+      text(cutbackName, originX - 12, blockY + (cellH / 2));
 
-      for (var i = 0; i < this.statuses.length; i++) {
-        var status = this.statuses[i];
-        var count = this.counts[cutback][status];
-        var strength = this.maxCount > 0 ? count / this.maxCount : 0;
-        var x = left + (i * cellWidth);
+      for (var sIdx = 0; sIdx < this.statuses.length; sIdx++) {
+        var groupStatus = this.statuses[sIdx];
+        var responsesCount = this.counts[cutbackName][groupStatus];
+        var alphaRatio = this.maxCount > 0 ? (responsesCount / this.maxCount) : 0;
+        var blockX = originX + (sIdx * cellW);
+        var tileW = cellW - 4;
+        var tileH = cellH - 4;
 
-        // Red cell with alpha scaled by this group's count (darker = more people).
-        fill(SATheme.withAlpha(SATheme.redRGB, strength * 255));
+        fill(SATheme.withAlpha(SATheme.redRGB, alphaRatio * 255));
         stroke(SATheme.axis);
         strokeWeight(1);
-        rect(x, y, cellWidth - 4, cellHeight - 4);
+        rect(blockX, blockY, tileW, tileH);
 
         noStroke();
         fill(SATheme.text);
         textAlign(CENTER, CENTER);
-        text(count, x + ((cellWidth - 4) / 2), y + ((cellHeight - 4) / 2));
+        text(responsesCount, blockX + (tileW / 2), blockY + (tileH / 2));
 
-        if (mouseIsOverRect(x, y, cellWidth - 4, cellHeight - 4)) {
-          drawChartTooltip(cutback + ' / ' + status, String(count), 'responses');
+        if (mouseIsOverRect(blockX, blockY, tileW, tileH)) {
+          drawChartTooltip(cutbackName + ' / ' + groupStatus, String(responsesCount), 'responses');
         }
       }
     }

@@ -1,5 +1,4 @@
-// Share of individually owned farms and agricultural holdings, by population group.
-// Source: Department of Rural Development and Land Reform Land Audit Report 2017.
+// Shows farm and land ownership by group
 function ZALandOwnershipByGroup() {
 
   this.name = 'Land ownership';
@@ -103,59 +102,59 @@ function ZALandOwnershipByGroup() {
   };
 
   this.drawBars = function() {
-    var compact = isCompactChart();
-    var left = compact ? 98 : 142;
-    var right = width - 54;
-    var top = isPhoneChart() ? 134 : 118;
-    var barHeight = compact ? 24 : 30;
-    var gap = this.getBarGap();
-    var barWidth = right - left;
+    var isCompact = isCompactChart();
+    var xStart = isCompact ? 98 : 142;
+    var xEnd = width - 54;
+    var yStart = isPhoneChart() ? 134 : 118;
+    var barThick = isCompact ? 24 : 30;
+    var stepGap = this.getBarGap();
+    var maxSpan = xEnd - xStart;
 
     stroke(SATheme.grid);
     strokeWeight(1);
-    for (var tick = 0; tick <= 80; tick += 20) {
-      var x = map(tick, 0, 80, left, right);
-      line(x, top - 12, x, top + (gap * (this.rows.length - 1)) + barHeight + 10);
+    for (var tickVal = 0; tickVal <= 80; tickVal += 20) {
+      var tickX = map(tickVal, 0, 80, xStart, xEnd);
+      line(tickX, yStart - 12, tickX, yStart + (stepGap * (this.rows.length - 1)) + barThick + 10);
       if (!isPhoneChart()) {
         noStroke();
         fill(SATheme.textMuted);
         textStyle(NORMAL);
         chartTextSize(11);
         textAlign(CENTER, TOP);
-        text(tick + '%', x, top + (gap * (this.rows.length - 1)) + barHeight + 18);
+        text(tickVal + '%', tickX, yStart + (stepGap * (this.rows.length - 1)) + barThick + 18);
       }
       stroke(SATheme.grid);
     }
 
-    for (var i = 0; i < this.rows.length; i++) {
-      var row = this.rows[i];
-      var y = top + (i * gap);
-      var currentWidth = map(row.share, 0, 80, 0, barWidth);
-      var colour = row.group == 'White' ? SATheme.red : SATheme.green;
+    for (var idx = 0; idx < this.rows.length; idx++) {
+      var rowItem = this.rows[idx];
+      var rowY = yStart + (idx * stepGap);
+      var rowBarWidth = map(rowItem.share, 0, 80, 0, maxSpan);
+      var barCol = rowItem.group === 'White' ? SATheme.red : SATheme.green;
 
       noStroke();
       fill(SATheme.text);
       textStyle(BOLD);
-      chartTextSize(compact ? 10 : 12);
+      chartTextSize(isCompact ? 10 : 12);
       textAlign(RIGHT, CENTER);
-      text(row.group, left - 12, y + (barHeight / 2));
+      text(rowItem.group, xStart - 12, rowY + (barThick / 2));
 
-      drawBar(left, y, currentWidth, barHeight, colour);
+      drawBar(xStart, rowY, rowBarWidth, barThick, barCol);
 
-      if (mouseIsOverRect(left, y, currentWidth, barHeight)) {
-        drawChartTooltip(row.group, row.share.toFixed(1) + '%', formatThousands(row.hectares) + ' ha');
+      if (mouseIsOverRect(xStart, rowY, rowBarWidth, barThick)) {
+        drawChartTooltip(rowItem.group, rowItem.share.toFixed(1) + '%', formatThousands(rowItem.hectares) + ' ha');
       }
 
       fill(SATheme.text);
       textStyle(BOLD);
       chartTextSize(12);
       textAlign(LEFT, CENTER);
-      text(row.share.toFixed(0) + '%', left + currentWidth + 8, y + (barHeight / 2));
+      text(rowItem.share.toFixed(0) + '%', xStart + rowBarWidth + 8, rowY + (barThick / 2));
 
       textStyle(NORMAL);
-      chartTextSize(compact ? 9 : 10);
+      chartTextSize(isCompact ? 9 : 10);
       fill(SATheme.textMuted);
-      text(formatThousands(row.hectares) + ' ha', left, y + barHeight + (compact ? 8 : 12));
+      text(formatThousands(rowItem.hectares) + ' ha', xStart, rowY + barThick + (isCompact ? 8 : 12));
     }
 
     noStroke();

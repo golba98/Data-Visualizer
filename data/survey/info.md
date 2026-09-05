@@ -1,7 +1,7 @@
-# Survey Data Notes
+# Survey data notes
 
-## Cutback Normalization (`cut_back_on`)
+## Cutback normalisation
 
-The `cut_back_on` responses were rewritten with AI assistance to make the categories uniform and consistent across records.
+AI helped make `cut_back_on` categories consistent
 
-After the AI processing, all entries were manually checked and verified to ensure the answers and underlying meanings remained identical to the original responses, serving strictly as data cleanup and standardization.
+Every answer was checked by hand and kept its original meaning

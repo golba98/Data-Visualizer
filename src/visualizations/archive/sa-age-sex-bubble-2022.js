@@ -1,16 +1,15 @@
-// One bubble per age group: group size against the share of that group that is female.
-// Source: Statistics South Africa mid-year population estimates, 2022.
+// Draws age groups as bubbles
 function SAAgeSexBubble2022() {
 
   this.name = 'Age group size and female share';
   this.id = 'sa-age-sex-bubble-2022';
 
   this.loaded = false;
-  this.pad = 58;          // padding between the plot area and the canvas edge
-  this.dotSizeMin = 12;   // bubble diameter for the smallest age group
-  this.dotSizeMax = 42;   // bubble diameter for the largest age group
-  this.yMin = 45;         // female-% axis range (minimum)
-  this.yMax = 75;         // female-% axis range (maximum)
+  this.pad = 58;
+  this.dotSizeMin = 12;
+  this.dotSizeMax = 42;
+  this.yMin = 45;
+  this.yMax = 75;
 
   this.preload = function() {
     var self = this;
@@ -65,7 +64,6 @@ function SAAgeSexBubble2022() {
 
       ellipse(x, y, size, size);
 
-      // Label every other bubble (plus the 85+ group) to avoid crowding.
       if (i % 2 == 0 || ageGroup == '85+') {
         fill(SATheme.text);
         noStroke();

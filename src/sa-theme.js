@@ -1,4 +1,3 @@
-// One dark palette keeps every chart readable and consistent.
 var SATheme = {
   bg: '#121316',
   text: '#F5F7FA',
@@ -13,8 +12,6 @@ var SATheme = {
   blueRGB: [96, 165, 250],
   orange: '#FB923C',
   blueTint: '#93C5FD',
-  // Series colours, in the order charts assign them. The last three have no named
-  // key of their own -- they are only ever used from this list.
   categorical: ['#60A5FA', '#F5C451', '#22C55E', '#F87171', '#A78BFA', '#22D3EE', '#FB923C'],
 
   withAlpha: function(rgb, alpha) {

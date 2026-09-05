@@ -1,5 +1,4 @@
-// Share of national income taken by the top 10 percent, over time.
-// Source: WID.world via Our World in Data, 1993-2014.
+// Draws the top income share trend
 function ZAIncomeShareTrend() {
 
   this.name = 'Top income share';

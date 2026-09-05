@@ -1,6 +1,5 @@
-// Debug / test flags
 
-// Opt-in flags read from the query string.
+// Checks for a URL flag
 function hasQueryFlag(name) {
   if (typeof window == 'undefined' || !window.location) {
     return false;
@@ -9,7 +8,6 @@ function hasQueryFlag(name) {
   return new URLSearchParams(window.location.search).get(name) == '1';
 }
 
-// Console output that stays silent unless ?debug=1 is set, so temporary diagnostics never reach a normal visitor's console.
 function debugLog() {
   if (!hasQueryFlag('debug')) {
     return;
@@ -18,8 +16,7 @@ function debugLog() {
   console.log.apply(console, arguments);
 }
 
-// Returns the path unchanged, unless ?failData=1 is set -- then it points at a
-// missing file so the error path can be exercised on purpose.
+// Returns the normal or test data path
 function resolveDataPath(path) {
   if (hasQueryFlag('failData')) {
     return path + '.missing';
@@ -28,13 +25,10 @@ function resolveDataPath(path) {
   return path;
 }
 
-// Chart breakpoints. These read the p5 canvas size, not the window -- the canvas
-// is a good deal narrower than the viewport once the card padding is taken off.
 var CHART_PHONE_WIDTH = 520;
 var CHART_COMPACT_WIDTH = 720;
 var CHART_SHORT_HEIGHT = 320;
 
-// Smallest text we ever draw on a canvas. Anything under this is unreadable on a phone.
 var CHART_MIN_TEXT_SIZE = 10;
 
 function isPhoneChart() {
@@ -49,16 +43,14 @@ function isShortChart() {
   return height < CHART_SHORT_HEIGHT;
 }
 
-// textSize() with the legibility floor applied.
 function chartTextSize(size) {
   textSize(Math.max(CHART_MIN_TEXT_SIZE, size));
 }
 
-// Data processing helper functions.
+// Adds all values in an array
 function sum(data) {
   var total = 0;
 
-  // Ensure that data contains numbers and not strings.
   data = stringsToNumbers(data);
 
   for (let i = 0; i < data.length; i++) {
@@ -78,7 +70,6 @@ function sliceRowNumbers (row, start=0, end) {
   var rowData = [];
 
   if (!end) {
-    // Parse all values until the end of the row.
     end = row.arr.length;
   }
 
@@ -93,21 +84,35 @@ function stringsToNumbers (array) {
   return array.map(Number);
 }
 
-// Add thousands separators to a number, e.g.
+// Formats a number with commas
 function formatThousands(value) {
-  var number = Number(value);
-
-  if (!isFinite(number)) {
+  var num = Number(value);
+  if (!isFinite(num)) {
     return '—';
   }
 
-  return Math.round(number).toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+  var digits = String(Math.round(num));
+  var isNegative = false;
+  if (digits.charAt(0) === '-') {
+    isNegative = true;
+    digits = digits.slice(1);
+  }
+
+  var result = '';
+  var length = digits.length;
+  for (var i = 0; i < length; i++) {
+    if (i > 0 && (length - i) % 3 === 0) {
+      result += ',';
+    }
+    result += digits.charAt(i);
+  }
+
+  return isNegative ? '-' + result : result;
 }
 
-// Plotting helper functions
 
+// Draws the chart border
 function drawAxis(layout, colour) {
-  // Flat plot area: a plain border box around all four sides.
   push();
   var strokeCol = colour !== undefined ? colour : (typeof SATheme !== 'undefined' ? SATheme.axis : 80);
   stroke(strokeCol);
@@ -121,8 +126,6 @@ function drawAxis(layout, colour) {
 }
 
 function drawAxisLabels(xLabel, yLabel, layout) {
-  // On a very short canvas the tick labels already carry the units, and the axis
-  // captions would be drawn past the bottom edge.
   if (isShortChart()) return;
 
   push();
@@ -131,12 +134,10 @@ function drawAxisLabels(xLabel, yLabel, layout) {
   noStroke();
   textAlign('center', 'center');
 
-  // Draw x-axis label, centred below the plot.
   text(xLabel,
        (layout.plotWidth() / 2) + layout.leftMargin,
        layout.bottomMargin + (layout.marginSize * 1.5));
 
-  // Draw y-axis label, rotated 90 degrees and centred to the left of the plot.
   translate(layout.leftMargin - (layout.marginSize * 1.5),
             layout.bottomMargin / 2);
   rotate(- PI / 2);
@@ -146,7 +147,6 @@ function drawAxisLabels(xLabel, yLabel, layout) {
 
 function drawYAxisTickLabels(min, max, layout, mapFunction,
                              decimalPlaces) {
-  // Map function must be passed with .bind(this).
   var range = max - min;
   var yTickStep = range / layout.numYTickLabels;
   var textCol = typeof SATheme !== 'undefined' ? SATheme.textMuted : 160;
@@ -156,12 +156,10 @@ function drawYAxisTickLabels(min, max, layout, mapFunction,
   noStroke();
   textAlign('right', 'center');
 
-  // Draw all axis tick labels and grid lines.
   for (var i = 0; i <= layout.numYTickLabels; i++) {
     var value = min + (i * yTickStep);
     var y = mapFunction(value);
 
-    // Add tick label.
     fill(textCol);
     noStroke();
     text(value.toFixed(decimalPlaces),
@@ -169,7 +167,6 @@ function drawYAxisTickLabels(min, max, layout, mapFunction,
          y);
 
     if (layout.grid) {
-      // Add grid line.
       stroke(gridCol);
       strokeWeight(1);
       line(layout.leftMargin, y, layout.rightMargin, y);
@@ -178,7 +175,6 @@ function drawYAxisTickLabels(min, max, layout, mapFunction,
 }
 
 function drawXAxisTickLabel(value, layout, mapFunction) {
-  // Map function must be passed with .bind(this).
   var x = mapFunction(value);
   var textCol = typeof SATheme !== 'undefined' ? SATheme.textMuted : 160;
   var gridCol = typeof SATheme !== 'undefined' ? SATheme.grid : 40;
@@ -187,13 +183,11 @@ function drawXAxisTickLabel(value, layout, mapFunction) {
   noStroke();
   textAlign('center', 'center');
 
-  // Add tick label.
   text(value,
        x,
        layout.bottomMargin + layout.marginSize / 2);
 
   if (layout.grid) {
-    // Add grid line.
     stroke(gridCol);
     strokeWeight(1);
     line(x,
@@ -203,9 +197,7 @@ function drawXAxisTickLabel(value, layout, mapFunction) {
   }
 }
 
-// Flat 2D chart styling helpers
 
-// Draw a plain flat bar.
 function drawBar(x, y, w, h, col) {
   push();
   stroke(typeof SATheme !== 'undefined' ? SATheme.axis : 80);
@@ -217,7 +209,7 @@ function drawBar(x, y, w, h, col) {
 
 var pendingChartTooltip = null;
 
-// Queue the tooltip so it is drawn above every chart mark.
+// Stores the next chart tooltip
 function drawChartTooltip(label, value, extra) {
   pendingChartTooltip = { label: label, value: value, extra: extra };
 }
@@ -238,8 +230,6 @@ function drawPendingChartTooltip() {
   var maxWidth = width - 12;
   var boxWidth = Math.min(textWidth(message) + 20, maxWidth);
 
-  // Drop the bracketed extra, then ellipsise, rather than letting the box
-  // overflow a narrow canvas.
   if (textWidth(message) + 20 > maxWidth && extra) {
     message = label + ': ' + value;
     boxWidth = Math.min(textWidth(message) + 20, maxWidth);
@@ -252,8 +242,6 @@ function drawPendingChartTooltip() {
   var pointer = getChartPointer();
   var onTouch = typeof touches !== 'undefined' && touches.length > 0;
 
-  // A fingertip covers roughly 45px, so on touch the box has to clear it --
-  // above the pointer when there is room, below it when there is not.
   var lift = onTouch ? 58 : 38;
   var boxY = pointer.y - lift;
   if (boxY < 6) {
@@ -279,7 +267,6 @@ function drawPendingChartTooltip() {
   pop();
 }
 
-// Draw a compact crosshair behind the shared tooltip.
 function drawChartCrosshair(x, y) {
   if (!isFinite(x) || !isFinite(y)) return;
 
@@ -406,6 +393,7 @@ function rowsToExportData(rows) {
   return { columns: columns, rows: rows };
 }
 
+// Gets data ready for export
 function getVisualExportData(vis) {
   if (vis && typeof vis.getExportData === 'function') {
     var customData = vis.getExportData();
@@ -450,6 +438,7 @@ function escapeCSVCell(value) {
     : textValue;
 }
 
+// Downloads chart data as CSV
 function exportDataCSV(vis) {
   var data = getVisualExportData(vis);
   var lines = [data.columns.map(escapeCSVCell).join(',')];

@@ -1,9 +1,7 @@
-// Topic 8 -- software testing for this project.
 
 (function(global) {
   'use strict';
 
-  // Test harness
 
   function AssertionError(message) {
     this.name = 'AssertionError';
@@ -23,7 +21,6 @@
     this.currentSuite = name;
   };
 
-  // Run one test.
   TestRunner.prototype.test = function(name, testFunction) {
     this.total++;
 
@@ -48,9 +45,7 @@
     return record;
   };
 
-  // Assertions
 
-  // Values are compared after being made printable, so 3 and '3' are not treated as equal and the failure message shows both types.
   TestRunner.prototype.assertEqual = function(actual, expected, message) {
     if (actual === expected) {
       return;
@@ -62,7 +57,6 @@
       + ', actual: ' + describe(actual));
   };
 
-  // Float-tolerant comparison, for anything derived from map()/division.
   TestRunner.prototype.assertClose = function(actual, expected, tolerance, message) {
     var allowed = (tolerance === undefined) ? 1e-9 : tolerance;
 
@@ -118,7 +112,6 @@
     return String(value);
   }
 
-  // Reporting
 
   TestRunner.prototype.report = function() {
     var suites = {};
@@ -156,9 +149,7 @@
     console.groupEnd();
   };
 
-  // Test fixtures
 
-  // Build a real p5.Table so the tests exercise the same table API the charts use at runtime, instead of a hand-rolled stand-in.
   function makeTable(headers, rows) {
     var table = new p5.Table();
 
@@ -177,7 +168,6 @@
     return table;
   }
 
-  // Use the first two sanitized Survey App rows.
   var SURVEY_HEADERS = ['id', 'age', 'status', 'pressure', 'cost_increased',
                         'work_worry', 'income_keeps_up', 'transport_cost',
                         'food_cost'];
@@ -186,14 +176,11 @@
     [2, '18-21', 'Student', 'Data', 'Yes', 2, 4, 'R0-R300', 'R501-R1000']
   ];
 
-  // The full 2022 column of data/archive/population_group_census_1996_2022.csv, in file order (Black African, Coloured, Indian or Asian, White,...
   var CENSUS_2022_SHARES = ['81.4', '8.2', '2.7', '7.3', '0.4'];
 
-  // Unit tests -- each one calls a real function already used by the app
 
   function runUnitTests(t) {
 
-    // helper-functions.js : formatThousands
     t.suite('unit: formatThousands (helper-functions.js)');
 
     t.test('formats a large number with separators', function() {
@@ -221,14 +208,12 @@
     });
 
     t.test('invalid input falls back to an unavailable marker', function() {
-      // Chart labels are built straight from this, so a non-numeric cell must not end up rendered to the user as "RNaN".
       t.assertEqual(formatThousands('not a number'), '—',
         'non-numeric string');
       t.assertEqual(formatThousands(undefined), '—', 'missing value');
       t.assertEqual(formatThousands(Infinity), '—', 'non-finite value');
     });
 
-    // helper-functions.js : sum / mean / stringsToNumbers
     t.suite('unit: sum / mean (helper-functions.js)');
 
     t.test('sum adds a list of numbers', function() {
@@ -257,11 +242,9 @@
     });
 
     t.test('invalid input: mean of an empty list is not a number', function() {
-      // Documents the current behaviour so a caller knows it must guard against an empty column before displaying the result.
       t.assertTrue(isNaN(mean([])), 'empty list yields NaN, not 0');
     });
 
-    // survey-pressure-index.js : the three scoring lookups
     t.suite('unit: SurveyPressureIndex scoring (survey-pressure-index.js)');
 
     var index = new SurveyPressureIndex();
@@ -304,7 +287,6 @@
       t.assertEqual(index.getTransportScore('free'), 0.25, 'band not in table');
     });
 
-    // pie-chart.js : get_radians
     t.suite('unit: PieChart.get_radians (pie-chart.js)');
 
     var pie = new PieChart(0, 0, 100);
@@ -331,7 +313,6 @@
       t.assertClose(sum(angles), TWO_PI, 1e-9, 'sum of all slice angles');
     });
 
-    // gallery.js : registry and catalogue lookups
     t.suite('unit: Gallery lookups (gallery.js)');
 
     t.test('findVisIndex locates a registered visualisation', function() {
@@ -474,16 +455,341 @@
       t.assertTrue(SurveyData.note.indexOf('Real survey data') !== -1, 'the note does not claim the data is synthetic');
       t.assertTrue(SurveyData.source.indexOf('Real survey data') !== -1, 'the source does not claim the data is synthetic');
     });
+
+    t.suite('unit: Waffle counting and allocation (waffle/waffle.js)');
+
+    function makeWaffle(categories, values, across, down) {
+      var rows = [];
+      for (var i = 0; i < values.length; i++) {
+        rows.push([values[i]]);
+      }
+
+      var colours = {};
+      for (var c = 0; c < categories.length; c++) {
+        colours[categories[c]] = SATheme.categorical[c % SATheme.categorical.length];
+      }
+
+      return new Waffle(0, 0, 100, 100,
+                        across === undefined ? 10 : across,
+                        down === undefined ? 10 : down,
+                        makeTable(['pressure'], rows),
+                        'pressure', categories, colours);
+    }
+
+    function totalOf(boxTotals, categories) {
+      var total = 0;
+      for (var i = 0; i < categories.length; i++) {
+        total += boxTotals[categories[i]];
+      }
+      return total;
+    }
+
+    t.test('countCategories tallies only recognised categories', function() {
+      var categories = ['Food', 'Transport'];
+      var waffle = makeWaffle(categories, ['Food', 'Food', 'Transport', 'Childcare', '']);
+
+      t.assertEqual(waffle.countCategories(), 3, 'three rows fell into a known category');
+      t.assertEqual(waffle.counts.Food, 2, 'Food');
+      t.assertEqual(waffle.counts.Transport, 1, 'Transport');
+    });
+
+    t.test('countCategories trims surrounding whitespace before matching', function() {
+      var waffle = makeWaffle(['Food'], ['  Food  ']);
+
+      t.assertEqual(waffle.countCategories(), 1, 'a padded cell still matches');
+    });
+
+    t.test('an even split gives every category the same number of boxes', function() {
+      var categories = ['Food', 'Transport', 'Data', 'Rent'];
+      var waffle = makeWaffle(categories, categories);
+      var totals = waffle.calculateBoxTotals(waffle.countCategories());
+
+      t.assertEqual(totals.Food, 25, 'Food');
+      t.assertEqual(totals.Rent, 25, 'Rent');
+      t.assertEqual(totalOf(totals, categories), 100, 'the grid is exactly filled');
+    });
+
+    t.test('leftover boxes go to the largest fractional remainder', function() {
+      var categories = ['Food', 'Transport', 'Data'];
+      var waffle = makeWaffle(categories, ['Food', 'Food', 'Transport']);
+      var totals = waffle.calculateBoxTotals(waffle.countCategories());
+
+      t.assertEqual(totals.Food, 67, 'Food takes the leftover box');
+      t.assertEqual(totals.Transport, 33, 'Transport keeps its whole part');
+      t.assertEqual(totals.Data, 0, 'a category nobody chose gets no boxes');
+      t.assertEqual(totalOf(totals, categories), 100, 'the grid is exactly filled');
+    });
+
+    t.test('tied remainders are broken in category order, not at random', function() {
+      var categories = ['Food', 'Transport', 'Data'];
+      var waffle = makeWaffle(categories, categories);
+      var totals = waffle.calculateBoxTotals(waffle.countCategories());
+
+      t.assertEqual(totals.Food, 34, 'the first category wins the tie');
+      t.assertEqual(totals.Transport, 33, 'Transport');
+      t.assertEqual(totals.Data, 33, 'Data');
+      t.assertEqual(totalOf(totals, categories), 100, 'the grid is exactly filled');
+    });
+
+    t.test('lowest boundary: no valid rows leaves every category empty', function() {
+      var categories = ['Food', 'Transport', 'Data'];
+      var waffle = makeWaffle(categories, ['Childcare', '']);
+      var totals = waffle.calculateBoxTotals(waffle.countCategories());
+
+      t.assertEqual(totalOf(totals, categories), 0, 'no data means no boxes');
+      t.assertEqual(totals.Food, 0, 'Food');
+    });
+
+    t.test('an empty table draws no boxes at all', function() {
+      var waffle = makeWaffle(['Food', 'Transport'], []);
+      var filled = 0;
+
+      for (var row = 0; row < waffle.boxes.length; row++) {
+        for (var col = 0; col < waffle.boxes[row].length; col++) {
+          if (waffle.boxes[row][col]) {
+            filled++;
+          }
+        }
+      }
+
+      t.assertEqual(filled, 0, 'the grid is left empty rather than filled with category one');
+    });
+
+    t.test('the allocation fills whatever grid size it is given', function() {
+      var categories = ['Food', 'Transport', 'Data', 'Rent'];
+      var waffle = makeWaffle(categories, categories, 10, 5);
+      var totals = waffle.calculateBoxTotals(waffle.countCategories());
+
+      t.assertEqual(totalOf(totals, categories), 50, 'a 10x5 grid is exactly filled');
+      t.assertEqual(totals.Food, 13, 'first category takes a leftover');
+      t.assertEqual(totals.Rent, 12, 'last category keeps its whole part');
+    });
+
+    t.test('a real 48-row survey column still fills all 100 boxes', function() {
+      var categories = ['Food', 'Transport', 'Data', 'Rent', 'Tuition', 'Debt', 'Electricity'];
+      var values = [];
+      var distribution = [11, 10, 7, 7, 6, 5, 2];
+      for (var i = 0; i < categories.length; i++) {
+        for (var n = 0; n < distribution[i]; n++) {
+          values.push(categories[i]);
+        }
+      }
+
+      var waffle = makeWaffle(categories, values);
+      var totals = waffle.calculateBoxTotals(waffle.countCategories());
+
+      t.assertEqual(totalOf(totals, categories), 100, 'the grid is exactly filled');
+    });
+
+    t.suite('unit: SurveyCutbackHeatmap.countCutbacks (survey-cutback-heatmap.js)');
+
+    var CUTBACK_HEADERS = ['status', 'cut_back_on'];
+
+    t.test('a hand-counted fixture matches cell for cell', function() {
+      var chart = new SurveyCutbackHeatmap();
+      chart.table = makeTable(CUTBACK_HEADERS, [
+        ['Student', 'Meat; Data'],
+        ['Student', 'Meat'],
+        ['Employed', 'Transport; Meat'],
+        ['Freelancer', 'Meat']
+      ]);
+      chart.loaded = true;
+
+      chart.countCutbacks();
+
+      t.assertEqual(chart.counts.Meat.Student, 2, 'Meat / Student');
+      t.assertEqual(chart.counts.Meat.Employed, 1, 'Meat / Employed');
+      t.assertEqual(chart.counts.Data.Student, 1, 'Data / Student');
+      t.assertEqual(chart.counts.Transport.Employed, 1, 'Transport / Employed');
+      t.assertEqual(chart.counts.Clothing.Student, 0, 'a cutback nobody chose stays at zero');
+      t.assertEqual(chart.maxCount, 2, 'the busiest cell sets the colour scale');
+    });
+
+    t.test('a status outside the four known groups is left out', function() {
+      var chart = new SurveyCutbackHeatmap();
+      chart.table = makeTable(CUTBACK_HEADERS, [['Freelancer', 'Meat']]);
+      chart.loaded = true;
+
+      chart.countCutbacks();
+
+      t.assertEqual(chart.maxCount, 0, 'nothing was counted');
+      t.assertEqual(chart.representedRows, 0, 'the row is reported as unrepresented');
+    });
+
+    t.test('one cutback name inside another is not double counted', function() {
+      var chart = new SurveyCutbackHeatmap();
+      chart.cutbacks = ['Data', 'Data bundles'];
+      chart.table = makeTable(CUTBACK_HEADERS, [['Student', 'Data bundles']]);
+      chart.loaded = true;
+
+      chart.countCutbacks();
+
+      t.assertEqual(chart.counts['Data bundles'].Student, 1, 'the full name matched');
+      t.assertEqual(chart.counts.Data.Student, 0, 'the shorter name did not');
+    });
+
+    t.test('every row of valid input is represented', function() {
+      var chart = new SurveyCutbackHeatmap();
+      chart.table = makeTable(CUTBACK_HEADERS, [
+        ['Student', 'Meat'],
+        ['Employed', 'Data'],
+        ['Unemployed', 'Transport']
+      ]);
+      chart.loaded = true;
+
+      chart.countCutbacks();
+
+      t.assertEqual(chart.representedRows, 3, 'no row was silently dropped');
+    });
+
+    t.suite('unit: SurveyFoodTransportBurden.countBurden (survey-food-transport-burden.js)');
+
+    var BURDEN_HEADERS = ['food_cost', 'transport_cost'];
+
+    t.test('the cheapest food band is a real row of the grid', function() {
+      var chart = new SurveyFoodTransportBurden();
+      chart.table = makeTable(BURDEN_HEADERS, [['R0-R500', 'R0-R300']]);
+      chart.loaded = true;
+
+      chart.countBurden();
+
+      t.assertEqual(chart.counts['R0-R500']['R0-R300'], 1, 'the respondent is plotted');
+      t.assertEqual(chart.representedRows, 1, 'and counted as represented');
+    });
+
+    t.test('respondents land in the cell matching both of their bands', function() {
+      var chart = new SurveyFoodTransportBurden();
+      chart.table = makeTable(BURDEN_HEADERS, [
+        ['R3000+', 'R0-R300'],
+        ['R3000+', 'R0-R300'],
+        ['R501-R1000', 'R1500+']
+      ]);
+      chart.loaded = true;
+
+      chart.countBurden();
+
+      t.assertEqual(chart.counts['R3000+']['R0-R300'], 2, 'the busiest cell');
+      t.assertEqual(chart.counts['R501-R1000']['R1500+'], 1, 'the opposite corner');
+      t.assertEqual(chart.maxCount, 2, 'circle scaling uses the busiest cell');
+      t.assertEqual(chart.representedRows, 3, 'every row is represented');
+    });
+
+    t.test('a band outside the schema is dropped rather than miscounted', function() {
+      var chart = new SurveyFoodTransportBurden();
+      chart.table = makeTable(BURDEN_HEADERS, [['R9000+', 'R0-R300']]);
+      chart.loaded = true;
+
+      chart.countBurden();
+
+      t.assertEqual(chart.maxCount, 0, 'nothing plotted');
+      t.assertEqual(chart.representedRows, 0, 'the drop is visible in the count');
+    });
+
+    t.suite('unit: SurveyStatusPressure.countPressures (survey-status-pressure.js)');
+
+    var STATUS_PRESSURE_HEADERS = ['status', 'pressure'];
+
+    t.test('per-group totals equal the number of rows in that group', function() {
+      var chart = new SurveyStatusPressure();
+      chart.table = makeTable(STATUS_PRESSURE_HEADERS, [
+        ['Student', 'Food'],
+        ['Student', 'Food'],
+        ['Student', 'Data'],
+        ['Employed', 'Rent']
+      ]);
+      chart.loaded = true;
+
+      chart.countPressures();
+
+      t.assertEqual(chart.counts.Student.Food, 2, 'Student / Food');
+      t.assertEqual(chart.counts.Student.Data, 1, 'Student / Data');
+      t.assertEqual(chart.totals.Student, 3, 'three students in total');
+      t.assertEqual(chart.totals.Employed, 1, 'one employed respondent');
+      t.assertEqual(chart.totals.Unemployed, 0, 'a group with no rows stays at zero');
+    });
+
+    t.test('unknown statuses and pressures are excluded from the totals', function() {
+      var chart = new SurveyStatusPressure();
+      chart.table = makeTable(STATUS_PRESSURE_HEADERS, [
+        ['Student', 'Childcare'],
+        ['Freelancer', 'Food'],
+        ['Student', 'Food']
+      ]);
+      chart.loaded = true;
+
+      chart.countPressures();
+
+      t.assertEqual(chart.totals.Student, 1, 'only the recognised student row counted');
+      t.assertEqual(chart.representedRows, 1, 'two rows were dropped');
+    });
+
+    t.suite('unit: SurveyIncomeRealityGap.calculateRows (survey-income-reality-gap.js)');
+
+    var GAP_HEADERS = ['status', 'work_worry', 'income_keeps_up'];
+
+    function findGapRow(chart, label) {
+      for (var i = 0; i < chart.rows.length; i++) {
+        if (chart.rows[i].label === label) {
+          return chart.rows[i];
+        }
+      }
+      return null;
+    }
+
+    t.test('Overall averages every respondent, not just one group', function() {
+      var chart = new SurveyIncomeRealityGap();
+      chart.table = makeTable(GAP_HEADERS, [
+        ['Student', 5, 1],
+        ['Employed', 3, 2],
+        ['Employed', 1, 3]
+      ]);
+      chart.loaded = true;
+
+      chart.calculateRows();
+
+      var overall = findGapRow(chart, 'Overall');
+      t.assertClose(overall.worry, 3, 1e-9, 'mean work worry');
+      t.assertClose(overall.income, 2, 1e-9, 'mean income adequacy');
+      t.assertEqual(overall.count, 3, 'every row included');
+    });
+
+    t.test('each status group averages only its own rows', function() {
+      var chart = new SurveyIncomeRealityGap();
+      chart.table = makeTable(GAP_HEADERS, [
+        ['Student', 5, 1],
+        ['Employed', 3, 2],
+        ['Employed', 1, 3]
+      ]);
+      chart.loaded = true;
+
+      chart.calculateRows();
+
+      var employed = findGapRow(chart, 'Employed');
+      t.assertClose(employed.worry, 2, 1e-9, 'mean work worry for employed');
+      t.assertEqual(employed.count, 2, 'two employed respondents');
+    });
+
+    t.test('a group nobody belongs to is left out instead of averaging zero rows', function() {
+      var chart = new SurveyIncomeRealityGap();
+      chart.table = makeTable(GAP_HEADERS, [['Student', 5, 1]]);
+      chart.loaded = true;
+
+      chart.calculateRows();
+
+      t.assertNull(findGapRow(chart, 'Unemployed'), 'no empty row emitted');
+
+      for (var i = 0; i < chart.rows.length; i++) {
+        t.assertTrue(isFinite(chart.rows[i].worry), chart.rows[i].label + ' has a real average');
+      }
+    });
   }
 
-  // Integration tests -- output of one real unit fed into another
 
   function runIntegrationTests(t) {
 
     t.suite('integration: CSV row -> sliceRowNumbers -> mean -> formatThousands');
 
     t.test('a table row is parsed, averaged, and formatted for display', function() {
-      // The chain a chart actually uses: read a row out of a p5 table, slice its numeric columns, average them, then format for a label.
       var table = makeTable(
         ['population_group', '1996', '2001', '2011', '2022'],
         [['Black African', 31127631, 35416166, 41000938, 48000000]]);
@@ -504,7 +810,6 @@
     t.suite('integration: CSV column -> stringsToNumbers -> PieChart.get_radians');
 
     t.test('a string column becomes slice angles that map back to shares', function() {
-      // stringsToNumbers -> PieChart.get_radians -> sum, exactly as sa-population-group-census.js drives the pie chart.
       var values = stringsToNumbers(CENSUS_2022_SHARES);
       t.assertEqual(values[0], 81.4, 'largest share parsed as a number');
 
@@ -515,7 +820,6 @@
         'one angle per population group');
       t.assertClose(sum(angles), TWO_PI, 1e-9, 'slices fill the circle');
 
-      // The biggest group must own the biggest slice, in proportion.
       var total = sum(values);
       t.assertClose(angles[0] / TWO_PI, 81.4 / total, 1e-9,
         'largest slice keeps its share of the total');
@@ -524,7 +828,6 @@
     t.suite('integration: survey table -> calculateIndex -> components + score');
 
     t.test('survey rows produce the expected components and index', function() {
-      // Feeds a real p5 table through calculateIndex(), which internally calls getPressureScore, getFoodScore and getTransportScore.
       var index = new SurveyPressureIndex();
       index.table = makeTable(SURVEY_HEADERS, SURVEY_ROWS);
       index.loaded = true;
@@ -533,18 +836,12 @@
 
       t.assertEqual(index.components.length, 5, 'five pressure components');
 
-      // (0.90 + 0.70) / 2
       t.assertClose(index.components[0].value, 0.80, 1e-9, 'main pressure');
-      // (5/5 + 2/5) / 2
       t.assertClose(index.components[1].value, 0.70, 1e-9, 'work worry');
-      // ((6-1)/5 + (6-4)/5) / 2
       t.assertClose(index.components[2].value, 0.70, 1e-9, 'income gap');
-      // (1.00 + 0.35) / 2
       t.assertClose(index.components[3].value, 0.675, 1e-9, 'food cost');
-      // (0.20 + 0.20) / 2
       t.assertClose(index.components[4].value, 0.20, 1e-9, 'transport cost');
 
-      // Mean of the five components, scaled to 0-100 and rounded.
       t.assertEqual(index.index, 62, 'overall pressure index');
     });
 
@@ -562,7 +859,6 @@
     t.suite('integration: menu id -> gallery lookup -> chart details in the DOM');
 
     t.test('selecting a catalogue id populates the chart and info panels', function() {
-      // findVisIndex -> getCatalogueItem -> showChartDetails -> DOM, which is the chain a sidebar button click runs through.
       var previous = gallery.selectedVisual;
       var visId = 'za-land-ownership-by-group';
 
@@ -597,7 +893,6 @@
         t.assertEqual(selectedButton.dataset.visualId, visId,
           'the selected menu button matches the chart');
       } finally {
-        // Leave the app exactly as the test found it.
         if (previous === null) {
           gallery.showOverview();
         } else {
@@ -621,7 +916,6 @@
     t.suite('integration: asynchronous load state -> ZAGiniTrend draw branch');
 
     t.test('the chart refuses to derive scales before its data arrives', function() {
-      // Ready-state protection: setup() must be safe to call while the request is still in flight.
       var chart = new ZAGiniTrend();
 
       t.assertEqual(chart.isReady, false, 'starts not ready');
@@ -664,7 +958,6 @@
     });
   }
 
-  // System test cases -- manual, black-box, run against the whole app
 
   var systemTestCases = [
     {
@@ -821,7 +1114,6 @@
     }
   ];
 
-  // Public API
 
   function runAll() {
     if (typeof gallery === 'undefined' || gallery === null) {
@@ -832,7 +1124,6 @@
 
     var t = new TestRunner();
 
-    // Both suites are run before anything is reported or corrected, so one failure never hides the results of the tests after it.
     runUnitTests(t);
     runIntegrationTests(t);
 
@@ -847,7 +1138,6 @@
     };
   }
 
-  // Snapshot of the asynchronous load state, used as evidence that the loading, ready, and error states are real and observable.
   function describeLoadState() {
     if (typeof gallery === 'undefined' || gallery === null) {
       return null;
@@ -888,7 +1178,6 @@
     TestRunner: TestRunner
   };
 
-  // Only ever runs when ?test=1 is in the URL.
   if (typeof hasQueryFlag === 'function' && hasQueryFlag('test')) {
     global.addEventListener('load', function() {
       global.cm1010TestResults = runAll();

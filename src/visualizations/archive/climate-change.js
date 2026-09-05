@@ -1,5 +1,4 @@
-// Global average temperature anomaly, 1880-2025, with a year-range slider.
-// Source: NASA GISS via Our World in Data.
+// Draws the temperature anomaly trend
 function ClimateChange() {
 
   this.name = 'Global temperature anomaly';
@@ -29,7 +28,6 @@ function ClimateChange() {
 
     grid: false,
 
-    // Capped so tick labels never overlap.
     numXTickLabels: 8,
     numYTickLabels: 8,
   };
@@ -54,17 +52,14 @@ function ClimateChange() {
     chartTextSize(16);
     textAlign('center', 'center');
 
-    // Assumes the CSV is sorted by year.
     this.minYear = this.data.getNum(0, 'year');
     this.maxYear = this.data.getNum(this.data.getRowCount() - 1, 'year');
 
-    // Range used to map temperature onto canvas height.
     this.minTemperature = min(this.data.getColumn('temperature_anomaly_c'));
     this.maxTemperature = max(this.data.getColumn('temperature_anomaly_c'));
 
     this.meanTemperature = mean(this.data.getColumn('temperature_anomaly_c'));
 
-    // Frame counter, used to reveal the line one year at a time.
     this.frameCount = 0;
 
     var controls = document.getElementById('chart-controls');
@@ -133,7 +128,6 @@ function ClimateChange() {
       return;
     }
 
-    // Keep the two year sliders from crossing over.
     if (this.startSlider.value() >= this.endSlider.value()) {
       this.startSlider.value(this.endSlider.value() - 1);
     }
@@ -165,7 +159,6 @@ function ClimateChange() {
     var numYears = this.endYear - this.startYear;
     var segmentWidth = this.layout.plotWidth() / numYears;
 
-    // How many years are revealed this frame.
     var yearCount = 0;
 
     for (var i = 0; i < this.data.getRowCount(); i++) {
@@ -190,7 +183,6 @@ function ClimateChange() {
              this.mapYearToWidth(current.year),
              this.mapValueToHeight(current.temperature));
 
-        // Skip labels so only numXTickLabels are drawn.
         var xLabelSkip = ceil(numYears / this.layout.numXTickLabels);
 
         if (yearCount % xLabelSkip == 0) {
@@ -198,7 +190,6 @@ function ClimateChange() {
                              this.mapYearToWidth.bind(this));
         }
 
-        // With six or fewer years there is room for the final year's label too.
         if ((numYears <= 6
              && yearCount == numYears - 1)) {
           drawXAxisTickLabel(current.year, this.layout,
@@ -208,12 +199,10 @@ function ClimateChange() {
         yearCount++;
       }
 
-      // Stop once this frame's quota of years is drawn.
       if (yearCount >= this.frameCount) {
         break;
       }
 
-      // The current point becomes the next segment's start point.
       previous = current;
     }
 

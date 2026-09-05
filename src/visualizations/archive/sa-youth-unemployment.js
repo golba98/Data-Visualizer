@@ -1,5 +1,4 @@
-// Youth unemployment rate, 1991-2025.
-// Source: World Bank / Statistics South Africa.
+// Draws youth unemployment over time
 function SAYouthUnemployment() {
 
   this.name = 'Youth unemployment trend';
@@ -8,7 +7,7 @@ function SAYouthUnemployment() {
   this.xAxisLabel = 'year';
   this.yAxisLabel = '%';
 
-  var marginSize = 35;   // base spacing used to derive the plot margins below
+  var marginSize = 35;
 
   this.layout = {
     marginSize: marginSize,
@@ -94,7 +93,6 @@ function SAYouthUnemployment() {
 
     this.drawLegend();
 
-    // Trend line in SA flag blue.
     stroke(SATheme.blue);
     strokeWeight(3);
     noFill();

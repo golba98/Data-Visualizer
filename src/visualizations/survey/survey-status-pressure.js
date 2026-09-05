@@ -1,5 +1,4 @@
-// Which pressure each employment-status group reports most, as stacked bars.
-// Source: project survey, 48 responses.
+// Compares pressure by employment status
 function SurveyStatusPressure() {
 
   this.name = 'Student vs worker';
@@ -8,9 +7,10 @@ function SurveyStatusPressure() {
   this.loaded = false;
   this.statuses = ['Student', 'Employed', 'Unemployed', 'Studying and working'];
   this.pressures = ['Food', 'Transport', 'Data', 'Rent', 'Tuition', 'Debt', 'Electricity'];
-  this.colours = SATheme.pressure;   // SA flag colours, shared with the waffle chart
+  this.colours = SATheme.pressure;
   this.counts = {};
   this.totals = {};
+  this.representedRows = 0;
 
   this.preload = function() {
     var self = this;
@@ -24,7 +24,7 @@ function SurveyStatusPressure() {
         self.loaded = true;
       },
       function(error) {
-        console.error('Could not load demo status pressure data', error);
+        console.error('Could not load status pressure data', error);
       });
   };
 
@@ -36,28 +36,29 @@ function SurveyStatusPressure() {
     this.countPressures();
   };
 
-  // Count each status group's main-pressure responses and keep per-group totals.
   this.countPressures = function() {
     this.counts = {};
     this.totals = {};
+    this.representedRows = 0;
 
-    for (var s = 0; s < this.statuses.length; s++) {
-      var status = this.statuses[s];
-      this.counts[status] = {};
-      this.totals[status] = 0;
-
-      for (var p = 0; p < this.pressures.length; p++) {
-        this.counts[status][this.pressures[p]] = 0;
+    for (var sIdx = 0; sIdx < this.statuses.length; sIdx++) {
+      var st = this.statuses[sIdx];
+      this.counts[st] = {};
+      this.totals[st] = 0;
+      for (var pIdx = 0; pIdx < this.pressures.length; pIdx++) {
+        this.counts[st][this.pressures[pIdx]] = 0;
       }
     }
 
-    for (var row = 0; row < this.table.getRowCount(); row++) {
-      var rowStatus = this.table.getString(row, 'status');
-      var pressure = this.table.getString(row, 'pressure');
+    var totalRows = this.table.getRowCount();
+    for (var r = 0; r < totalRows; r++) {
+      var rowStatus = this.table.getString(r, 'status');
+      var rowPressure = this.table.getString(r, 'pressure');
 
-      if (this.counts[rowStatus] && this.counts[rowStatus].hasOwnProperty(pressure)) {
-        this.counts[rowStatus][pressure]++;
+      if (this.counts[rowStatus] && (rowPressure in this.counts[rowStatus])) {
+        this.counts[rowStatus][rowPressure]++;
         this.totals[rowStatus]++;
+        this.representedRows++;
       }
     }
   };
@@ -84,7 +85,7 @@ function SurveyStatusPressure() {
     fill(SATheme.text);
     noStroke();
     textAlign(CENTER, CENTER);
-    text('Loading demo status pressure data...', width / 2, height / 2);
+    text('Loading status pressure data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -106,58 +107,54 @@ function SurveyStatusPressure() {
   };
 
   this.drawStackedBars = function() {
-    var left = isCompactChart() ? 118 : 174;
-    // Reserve a gutter on the right for the "n=" totals drawn after each bar.
-    var right = width - (isCompactChart() ? 46 : 56);
-    var startY = 112;
-    var barHeight = isCompactChart() ? 28 : 34;
-    var gap = isCompactChart() ? 42 : 54;
-    var barWidth = right - left;
+    var isCompact = isCompactChart();
+    var barLeft = isCompact ? 118 : 174;
+    var barRight = width - (isCompact ? 46 : 56);
+    var originY = 112;
+    var barHeight = isCompact ? 28 : 34;
+    var rowStride = isCompact ? 42 : 54;
+    var fullWidth = barRight - barLeft;
 
-    for (var i = 0; i < this.statuses.length; i++) {
-      var status = this.statuses[i];
-      var y = startY + (i * gap);
-      var currentX = left;
+    for (var s = 0; s < this.statuses.length; s++) {
+      var statusKey = this.statuses[s];
+      var rowTop = originY + (s * rowStride);
+      var currentLeft = barLeft;
+      var groupTotal = this.totals[statusKey] || 0;
 
       fill(SATheme.text);
       noStroke();
       textStyle(BOLD);
-      chartTextSize(isCompactChart() ? 10 : 12);
+      chartTextSize(isCompact ? 10 : 12);
       textAlign(RIGHT, CENTER);
-      text(this.getShortStatus(status), left - 12, y + (barHeight / 2));
+      text(this.getShortStatus(statusKey), barLeft - 12, rowTop + (barHeight / 2));
 
       for (var p = 0; p < this.pressures.length; p++) {
-        var pressure = this.pressures[p];
-        var count = this.counts[status][pressure];
-        var segmentWidth = this.totals[status] > 0
-            ? (count / this.totals[status]) * barWidth
-            : 0;
+        var pressureKey = this.pressures[p];
+        var countVal = this.counts[statusKey][pressureKey];
+        var sliceWidth = groupTotal > 0 ? (countVal / groupTotal) * fullWidth : 0;
 
-        if (segmentWidth > 0) {
-          fill(this.colours[pressure]);
+        if (sliceWidth > 0) {
+          fill(this.colours[pressureKey]);
           stroke(SATheme.axis);
           strokeWeight(1);
-          rect(currentX, y, segmentWidth, barHeight);
+          rect(currentLeft, rowTop, sliceWidth, barHeight);
 
-          // Only label a segment when it's wide enough to fit the count.
-          if (segmentWidth > 24) {
+          if (sliceWidth > 24) {
             noStroke();
             fill(SATheme.text);
             textAlign(CENTER, CENTER);
             textStyle(BOLD);
             chartTextSize(11);
-            text(count, currentX + (segmentWidth / 2), y + (barHeight / 2));
+            text(countVal, currentLeft + (sliceWidth / 2), rowTop + (barHeight / 2));
           }
 
-          if (mouseIsOverRect(currentX, y, segmentWidth, barHeight)) {
-            var percent = this.totals[status] > 0
-              ? ((count / this.totals[status]) * 100).toFixed(1)
-              : '0.0';
-            drawChartTooltip(status + ' / ' + pressure, count + ' responses', percent + '% of group');
+          if (mouseIsOverRect(currentLeft, rowTop, sliceWidth, barHeight)) {
+            var pctText = groupTotal > 0 ? ((countVal / groupTotal) * 100).toFixed(1) : '0.0';
+            drawChartTooltip(statusKey + ' / ' + pressureKey, countVal + ' responses', pctText + '% of group');
           }
         }
 
-        currentX += segmentWidth;
+        currentLeft += sliceWidth;
       }
 
       noStroke();
@@ -165,7 +162,7 @@ function SurveyStatusPressure() {
       textStyle(NORMAL);
       chartTextSize(11);
       textAlign(LEFT, CENTER);
-      text('n=' + this.totals[status], right + 8, y + (barHeight / 2));
+      text('n=' + groupTotal, barRight + 8, rowTop + (barHeight / 2));
     }
   };
 
