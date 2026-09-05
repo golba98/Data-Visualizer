@@ -1,5 +1,4 @@
-// Life expectancy at birth for women and men, 1960-2024.
-// Source: World Bank / Our World in Data.
+// Draws life expectancy over time
 function SALifeExpectancy() {
 
   this.name = 'Life expectancy by sex';
@@ -8,7 +7,7 @@ function SALifeExpectancy() {
   this.xAxisLabel = 'year';
   this.yAxisLabel = 'years';
 
-  var marginSize = 35;   // base spacing used to derive the plot margins below
+  var marginSize = 35;
 
   this.layout = {
     marginSize: marginSize,
@@ -33,7 +32,6 @@ function SALifeExpectancy() {
 
   this.loaded = false;
 
-  // One line colour per data series.
   this.seriesColours = {
     'Female': SATheme.red,
     'Male': SATheme.blue,
@@ -79,7 +77,6 @@ function SALifeExpectancy() {
       });
     }
 
-    // Add ~8% headroom above and below the data so the lines don't touch the axes, then round the y-axis bounds to one decimal place.
     var minValue = min(allValues);
     var maxValue = max(allValues);
     var padding = max(1, (maxValue - minValue) * 0.08);
@@ -131,38 +128,31 @@ function SALifeExpectancy() {
   this.drawSeriesLines = function() {
     chartTextSize(12);
 
-    for (var i = 0; i < this.series.length; i++) {
-      var series = this.series[i];
-      series.colour = series.label == 'Female'
+    for (var s = 0; s < this.series.length; s++) {
+      var itemSeries = this.series[s];
+      itemSeries.colour = itemSeries.label === 'Female'
         ? SATheme.red
-        : (series.label == 'Male' ? SATheme.blue : SATheme.green);
-      var previous = null;
+        : (itemSeries.label === 'Male' ? SATheme.blue : SATheme.green);
 
-      stroke(series.colour);
+      stroke(itemSeries.colour);
       strokeWeight(2.5);
       noFill();
 
-      for (var j = 0; j < this.years.length; j++) {
-        var current = {
-          year: this.years[j],
-          value: series.values[j]
-        };
-
-        if (previous != null) {
-          line(this.mapYearToWidth(previous.year),
-               this.mapValueToHeight(previous.value),
-               this.mapYearToWidth(current.year),
-               this.mapValueToHeight(current.value));
-        }
-
-        previous = current;
+      for (var yIdx = 1; yIdx < this.years.length; yIdx++) {
+        var x1 = this.mapYearToWidth(this.years[yIdx - 1]);
+        var y1 = this.mapValueToHeight(itemSeries.values[yIdx - 1]);
+        var x2 = this.mapYearToWidth(this.years[yIdx]);
+        var y2 = this.mapValueToHeight(itemSeries.values[yIdx]);
+        line(x1, y1, x2, y2);
       }
 
-      this.drawSeriesLabel(series, previous.value);
+      if (this.years.length > 0) {
+        var lastVal = itemSeries.values[this.years.length - 1];
+        this.drawSeriesLabel(itemSeries, lastVal);
+      }
     }
   };
 
-  // Draw an end-of-line label (series name + dot) at the series' final value.
   this.drawSeriesLabel = function(series, finalValue) {
     var labelX = this.layout.rightMargin - 4;
     var labelY = this.mapValueToHeight(finalValue);

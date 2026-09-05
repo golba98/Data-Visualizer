@@ -1,5 +1,4 @@
-// Reported income set against reported financial worry.
-// Source: project survey, 48 responses.
+// Compares income pressure and worry
 function SurveyIncomeRealityGap() {
 
   this.name = 'Income reality gap';
@@ -7,7 +6,8 @@ function SurveyIncomeRealityGap() {
   this.table = null;
   this.loaded = false;
   this.statuses = ['Overall', 'Student', 'Employed', 'Unemployed', 'Studying and working'];
-  this.rows = [];   // per-status average worry vs income ratings
+  this.rows = [];
+  this.representedRows = 0;
 
   this.preload = function() {
     var self = this;
@@ -21,7 +21,7 @@ function SurveyIncomeRealityGap() {
         self.loaded = true;
       },
       function(error) {
-        console.error('Could not load demo income reality gap data', error);
+        console.error('Could not load income reality gap data', error);
       });
   };
 
@@ -33,33 +33,38 @@ function SurveyIncomeRealityGap() {
     this.calculateRows();
   };
 
-  // For each status group (plus an 'Overall' pass over everyone), average the work-worry and income-keeps-up ratings.
+  // Averages scores for each status
   this.calculateRows = function() {
     this.rows = [];
+    this.representedRows = 0;
+    var rowCount = this.table.getRowCount();
 
-    for (var i = 0; i < this.statuses.length; i++) {
-      var status = this.statuses[i];
-      var worryTotal = 0;
-      var incomeTotal = 0;
-      var count = 0;
+    for (var sIdx = 0; sIdx < this.statuses.length; sIdx++) {
+      var targetStatus = this.statuses[sIdx];
+      var accumWorry = 0;
+      var accumIncome = 0;
+      var tally = 0;
 
-      for (var row = 0; row < this.table.getRowCount(); row++) {
-        var rowStatus = this.table.getString(row, 'status');
-
-        if (status == 'Overall' || rowStatus == status) {
-          worryTotal += this.table.getNum(row, 'work_worry');
-          incomeTotal += this.table.getNum(row, 'income_keeps_up');
-          count++;
+      for (var r = 0; r < rowCount; r++) {
+        var personStatus = this.table.getString(r, 'status');
+        if (targetStatus === 'Overall' || personStatus === targetStatus) {
+          accumWorry += this.table.getNum(r, 'work_worry');
+          accumIncome += this.table.getNum(r, 'income_keeps_up');
+          tally++;
         }
       }
 
-      if (count > 0) {
+      if (tally > 0) {
         this.rows.push({
-          label: status,
-          worry: worryTotal / count,
-          income: incomeTotal / count,
-          count: count
+          label: targetStatus,
+          worry: accumWorry / tally,
+          income: accumIncome / tally,
+          count: tally
         });
+
+        if (targetStatus !== 'Overall') {
+          this.representedRows += tally;
+        }
       }
     }
   };
@@ -85,7 +90,7 @@ function SurveyIncomeRealityGap() {
     fill(SATheme.text);
     noStroke();
     textAlign(CENTER, CENTER);
-    text('Loading demo income gap data...', width / 2, height / 2);
+    text('Loading income gap data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -107,13 +112,13 @@ function SurveyIncomeRealityGap() {
   };
 
   this.drawScale = function() {
-    var left = isCompactChart() ? 122 : 172;
-    var right = width - 54;
-    var top = 124;
+    var scaleLeft = isCompactChart() ? 122 : 172;
+    var scaleRight = width - 54;
+    var scaleTop = 124;
 
     stroke(SATheme.grid);
     strokeWeight(1);
-    line(left, top, right, top);
+    line(scaleLeft, scaleTop, scaleRight, scaleTop);
 
     noStroke();
     fill(SATheme.textMuted);
@@ -121,62 +126,61 @@ function SurveyIncomeRealityGap() {
     textStyle(NORMAL);
     textAlign(CENTER, TOP);
 
-    for (var value = 1; value <= 5; value++) {
-      var x = map(value, 1, 5, left, right);
+    for (var score = 1; score <= 5; score++) {
+      var markerX = map(score, 1, 5, scaleLeft, scaleRight);
       stroke(SATheme.grid);
-      line(x, top - 4, x, height - 42);
+      line(markerX, scaleTop - 4, markerX, height - 42);
       noStroke();
-      text(value, x, top - 22);
+      text(score, markerX, scaleTop - 22);
     }
 
     fill(SATheme.textMuted);
     textAlign(LEFT, TOP);
-    text('Rating scale: 1 low, 5 high', left, top - 40);
+    text('Rating scale: 1 low, 5 high', scaleLeft, scaleTop - 40);
   };
 
   this.drawGapRows = function() {
-    var left = isCompactChart() ? 122 : 172;
-    var right = width - 54;
+    var chartLeft = isCompactChart() ? 122 : 172;
+    var chartRight = width - 54;
     var startY = 156;
-    var rowGap = min(54, (height - startY - 40) / this.rows.length);
-    var pointer = getChartPointer();
+    var rowStride = Math.min(54, (height - startY - 40) / this.rows.length);
+    var cursor = getChartPointer();
 
-    for (var i = 0; i < this.rows.length; i++) {
-      var item = this.rows[i];
-      var y = startY + (i * rowGap);
-      var worryX = map(item.worry, 1, 5, left, right);
-      var incomeX = map(item.income, 1, 5, left, right);
+    for (var row = 0; row < this.rows.length; row++) {
+      var itemData = this.rows[row];
+      var rowCenterY = startY + (row * rowStride);
+      var worryDotX = map(itemData.worry, 1, 5, chartLeft, chartRight);
+      var incomeDotX = map(itemData.income, 1, 5, chartLeft, chartRight);
 
-      // Dumbbell row: the line joins the income dot (blue) to the worry dot (red); a wider gap means more worry relative to income keeping up.
       stroke(SATheme.axis);
       strokeWeight(3);
-      line(incomeX, y, worryX, y);
+      line(incomeDotX, rowCenterY, worryDotX, rowCenterY);
 
       noStroke();
       fill(SATheme.blue);
-      circle(incomeX, y, 14);
+      circle(incomeDotX, rowCenterY, 14);
       fill(SATheme.red);
-      circle(worryX, y, 14);
+      circle(worryDotX, rowCenterY, 14);
 
-      if (dist(pointer.x, pointer.y, incomeX, y) < 12) {
-        drawChartTooltip(item.label, item.income.toFixed(2), 'income keeps up');
-      } else if (dist(pointer.x, pointer.y, worryX, y) < 12) {
-        drawChartTooltip(item.label, item.worry.toFixed(2), 'work worry');
+      if (dist(cursor.x, cursor.y, incomeDotX, rowCenterY) < 12) {
+        drawChartTooltip(itemData.label, itemData.income.toFixed(2), 'income keeps up');
+      } else if (dist(cursor.x, cursor.y, worryDotX, rowCenterY) < 12) {
+        drawChartTooltip(itemData.label, itemData.worry.toFixed(2), 'work worry');
       }
 
       fill(SATheme.text);
       textStyle(BOLD);
       chartTextSize(isCompactChart() ? 10 : 12);
       textAlign(RIGHT, CENTER);
-      text(this.getShortLabel(item.label), left - 12, y);
+      text(this.getShortLabel(itemData.label), chartLeft - 12, rowCenterY);
 
       fill(SATheme.textMuted);
       textStyle(NORMAL);
       textAlign(LEFT, CENTER);
-      text('n=' + item.count, right + 8, y);
+      text('n=' + itemData.count, chartRight + 8, rowCenterY);
     }
 
-    this.drawLegend(left, height - 24);
+    this.drawLegend(chartLeft, height - 24);
   };
 
   this.drawLegend = function(x, y) {

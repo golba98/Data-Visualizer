@@ -1,5 +1,4 @@
-// South Africa's Gini coefficient over time, with markers for 1994 and the peak year.
-// Source: World Bank Poverty and Inequality Platform via Our World in Data, 1993-2022.
+// Draws the Gini trend chart
 function ZAGiniTrend() {
 
   this.name = 'Gini trend';
@@ -7,16 +6,14 @@ function ZAGiniTrend() {
   this.xAxisLabel = 'year';
   this.yAxisLabel = 'Gini';
 
-  // Asynchronous load state
 
-  // The CSV arrives over the network, so nothing in here may assume the table exists.
   this.dataPath = 'data/inequality/za_gini_trend.csv';
   this.data = null;
-  this.isLoading = false;    // request in flight
-  this.isReady = false;      // parsed and safe to draw
-  this.loadError = null;     // user-facing message once a load has failed
-  this.loadProgress = 0;     // 0 = requested, 1 = parsed
-  this.loaded = false;       // kept in sync with isReady for older call sites
+  this.isLoading = false;
+  this.isReady = false;
+  this.loadError = null;
+  this.loadProgress = 0;
+  this.loaded = false;
 
   var marginSize = 42;
   var rightPadding = 78;
@@ -42,13 +39,10 @@ function ZAGiniTrend() {
     numYTickLabels: 5
   };
 
-  // Asynchronous loading
 
-  // Start the request and hand both outcomes to their own callback.
   this.preload = function() {
     var self = this;
 
-    // Drop anything from a previous attempt, so a retry can never draw a stale table while its replacement is still in flight.
     this.data = null;
     this.startYear = undefined;
     this.endYear = undefined;
@@ -71,7 +65,6 @@ function ZAGiniTrend() {
       });
   };
 
-  // Success callback: the only place this.data is ever assigned.
   this.handleDataLoaded = function(table) {
     this.data = table;
     this.isLoading = false;
@@ -83,7 +76,6 @@ function ZAGiniTrend() {
     this.deriveScales();
   };
 
-  // Failure callback.
   this.handleDataError = function(error) {
     this.data = null;
     this.isLoading = false;
@@ -96,14 +88,12 @@ function ZAGiniTrend() {
     debugLog('ZAGiniTrend: loadTable failed for', this.dataPath, error);
   };
 
-  // Let the error state be recovered from rather than being a dead end.
   this.retryLoad = function() {
     this.preload();
   };
 
-  // Scales
 
-  // Derived from the table, so it may only run once the data is ready.
+  // Sets chart scales from loaded data
   this.deriveScales = function() {
     if (!this.isReady) {
       return;
@@ -116,7 +106,6 @@ function ZAGiniTrend() {
   };
 
   this.setup = function() {
-    // Ready-state protection: if the data has not arrived, leave the scales alone and let draw() show the loading or error state instead.
     this.deriveScales();
   };
 
@@ -158,7 +147,6 @@ function ZAGiniTrend() {
     chartTextSize(14);
     text('Loading inequality data...', width / 2, (height / 2) - 16);
 
-    // p5 0.10.2's loadTable gives no byte-level progress event, so the bar shows the two states the loader genuinely knows about -- requested and parsed...
     var barWidth = Math.min(220, width * 0.4);
     var barX = (width - barWidth) / 2;
     var barY = (height / 2) + 8;

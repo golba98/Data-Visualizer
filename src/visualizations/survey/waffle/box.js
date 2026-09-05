@@ -1,4 +1,4 @@
-// A single waffle cell: a coloured rectangle tagged with its category.
+// Draws one waffle chart cell
 function Box(x, y, width, height, category, colour) {
   this.x = x;
   this.y = y;

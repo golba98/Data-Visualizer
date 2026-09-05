@@ -1,5 +1,4 @@
-// Poverty headcount against the food-poverty line over time.
-// Source: World Bank PIP via OWID and Stats SA Poverty Trends, 1993-2023.
+// Draws poverty measures over time
 function ZAPovertyContext() {
 
   this.name = 'Poverty context';
@@ -83,7 +82,6 @@ function ZAPovertyContext() {
       this.setup();
     }
 
-    // On phones, reserve a narrow strip below the stacked legend so the single summary badge never covers a data point or reference line.
     this.layout.topMargin = isPhoneChart() ? 180 : 154;
 
     this.colours = [SATheme.blue, SATheme.gold, SATheme.red];
@@ -211,32 +209,37 @@ function ZAPovertyContext() {
   };
 
   this.drawSeries = function() {
-    var pointer = getChartPointer();
-    for (var s = 0; s < this.seriesNames.length; s++) {
-      var name = this.seriesNames[s];
-      var rows = this.series[name];
+    var cursor = getChartPointer();
+    for (var sIdx = 0; sIdx < this.seriesNames.length; sIdx++) {
+      var seriesLabel = this.seriesNames[sIdx];
+      var seriesPoints = this.series[seriesLabel];
+      var lineColour = this.colours[sIdx];
 
-      stroke(this.colours[s]);
+      stroke(lineColour);
       strokeWeight(3);
       noFill();
 
-      for (var i = 1; i < rows.length; i++) {
-        line(this.mapYearToWidth(rows[i - 1].year),
-             this.mapValueToHeight(rows[i - 1].value),
-             this.mapYearToWidth(rows[i].year),
-             this.mapValueToHeight(rows[i].value));
+      for (var p = 1; p < seriesPoints.length; p++) {
+        var prevX = this.mapYearToWidth(seriesPoints[p - 1].year);
+        var prevY = this.mapValueToHeight(seriesPoints[p - 1].value);
+        var curX = this.mapYearToWidth(seriesPoints[p].year);
+        var curY = this.mapValueToHeight(seriesPoints[p].value);
+        line(prevX, prevY, curX, curY);
       }
 
-      for (var j = 0; j < rows.length; j++) {
+      for (var pt = 0; pt < seriesPoints.length; pt++) {
+        var node = seriesPoints[pt];
+        var circleX = this.mapYearToWidth(node.year);
+        var circleY = this.mapValueToHeight(node.value);
+
         fill(SATheme.bg);
-        stroke(this.colours[s]);
+        stroke(lineColour);
         strokeWeight(2);
-        var pointX = this.mapYearToWidth(rows[j].year);
-        var pointY = this.mapValueToHeight(rows[j].value);
-        circle(pointX, pointY, 7);
-        if (dist(pointer.x, pointer.y, pointX, pointY) < 12) {
-          drawChartCrosshair(pointX, pointY);
-          drawChartTooltip(String(rows[j].year), rows[j].value.toFixed(1) + '%', name);
+        circle(circleX, circleY, 7);
+
+        if (dist(cursor.x, cursor.y, circleX, circleY) < 12) {
+          drawChartCrosshair(circleX, circleY);
+          drawChartTooltip(String(node.year), node.value.toFixed(1) + '%', seriesLabel);
         }
       }
     }

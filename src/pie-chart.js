@@ -1,10 +1,10 @@
-// Reusable animated pie chart with a legend that reflows into two columns on a phone.
+// Draws an animated pie chart
 function PieChart(x, y, diameter) {
 
   this.x = x;
   this.y = y;
   this.diameter = diameter;
-  this.labelSpace = 30;   // vertical gap between legend rows, in pixels
+  this.labelSpace = 30;
   this.currentData = null;
   this.targetData = null;
   this.animation = 1;
@@ -13,7 +13,7 @@ function PieChart(x, y, diameter) {
     return this.animation < 1;
   };
 
-  // Convert each data value into its slice angle (its share of TWO_PI).
+  // Changes values into pie angles
   this.get_radians = function(data) {
     var total = sum(data);
     var radians = [];
@@ -25,9 +25,9 @@ function PieChart(x, y, diameter) {
     return radians;
   };
 
+  // Draws the pie and its legend
   this.draw = function(data, labels, colours) {
 
-    // Data, labels and colours have to line up one-to-one.
     if (data.length == 0) {
       debugLog('PieChart: no data to draw');
       return;
@@ -70,7 +70,6 @@ function PieChart(x, y, diameter) {
       stroke(SATheme.axis);
       strokeWeight(1);
 
-      // The + 0.001 nudge forces p5 to render a visible slice even when a category's angle is 0.
       arc(this.x, this.y,
           this.diameter, this.diameter,
           lastAngle, lastAngle + angles[i] + 0.001);
@@ -104,13 +103,10 @@ function PieChart(x, y, diameter) {
     }
   };
 
-  // Height of one phone legend row. Labels wrap inside a fixed-width column, so the
-  // row pitch has to allow for the tallest label rather than assume a single line.
   this.phoneRowHeight = function() {
     return 34;
   };
 
-  // Draw one coloured swatch + label for the legend, stacked by index i.
   this.makeLegendItem = function(label, i, colour) {
     var phoneLayout = isPhoneChart();
     var columnWidth = Math.floor((width - 48) / 2);

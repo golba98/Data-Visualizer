@@ -8,6 +8,7 @@ const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const DEFAULT_CSV = resolve(ROOT, 'data/survey/za_survey_responses.csv');
 const DEFAULT_CONFIG = resolve(ROOT, 'src/survey-data.js');
 
+// Splits CSV text into rows
 export function parseCsv(text) {
   const rows = [];
   let row = [];
@@ -49,6 +50,7 @@ export function parseCsv(text) {
   return rows;
 }
 
+// Cleans survey rows for charts
 export function prepareRows(text) {
   const parsed = parseCsv(text);
   const headers = parsed.shift() || [];
@@ -104,6 +106,7 @@ function csvCell(value) {
   return /[",\r\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
 }
 
+// Creates the safe survey CSV
 export function makeCsv(rows) {
   const columns = [
     'age', 'status', 'pressure', 'cost_increased', 'work_worry',
@@ -112,6 +115,7 @@ export function makeCsv(rows) {
   return [columns.join(','), ...rows.map((row) => columns.map((column) => csvCell(row[column])).join(','))].join('\n') + '\n';
 }
 
+// Creates survey chart settings
 export function makeConfig(metadata) {
   return `var SurveyData = ${JSON.stringify({
     path: 'data/survey/za_survey_responses.csv',

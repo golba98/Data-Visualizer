@@ -1,12 +1,11 @@
-// Share of the population by group for each census year, drawn as a pie.
-// Source: Statistics South Africa census tables, 1996-2022.
+// Draws census groups as a pie chart
 function SAPopulationGroupCensus() {
 
   this.name = 'Population group by census year';
   this.id = 'sa-population-group-census';
 
   this.loaded = false;
-  this.years = ['1996', '2001', '2011', '2022'];   // census years available in the CSV
+  this.years = ['1996', '2001', '2011', '2022'];
   this.pie = null;
 
   this.preload = function() {
@@ -54,8 +53,6 @@ function SAPopulationGroupCensus() {
     }
   };
 
-  // Recentre and rescale the pie for the current canvas. On a phone it sits at the
-  // top with the legend below it; on a wide canvas it sits left of the legend.
   this.onResize = function() {
     if (!this.pie) return;
 
@@ -66,8 +63,6 @@ function SAPopulationGroupCensus() {
       return;
     }
 
-    // On a phone the legend sits under the pie in two columns, so the pie can only
-    // have whatever height is left after those rows are accounted for.
     var rows = Math.ceil(this.years.length / 2) + 1;
     var legendHeight = 24 + (rows * this.pie.phoneRowHeight());
     var diameter = Math.max(96, Math.min(width - 64, height - legendHeight - 40));

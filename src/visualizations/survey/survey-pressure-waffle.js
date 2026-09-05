@@ -1,5 +1,4 @@
-// Which cost people worry about most, as a 10x10 waffle where each cell is one response.
-// Source: project survey, 48 responses.
+// Shows the main money worry
 function SurveyPressureWaffle() {
 
   this.name = 'Survey pressure waffle';
@@ -36,7 +35,28 @@ function SurveyPressureWaffle() {
     this.buildWaffle();
   };
 
-  // (Re)build the waffle sized to the current canvas.
+  this.waffleSize = function() {
+    var dim = this.legendBelow
+      ? Math.min(width - 56, height * 0.44, 320)
+      : Math.min(width * 0.42, height * 0.58, 380);
+
+    return Math.max(180, Math.floor(dim));
+  };
+
+  this.waffleX = function(dim) {
+    if (this.legendBelow) {
+      return Math.floor((width - dim) / 2);
+    }
+    return Math.max(28, Math.floor(width * 0.10));
+  };
+
+  this.waffleY = function(dim) {
+    if (this.legendBelow) {
+      return 92;
+    }
+    return Math.max(92, Math.floor((height - dim) / 2));
+  };
+
   this.buildWaffle = function() {
     if (!this.loaded || !this.table) {
       return;
@@ -45,26 +65,17 @@ function SurveyPressureWaffle() {
     this.layoutWidth = width;
     this.layoutHeight = height;
     this.colours = SATheme.pressure;
-
     this.legendBelow = isCompactChart();
 
-    var waffleSize = this.legendBelow
-        ? Math.min(width - 56, height * 0.44, 320)
-        : Math.min(width * 0.42, height * 0.58, 380);
-    waffleSize = Math.max(180, Math.floor(waffleSize));
-
-    var x = this.legendBelow
-        ? Math.floor((width - waffleSize) / 2)
-        : Math.max(28, Math.floor(width * 0.10));
-    var y = this.legendBelow
-        ? 92
-        : Math.max(92, Math.floor((height - waffleSize) / 2));
+    var sideLength = this.waffleSize();
+    var posX = this.waffleX(sideLength);
+    var posY = this.waffleY(sideLength);
 
     this.waffle = new Waffle(
-      x,
-      y,
-      waffleSize,
-      waffleSize,
+      posX,
+      posY,
+      sideLength,
+      sideLength,
       this.boxesAcross,
       this.boxesDown,
       this.table,
@@ -157,7 +168,6 @@ function SurveyPressureWaffle() {
     }
   };
 
-  // Queued through the shared tooltip so it is painted above every waffle cell.
   this.drawTooltip = function(category) {
     var count = this.waffle.counts[category] || 0;
     var percent = this.table.getRowCount() > 0

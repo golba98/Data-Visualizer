@@ -1,5 +1,4 @@
-// Population size next to share of land and wealth, so the gap between the two is visible.
-// Source: WID.world via Our World in Data.
+// Compares population land and wealth shares
 function ZAOwnershipComparison() {
 
   this.name = 'Population vs ownership';
@@ -126,7 +125,6 @@ function ZAOwnershipComparison() {
     drawingContext.setLineDash([]);
     pop();
 
-    // Keep the explanatory badge away from the 10.0% value and first bar.
     if (!isCompactChart()) {
       drawAnnotationBadge(
         '10% reference',
@@ -139,55 +137,57 @@ function ZAOwnershipComparison() {
   };
 
   this.drawBars = function() {
-    var phoneLayout = isPhoneChart();
-    var left = phoneLayout ? 110 : (isCompactChart() ? 136 : 190);
-    var right = width - (phoneLayout ? 36 : 48);
-    var top = 128;
-    var barHeight = isCompactChart() ? 34 : 42;
-    var gap = isCompactChart() ? 68 : 82;
-    var barWidth = right - left;
+    var isPhone = isPhoneChart();
+    var isCompact = isCompactChart();
+    var leftEdge = isPhone ? 110 : (isCompact ? 136 : 190);
+    var rightEdge = width - (isPhone ? 36 : 48);
+    var startY = 128;
+    var rowHeight = isCompact ? 34 : 42;
+    var rowStride = isCompact ? 68 : 82;
+    var plotWidth = rightEdge - leftEdge;
 
     stroke(SATheme.grid);
     strokeWeight(1);
-    for (var tick = 0; tick <= 100; tick += phoneLayout ? 50 : 25) {
-      var x = map(tick, 0, 100, left, right);
-      line(x, top - 18, x, top + (gap * (this.rows.length - 1)) + barHeight + 18);
+    var stepSize = isPhone ? 50 : 25;
+    for (var mark = 0; mark <= 100; mark += stepSize) {
+      var gridX = map(mark, 0, 100, leftEdge, rightEdge);
+      line(gridX, startY - 18, gridX, startY + (rowStride * (this.rows.length - 1)) + rowHeight + 18);
       noStroke();
       fill(SATheme.textMuted);
-      chartTextSize(phoneLayout ? 9 : 11);
+      chartTextSize(isPhone ? 9 : 11);
       textAlign(CENTER, TOP);
-      text(tick + '%', x, top + (gap * (this.rows.length - 1)) + barHeight + 24);
+      text(mark + '%', gridX, startY + (rowStride * (this.rows.length - 1)) + rowHeight + 24);
       stroke(SATheme.grid);
     }
 
-    for (var i = 0; i < this.rows.length; i++) {
-      var row = this.rows[i];
-      var y = top + (i * gap);
-      var currentWidth = map(row.value, 0, 100, 0, barWidth);
+    for (var r = 0; r < this.rows.length; r++) {
+      var item = this.rows[r];
+      var yPos = startY + (r * rowStride);
+      var currentBarWidth = map(item.value, 0, 100, 0, plotWidth);
 
       noStroke();
       fill(SATheme.text);
       textStyle(BOLD);
-      chartTextSize(phoneLayout ? 9 : (isCompactChart() ? 11 : 13));
+      chartTextSize(isPhone ? 9 : (isCompact ? 11 : 13));
       textAlign(RIGHT, CENTER);
-      text(row.label, left - 12, y + (barHeight / 2));
+      text(item.label, leftEdge - 12, yPos + (rowHeight / 2));
 
-      drawBar(left, y, currentWidth, barHeight, row.colour);
+      drawBar(leftEdge, yPos, currentBarWidth, rowHeight, item.colour);
 
-      if (mouseIsOverRect(left, y, currentWidth, barHeight)) {
-        drawChartTooltip(row.label, row.value.toFixed(1) + '%', row.note);
+      if (mouseIsOverRect(leftEdge, yPos, currentBarWidth, rowHeight)) {
+        drawChartTooltip(item.label, item.value.toFixed(1) + '%', item.note);
       }
 
       fill(SATheme.text);
       textAlign(LEFT, CENTER);
       textStyle(BOLD);
-      chartTextSize(phoneLayout ? 10 : 13);
-      text(row.value.toFixed(1) + '%', left + currentWidth + 10, y + (barHeight / 2));
+      chartTextSize(isPhone ? 10 : 13);
+      text(item.value.toFixed(1) + '%', leftEdge + currentBarWidth + 10, yPos + (rowHeight / 2));
 
       textStyle(NORMAL);
       fill(SATheme.textMuted);
-      chartTextSize(phoneLayout ? 9 : 11);
-      text(row.note, left, y + barHeight + 17);
+      chartTextSize(isPhone ? 9 : 11);
+      text(item.note, leftEdge, yPos + rowHeight + 17);
     }
   };
 

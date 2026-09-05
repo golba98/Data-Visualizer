@@ -1,35 +1,42 @@
 
-// Global variable to store the gallery object.
 var gallery;
 var chartCanvas;
 var chartResizeFrame = null;
 var chartLoopStartedAt = 0;
 
-// Canvas sizing & layout
 
-// Measure the chart card so the canvas fills it. The card is display:none until a
-// chart is picked, so the fallbacks have to cope with a zero-sized container: on a
-// phone the sidebar is a drawer and takes no width, hence the two subtractions.
+// Finds the best canvas size
 function getChartCanvasSize() {
-  var chartContainer = document.getElementById('chart-container');
-  var sidebarWidth = windowWidth < 820 ? 40 : 320;
-  var width = chartContainer && chartContainer.clientWidth
-      ? chartContainer.clientWidth
-      : windowWidth - sidebarWidth;
-  var height = chartContainer && chartContainer.clientHeight
-      ? chartContainer.clientHeight
-      : windowHeight - 140;
+  var container = document.getElementById('chart-container');
+  var targetWidth = 0;
+  var targetHeight = 0;
+
+  if (container && container.clientWidth > 0) {
+    targetWidth = container.clientWidth;
+  } else if (typeof windowWidth !== 'undefined') {
+    targetWidth = windowWidth < 820 ? (windowWidth - 40) : (windowWidth - 320);
+  } else {
+    targetWidth = 800;
+  }
+
+  if (container && container.clientHeight > 0) {
+    targetHeight = container.clientHeight;
+  } else if (typeof windowHeight !== 'undefined') {
+    targetHeight = windowHeight - 140;
+  } else {
+    targetHeight = 500;
+  }
 
   return {
-    width: Math.max(280, Math.floor(width)),
-    height: Math.max(240, Math.floor(height))
+    width: Math.max(280, Math.floor(targetWidth)),
+    height: Math.max(240, Math.floor(targetHeight))
   };
 }
 
+// Resizes and redraws the chart
 function resizeChartCanvas() {
-  var size = getChartCanvasSize();
-  // Avoid p5 drawing part-way through a view switch before controls exist.
-  resizeCanvas(size.width, size.height, true);
+  var dimensions = getChartCanvasSize();
+  resizeCanvas(dimensions.width, dimensions.height, true);
 
   if (gallery && gallery.selectedVisual) {
     refreshVisualLayout(gallery.selectedVisual);
@@ -37,6 +44,7 @@ function resizeChartCanvas() {
   }
 }
 
+// Draws one frame or starts animation
 function requestChartRender(animate) {
   if (animate) {
     chartLoopStartedAt = typeof millis === 'function' ? millis() : 0;
@@ -55,7 +63,6 @@ function chartNeedsMoreFrames(vis) {
   return waitingForData && millis() - chartLoopStartedAt < 10000;
 }
 
-// Views are hidden while their content is being changed.
 function queueChartResize() {
   if (chartResizeFrame != null) cancelAnimationFrame(chartResizeFrame);
   chartResizeFrame = requestAnimationFrame(function() {
@@ -64,94 +71,77 @@ function queueChartResize() {
   });
 }
 
-// Recompute a visualisation's layout margins after a resize so its plot keeps filling the current canvas.
 function refreshVisualLayout(vis) {
-  if (vis.layout) {
-    if (!vis.layout.responsiveDefaults) {
-      vis.layout.responsiveDefaults = {
-        marginSize: vis.layout.marginSize,
-        leftMargin: vis.layout.leftMargin,
-        topMargin: vis.layout.topMargin,
-        rightPadding: vis.layout.rightPadding,
-        bottomPadding: vis.layout.bottomPadding,
-        numXTickLabels: vis.layout.numXTickLabels,
-        numYTickLabels: vis.layout.numYTickLabels
-      };
+  if (!vis || !vis.layout) {
+    if (vis && typeof vis.onResize === 'function') {
+      vis.onResize();
     }
-
-    var defaults = vis.layout.responsiveDefaults;
-    var phoneLayout = isPhoneChart();
-    if (phoneLayout) {
-      if (vis.layout.hasOwnProperty('marginSize')) vis.layout.marginSize = 28;
-      if (vis.layout.hasOwnProperty('leftMargin')) {
-        vis.layout.leftMargin = Math.min(defaults.leftMargin || 56, 56);
-      }
-      if (vis.layout.hasOwnProperty('numXTickLabels')) {
-        vis.layout.numXTickLabels = Math.min(defaults.numXTickLabels || 4, 4);
-      }
-      if (vis.layout.hasOwnProperty('numYTickLabels')) {
-        vis.layout.numYTickLabels = Math.min(defaults.numYTickLabels || 5, 5);
-      }
-    } else {
-      if (defaults.marginSize !== undefined) vis.layout.marginSize = defaults.marginSize;
-      if (defaults.leftMargin !== undefined) vis.layout.leftMargin = defaults.leftMargin;
-      if (defaults.numXTickLabels !== undefined) vis.layout.numXTickLabels = defaults.numXTickLabels;
-      if (defaults.numYTickLabels !== undefined) vis.layout.numYTickLabels = defaults.numYTickLabels;
-    }
-
-    // A landscape phone, or the guided story's 240px floor, leaves so little height
-    // that a default top margin of ~118px would squeeze the plot down to nothing.
-    if (isShortChart()) {
-      if (vis.layout.hasOwnProperty('topMargin')) {
-        vis.layout.topMargin = Math.min(defaults.topMargin || 88, 88);
-      }
-      if (vis.layout.hasOwnProperty('marginSize')) {
-        vis.layout.marginSize = Math.min(defaults.marginSize || 24, 24);
-      }
-      if (vis.layout.hasOwnProperty('numYTickLabels')) {
-        vis.layout.numYTickLabels = Math.min(vis.layout.numYTickLabels || 4, 4);
-      }
-    } else if (vis.layout.hasOwnProperty('topMargin') && defaults.topMargin !== undefined) {
-      vis.layout.topMargin = defaults.topMargin;
-    }
-
-    if (vis.layout.hasOwnProperty('rightMargin')) {
-      vis.layout.rightMargin = width - (phoneLayout
-        ? 18
-        : (defaults.rightPadding || vis.layout.marginSize || 0));
-    }
-    if (vis.layout.hasOwnProperty('bottomMargin')) {
-      vis.layout.bottomMargin = height - (isShortChart()
-        ? 52
-        : phoneLayout
-        ? 58
-        : (defaults.bottomPadding || ((vis.layout.marginSize || 0) * 2)));
-    }
+    return;
   }
 
-  // Charts with layout needs the shared margins can't express handle it themselves.
+  if (!vis.layout.responsiveDefaults) {
+    vis.layout.responsiveDefaults = {
+      marginSize: vis.layout.marginSize,
+      leftMargin: vis.layout.leftMargin,
+      topMargin: vis.layout.topMargin,
+      rightPadding: vis.layout.rightPadding,
+      bottomPadding: vis.layout.bottomPadding,
+      numXTickLabels: vis.layout.numXTickLabels,
+      numYTickLabels: vis.layout.numYTickLabels
+    };
+  }
+
+  var base = vis.layout.responsiveDefaults;
+  var isPhone = isPhoneChart();
+  var isShort = isShortChart();
+
+  if (isPhone) {
+    if ('marginSize' in vis.layout) vis.layout.marginSize = 28;
+    if ('leftMargin' in vis.layout) vis.layout.leftMargin = Math.min(base.leftMargin || 56, 56);
+    if ('numXTickLabels' in vis.layout) vis.layout.numXTickLabels = Math.min(base.numXTickLabels || 4, 4);
+    if ('numYTickLabels' in vis.layout) vis.layout.numYTickLabels = Math.min(base.numYTickLabels || 5, 5);
+  } else {
+    if (base.marginSize !== undefined) vis.layout.marginSize = base.marginSize;
+    if (base.leftMargin !== undefined) vis.layout.leftMargin = base.leftMargin;
+    if (base.numXTickLabels !== undefined) vis.layout.numXTickLabels = base.numXTickLabels;
+    if (base.numYTickLabels !== undefined) vis.layout.numYTickLabels = base.numYTickLabels;
+  }
+
+  if (isShort) {
+    if ('topMargin' in vis.layout) vis.layout.topMargin = Math.min(base.topMargin || 88, 88);
+    if ('marginSize' in vis.layout) vis.layout.marginSize = Math.min(base.marginSize || 24, 24);
+    if ('numYTickLabels' in vis.layout) vis.layout.numYTickLabels = Math.min(vis.layout.numYTickLabels || 4, 4);
+  } else if ('topMargin' in vis.layout && base.topMargin !== undefined) {
+    vis.layout.topMargin = base.topMargin;
+  }
+
+  if ('rightMargin' in vis.layout) {
+    vis.layout.rightMargin = width - (isPhone ? 18 : (base.rightPadding || vis.layout.marginSize || 0));
+  }
+  if ('bottomMargin' in vis.layout) {
+    var bottomPad = isShort ? 52 : (isPhone ? 58 : (base.bottomPadding || ((vis.layout.marginSize || 0) * 2)));
+    vis.layout.bottomMargin = height - bottomPad;
+  }
+
   if (typeof vis.onResize === 'function') {
     vis.onResize();
   }
 }
 
-// p5 lifecycle
 
+// Starts the canvas and chart gallery
 function setup() {
   var urlParams = typeof URLSearchParams !== 'undefined' ? new URLSearchParams(window.location.search) : null;
   if (urlParams && urlParams.get('embedded') === '1') {
     document.body.classList.add('embedded-chart');
   }
 
-  // Create a canvas for the chart card from index.html.
   var size = getChartCanvasSize();
   chartCanvas = createCanvas(size.width, size.height);
   chartCanvas.parent('chart-container');
 
-  // Create a new gallery object.
   gallery = new Gallery();
 
-  // Add the visualisation objects here.
   gallery.addVisual(new ZAGiniTrend());
   gallery.addVisual(new ZAPopulationGroupEarnings());
   gallery.addVisual(new ZADwellingOwnershipByGroup());
@@ -166,7 +156,6 @@ function setup() {
   gallery.addVisual(new SurveyIncomeRealityGap());
   gallery.addVisual(new SurveyStatusPressure());
 
-  // Archived: earlier drafts of the project, kept for reference below the survey section rather than deleted outright.
   gallery.addVisual(new SAPopulationGroupCensus());
   gallery.addVisual(new SAPopulationSexAge2022());
   gallery.addVisual(new SAAgeSexBubble2022());
@@ -228,6 +217,7 @@ function setup() {
   }
 }
 
+// Draws the selected chart
 function draw() {
   if (gallery && gallery.selectedVisual != null) {
     background(SATheme.bg);
@@ -250,8 +240,6 @@ function touchStarted() {
   if (gallery && gallery.selectedVisual) requestChartRender();
 }
 
-// p5 0.10.2 has no mouseReleased fallback for touchend, so without this the last
-// tooltip stays painted on the canvas after the finger lifts.
 function touchEnded() {
   if (gallery && gallery.selectedVisual) requestChartRender();
 }

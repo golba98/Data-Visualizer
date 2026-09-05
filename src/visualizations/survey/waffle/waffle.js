@@ -1,4 +1,4 @@
-// Waffle chart: a boxesAcross x boxesDown grid of Box cells whose colours show each category's share of the values in table[columnName].
+// Builds and draws a waffle chart
 function Waffle(x, y, width, height, boxesAcross, boxesDown, table, columnName, categories, colours) {
 
   this.x = x;
@@ -13,10 +13,9 @@ function Waffle(x, y, width, height, boxesAcross, boxesDown, table, columnName, 
   this.colours = colours;
   this.boxes = [];
   this.counts = {};
+  this.representedRows = 0;
 
-  // Build
 
-  // Count categories, work out how many boxes each one gets, then fill a row-by-row grid of Box objects.
   this.build = function() {
     var validTotal = this.countCategories();
     var boxTotals = this.calculateBoxTotals(validTotal);
@@ -38,26 +37,29 @@ function Waffle(x, y, width, height, boxesAcross, boxesDown, table, columnName, 
       var boxRow = [];
 
       for (var col = 0; col < this.boxesAcross; col++) {
-        var currentCategory = categoryForBoxes[boxIndex] || this.categories[0];
-        var colour = this.colours[currentCategory];
+        var currentCategory = categoryForBoxes[boxIndex];
+        boxIndex++;
+
+        if (currentCategory === undefined) {
+          boxRow.push(null);
+          continue;
+        }
+
         boxRow.push(new Box(
           this.x + (col * boxWidth),
           this.y + (row * boxHeight),
           boxWidth,
           boxHeight,
           currentCategory,
-          colour
+          this.colours[currentCategory]
         ));
-        boxIndex++;
       }
 
       this.boxes.push(boxRow);
     }
   };
 
-  // Counting
 
-  // Tally how many table rows fall into each known category.
   this.countCategories = function() {
     var total = 0;
     this.counts = {};
@@ -75,46 +77,58 @@ function Waffle(x, y, width, height, boxesAcross, boxesDown, table, columnName, 
       }
     }
 
+    this.representedRows = total;
+
     return total;
   };
 
-  // Box allocation
-
-  // Convert category counts into whole box totals using the largest-remainder method, so the boxes always sum to exactly totalBoxes.
+  // Shares cells across categories
   this.calculateBoxTotals = function(validTotal) {
-    var totalBoxes = this.boxesAcross * this.boxesDown;
-    var boxTotals = {};
-    var remainders = [];
-    var assigned = 0;
+    var capacity = this.boxesAcross * this.boxesDown;
+    var allocation = {};
+
+    if (validTotal <= 0) {
+      for (var k = 0; k < this.categories.length; k++) {
+        allocation[this.categories[k]] = 0;
+      }
+      return allocation;
+    }
+
+    var baseSum = 0;
+    var fractionList = [];
 
     for (var i = 0; i < this.categories.length; i++) {
-      var category = this.categories[i];
-      var exact = validTotal > 0
-          ? (this.counts[category] / validTotal) * totalBoxes
-          : 0;
-      var whole = Math.floor(exact);
+      var catName = this.categories[i];
+      var rawShare = (this.counts[catName] / validTotal) * capacity;
+      var integerBoxes = Math.floor(rawShare);
 
-      boxTotals[category] = whole;
-      assigned += whole;
-      remainders.push({
-        category: category,
-        remainder: exact - whole
+      allocation[catName] = integerBoxes;
+      baseSum += integerBoxes;
+
+      fractionList.push({
+        name: catName,
+        position: i,
+        frac: rawShare - integerBoxes
       });
     }
 
-    // Hand the leftover boxes to the categories with the largest fractional remainders first.
-    remainders.sort(function(a, b) {
-      return b.remainder - a.remainder;
+    fractionList.sort(function(itemA, itemB) {
+      var diff = itemB.frac - itemA.frac;
+      if (Math.abs(diff) > 1e-12) {
+        return diff;
+      }
+      return itemA.position - itemB.position;
     });
 
-    for (var extra = 0; extra < totalBoxes - assigned; extra++) {
-      boxTotals[remainders[extra % remainders.length].category]++;
+    var unallocated = capacity - baseSum;
+    for (var extra = 0; extra < unallocated; extra++) {
+      var topCandidate = fractionList[extra % fractionList.length];
+      allocation[topCandidate.name]++;
     }
 
-    return boxTotals;
+    return allocation;
   };
 
-  // Drawing & interaction
 
   this.draw = function() {
     for (var row = 0; row < this.boxes.length; row++) {
@@ -140,6 +154,5 @@ function Waffle(x, y, width, height, boxesAcross, boxesDown, table, columnName, 
     return null;
   };
 
-  // Build the grid immediately when the Waffle is constructed.
   this.build();
 }

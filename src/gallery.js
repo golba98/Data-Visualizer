@@ -1,6 +1,6 @@
+// Manages the chart menu and views
 function Gallery() {
 
-  // Store the current view and controls.
 
   this.visuals = [];
   this.selectedVisual = null;
@@ -17,7 +17,6 @@ function Gallery() {
 
   var self = this;
 
-  // Keep the menu and chart text together.
 
   this.catalogue = [
     {
@@ -260,7 +259,6 @@ function Gallery() {
     }
   ];
 
-  // Menu & navigation
 
   this.getSectionGroups = function() {
     return [
@@ -460,46 +458,54 @@ function Gallery() {
     return null;
   };
 
-  this.buildMenu = function() {
-    var menu = document.getElementById('visuals-menu');
-    menu.innerHTML = '';
-    var groups = this.getSectionGroups();
+  this.createSectionTab = function(group) {
+    var isActive = group.id === self.activeSectionId;
+    var tabBtn = document.createElement('button');
 
-    // 1.
-    var tabsNav = document.createElement('div');
-    tabsNav.className = 'section-tabs';
-    tabsNav.setAttribute('role', 'tablist');
-    tabsNav.setAttribute('aria-label', 'Story Sections');
-
-    for (var i = 0; i < groups.length; i++) {
-      var group = groups[i];
-      var tabBtn = document.createElement('button');
-      tabBtn.type = 'button';
-      tabBtn.className = 'section-tab-btn' + (group.id === self.activeSectionId ? ' active' : '');
-      tabBtn.id = 'tab-' + group.id;
-      tabBtn.setAttribute('role', 'tab');
-      tabBtn.setAttribute('aria-selected', group.id === self.activeSectionId ? 'true' : 'false');
-      tabBtn.setAttribute('aria-controls', 'section-links-container');
-      tabBtn.textContent = group.title;
-      tabBtn.dataset.sectionId = group.id;
-
-      tabBtn.addEventListener('click', function() {
-        var secId = this.dataset.sectionId;
-        self.selectSection(secId);
-      });
-
-      tabsNav.appendChild(tabBtn);
+    tabBtn.type = 'button';
+    tabBtn.id = 'tab-' + group.id;
+    tabBtn.className = 'section-tab-btn';
+    if (isActive) {
+      tabBtn.className += ' active';
     }
 
-    menu.appendChild(tabsNav);
+    tabBtn.textContent = group.title;
+    tabBtn.dataset.sectionId = group.id;
 
-    // 2.
-    var linksContainer = document.createElement('div');
-    linksContainer.id = 'section-links-container';
-    linksContainer.className = 'section-links-container';
-    linksContainer.setAttribute('role', 'tabpanel');
-    linksContainer.setAttribute('aria-labelledby', 'tab-' + self.activeSectionId);
-    menu.appendChild(linksContainer);
+    tabBtn.setAttribute('role', 'tab');
+    tabBtn.setAttribute('aria-selected', isActive ? 'true' : 'false');
+    tabBtn.setAttribute('aria-controls', 'section-links-container');
+
+    tabBtn.addEventListener('click', function() {
+      self.selectSection(this.dataset.sectionId);
+    });
+
+    return tabBtn;
+  };
+
+  // Builds the section menu
+  this.buildMenu = function() {
+    var menuRoot = document.getElementById('visuals-menu');
+    if (!menuRoot) return;
+    menuRoot.innerHTML = '';
+
+    var sectionGroups = this.getSectionGroups();
+    var tabsHeader = document.createElement('div');
+    tabsHeader.className = 'section-tabs';
+    tabsHeader.setAttribute('role', 'tablist');
+    tabsHeader.setAttribute('aria-label', 'Story Sections');
+
+    for (var idx = 0; idx < sectionGroups.length; idx++) {
+      tabsHeader.appendChild(this.createSectionTab(sectionGroups[idx]));
+    }
+    menuRoot.appendChild(tabsHeader);
+
+    var linksPanel = document.createElement('div');
+    linksPanel.id = 'section-links-container';
+    linksPanel.className = 'section-links-container';
+    linksPanel.setAttribute('role', 'tabpanel');
+    linksPanel.setAttribute('aria-labelledby', 'tab-' + self.activeSectionId);
+    menuRoot.appendChild(linksPanel);
 
     this.renderSectionLinks(this.activeSectionId);
     this.initMobileMenu();
@@ -619,8 +625,6 @@ function Gallery() {
     if (closeBtn) closeBtn.focus();
   };
 
-  // returnFocus is false when the drawer closes because a chart was picked -- moving
-  // focus back to the toggle would scroll the phone away from the chart.
   this.closeMobileMenu = function(returnFocus) {
     var sidebar = document.getElementById('sidebar');
     var toggleBtn = document.getElementById('mobile-menu-toggle');
@@ -639,8 +643,6 @@ function Gallery() {
     }
   };
 
-  // Keep Tab inside the open drawer -- it covers the page, so tabbing to what is
-  // behind it strands keyboard and screen-reader users on hidden controls.
   this.trapDrawerFocus = function(e) {
     if (e.key !== 'Tab' || !this.mobileMenuIsOpen()) return;
 
@@ -701,7 +703,6 @@ function Gallery() {
     }
   };
 
-  // Open or close the chart notes.
 
   this.initAboutPanel = function() {
     var toggleBtn = document.getElementById('about-chart-toggle');
@@ -756,8 +757,6 @@ function Gallery() {
       queueChartResize();
     }
 
-    // On a phone the panel stacks below the chart, off screen, so opening it looks
-    // like nothing happened unless we scroll to it.
     if (this.isAboutOpen && infoPanel && this.isMobileViewport()) {
       infoPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
       var infoTitle = document.getElementById('info-title');
@@ -766,59 +765,63 @@ function Gallery() {
     }
   };
 
-  // Overview cards
+
+  this.createDatasetCard = function(item) {
+    var card = document.createElement('article');
+    card.className = 'dataset-card';
+
+    var title = document.createElement('h4');
+    title.textContent = item.name;
+
+    var summary = document.createElement('p');
+    summary.textContent = item.shows;
+
+    var button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = 'Open visualisation';
+    button.dataset.visualId = item.id;
+    button.addEventListener('click', function() {
+      self.selectVisual(this.dataset.visualId);
+      self.scrollMobileViewToTop();
+    });
+
+    card.appendChild(title);
+    card.appendChild(summary);
+    card.appendChild(button);
+
+    return card;
+  };
 
   this.buildOverviewCards = function() {
-    var cards = document.getElementById('overview-cards');
-    cards.innerHTML = '';
+    var container = document.getElementById('overview-cards');
+    if (!container) return;
+    container.innerHTML = '';
 
-    for (var i = 0; i < this.catalogue.length; i++) {
-      var group = this.catalogue[i];
-      var groupEl = document.createElement('section');
-      groupEl.className = 'overview-group';
+    for (var gIndex = 0; gIndex < this.catalogue.length; gIndex++) {
+      var group = this.catalogue[gIndex];
+      var sectionElement = document.createElement('section');
+      sectionElement.className = 'overview-group';
 
-      var heading = document.createElement('h3');
-      heading.className = 'overview-group-title';
-      heading.textContent = group.title;
-      groupEl.appendChild(heading);
+      var sectionTitle = document.createElement('h3');
+      sectionTitle.className = 'overview-group-title';
+      sectionTitle.textContent = group.title;
+      sectionElement.appendChild(sectionTitle);
 
-      var groupCards = document.createElement('div');
-      groupCards.className = 'card-grid';
+      var gridElement = document.createElement('div');
+      gridElement.className = 'card-grid';
 
-      for (var j = 0; j < group.items.length; j++) {
-        var item = group.items[j];
-
-        if (this.findVisIndex(item.id) == null) {
-          continue;
+      var validCardCount = 0;
+      for (var itemIndex = 0; itemIndex < group.items.length; itemIndex++) {
+        var item = group.items[itemIndex];
+        if (this.findVisIndex(item.id) !== null) {
+          gridElement.appendChild(this.createDatasetCard(item));
+          validCardCount++;
         }
-
-        var card = document.createElement('article');
-        card.className = 'dataset-card';
-
-        var title = document.createElement('h4');
-        title.textContent = item.name;
-
-        var summary = document.createElement('p');
-        summary.textContent = item.shows;
-
-        var button = document.createElement('button');
-        button.type = 'button';
-        button.textContent = 'Open visualisation';
-        button.dataset.visualId = item.id;
-        button.addEventListener('click', function() {
-          self.selectVisual(this.dataset.visualId);
-          self.scrollMobileViewToTop();
-        });
-
-        card.appendChild(title);
-        card.appendChild(summary);
-        card.appendChild(button);
-        groupCards.appendChild(card);
       }
 
-      if (groupCards.children.length > 0) {
-        groupEl.appendChild(groupCards);
-        cards.appendChild(groupEl);
+      if (validCardCount > 0) {
+        sectionElement.appendChild(gridElement);
+        container.appendChild(sectionElement);
       }
     }
   };
@@ -849,7 +852,6 @@ function Gallery() {
       this.renderSectionLinks(parentSectionId);
     }
 
-    // Mark from the requested id instead of relying on selectedVisual.
     var buttons = document.querySelectorAll('.menu-button');
     for (var b = 0; b < buttons.length; b++) {
       var isSelected = buttons[b].dataset.visualId == visId;
@@ -868,11 +870,27 @@ function Gallery() {
     }
   };
 
-  // View switching (overview <-> chart)
+
+  this.showView = function(visibleId) {
+    var viewIds = ['overview', 'chart-view', 'comparison-view'];
+
+    for (var i = 0; i < viewIds.length; i++) {
+      var view = document.getElementById(viewIds[i]);
+
+      if (!view) {
+        continue;
+      }
+
+      if (viewIds[i] === visibleId) {
+        view.classList.remove('hidden');
+      } else {
+        view.classList.add('hidden');
+      }
+    }
+  };
 
   this.showOverview = function() {
-    if (this.selectedVisual != null
-        && this.selectedVisual.hasOwnProperty('destroy')) {
+    if (this.selectedVisual && typeof this.selectedVisual.destroy === 'function') {
       this.selectedVisual.destroy();
     }
 
@@ -881,69 +899,85 @@ function Gallery() {
     clear();
     noLoop();
 
-    document.getElementById('overview').classList.remove('hidden');
-    document.getElementById('chart-view').classList.add('hidden');
-    var comparison = document.getElementById('comparison-view');
-    if (comparison) comparison.classList.add('hidden');
-    var tour = document.getElementById('tour-view');
-    if (tour) tour.classList.add('hidden');
+    this.showView('overview');
+
+    var tourElement = document.getElementById('tour-view');
+    if (tourElement) {
+      tourElement.classList.add('hidden');
+    }
+
     this.isTourActive = false;
     this.setTourLayoutActive(false);
     this.updateSelectedMenu('overview');
-    if (!this.isEmbedded) this.updateHash('overview');
+    if (!this.isEmbedded) {
+      this.updateHash('overview');
+    }
     this.scrollMobileViewToTop();
   };
 
   this.clearChartControls = function() {
     var controls = document.getElementById('chart-controls');
-    controls.innerHTML = '';
+    if (controls) {
+      controls.innerHTML = '';
+    }
   };
 
   this.showChartDetails = function(vis) {
-    var metadata = this.getCatalogueItem(vis.id);
+    var meta = this.getCatalogueItem(vis.id) || {
+      title: vis.name,
+      shows: '',
+      finding: '',
+      source: '',
+      chartSource: ''
+    };
 
-    if (metadata == null) {
-      metadata = {
-        title: vis.name,
-        shows: '',
-        finding: '',
-        source: '',
-        chartSource: ''
-      };
+    this.showView('chart-view');
+
+    var chartTitleElem = document.getElementById('chart-title');
+    var infoTitleElem = document.getElementById('info-title');
+    var infoShowsElem = document.getElementById('info-shows');
+    var infoFindingElem = document.getElementById('info-finding');
+    var infoSourceElem = document.getElementById('info-source');
+    var chartSourceElem = document.getElementById('chart-source');
+
+    if (chartTitleElem) chartTitleElem.textContent = meta.title;
+    if (infoTitleElem) infoTitleElem.textContent = 'About this chart';
+    if (infoShowsElem) infoShowsElem.textContent = meta.shows;
+    if (infoFindingElem) infoFindingElem.textContent = meta.finding;
+    if (infoSourceElem) infoSourceElem.textContent = meta.source;
+    if (chartSourceElem) chartSourceElem.textContent = meta.chartSource;
+
+    var controlsPanel = document.getElementById('chart-controls');
+    if (controlsPanel) {
+      var saveBtn = this.makeActionButton('Save high-res PNG', 'Export this chart as a 3x PNG image', function() {
+        exportHighResolutionPNG(vis);
+      });
+      var csvBtn = this.makeActionButton('Download CSV', 'Download the chart-ready data as CSV', function() {
+        exportDataCSV(vis);
+      });
+      var compBtn = this.makeActionButton('Compare', 'Open this chart in comparison mode', function() {
+        self.openComparison(vis.id, self.getDefaultComparisonId(vis.id));
+      });
+      var annotBtn = this.makeActionButton(
+        this.annotationsEnabled ? 'Hide annotations' : 'Show annotations',
+        'Show or hide contextual chart annotations',
+        function() {
+          self.annotationsEnabled = !self.annotationsEnabled;
+          self.updateAnnotationButtons();
+        }
+      );
+      annotBtn.dataset.annotationButton = 'true';
+
+      controlsPanel.appendChild(saveBtn);
+      controlsPanel.appendChild(csvBtn);
+      if (!this.isTourActive) {
+        controlsPanel.appendChild(annotBtn);
+      }
+      if (!this.isEmbedded) {
+        controlsPanel.appendChild(compBtn);
+      }
     }
 
-    document.getElementById('overview').classList.add('hidden');
-    document.getElementById('chart-view').classList.remove('hidden');
-    var comparison = document.getElementById('comparison-view');
-    if (comparison) comparison.classList.add('hidden');
-    document.getElementById('chart-title').textContent = metadata.title;
-    document.getElementById('info-title').textContent = 'About this chart';
-    document.getElementById('info-shows').textContent = metadata.shows;
-    document.getElementById('info-finding').textContent = metadata.finding;
-    document.getElementById('info-source').textContent = metadata.source;
-    document.getElementById('chart-source').textContent = metadata.chartSource;
-    var controls = document.getElementById('chart-controls');
-    var saveButton = this.makeActionButton('Save high-res PNG', 'Export this chart as a 3x PNG image', function() {
-      exportHighResolutionPNG(vis);
-    });
-    var csvButton = this.makeActionButton('Download CSV', 'Download the chart-ready data as CSV', function() {
-      exportDataCSV(vis);
-    });
-    var compareButton = this.makeActionButton('Compare', 'Open this chart in comparison mode', function() {
-      self.openComparison(vis.id, self.getDefaultComparisonId(vis.id));
-    });
-    var annotationButton = this.makeActionButton(
-      this.annotationsEnabled ? 'Hide annotations' : 'Show annotations',
-      'Show or hide contextual chart annotations',
-      function() {
-        self.annotationsEnabled = !self.annotationsEnabled;
-        self.updateAnnotationButtons();
-      });
-    annotationButton.dataset.annotationButton = 'true';
-    controls.appendChild(saveButton);
-    controls.appendChild(csvButton);
-    if (!this.isTourActive) controls.appendChild(annotationButton);
-    if (!this.isEmbedded) controls.appendChild(compareButton);
     this.updateAnnotationButtons();
     this.updateSelectedMenu(vis.id);
   };
@@ -1018,7 +1052,6 @@ function Gallery() {
     var controls = document.getElementById('comparison-controls');
     controls.innerHTML = '';
     var selfGallery = this;
-    // Archived charts stay out of the comparison selectors.
     var archiveIds = [
       'sa-population-group-census',
       'sa-sex-age-2022',
@@ -1055,8 +1088,6 @@ function Gallery() {
     });
   };
 
-  // Each pane is a full copy of the app in an iframe. On a phone the panes stack, so
-  // the second one is loaded lazily rather than running a second p5 sketch off screen.
   this.renderComparisonPanes = function(leftId, rightId) {
     var panes = document.getElementById('comparison-panes');
     var lazy = this.isMobileViewport();
@@ -1098,42 +1129,36 @@ function Gallery() {
     });
   };
 
-  // Visualisation registry
 
-  // Add a new visualisation to the gallery.
   this.addVisual = function(vis) {
 
-    // Check that the vis object has an id and name.
     if (!vis.hasOwnProperty('id')
         || !vis.hasOwnProperty('name')) {
       alert('Make sure your visualisation has an id and name!');
     }
 
-    // Check that the vis object has a unique id.
     if (this.findVisIndex(vis.id) != null) {
       alert(`Vis '${vis.name}' has a duplicate id: '${vis.id}'`);
     }
 
     this.visuals.push(vis);
 
-    // Preload data if necessary.
     if (vis.hasOwnProperty('preload')) {
       vis.preload();
     }
   };
 
   this.findVisIndex = function(visId) {
-    // Search through the visualisations looking for one with the id matching visId.
     for (var i = 0; i < this.visuals.length; i++) {
       if (this.visuals[i].id == visId) {
         return i;
       }
     }
 
-    // Visualisation not found.
     return null;
   };
 
+  // Opens the chosen chart
   this.selectVisual = function(visId, fromHash, keepTour) {
     var visIndex = this.findVisIndex(visId);
 
@@ -1144,14 +1169,12 @@ function Gallery() {
         var tour = document.getElementById('tour-view');
         if (tour) tour.classList.add('hidden');
       }
-      // If the current visualisation has a deselect method run it.
       if (this.selectedVisual != null
           && this.selectedVisual.hasOwnProperty('destroy')) {
         this.selectedVisual.destroy();
       }
       this.clearChartControls();
 
-      // Select the visualisation in the gallery.
       this.selectedVisual = this.visuals[visIndex];
       this.showChartDetails(this.selectedVisual);
 
@@ -1159,7 +1182,6 @@ function Gallery() {
         queueChartResize();
       }
 
-      // Initialise visualisation if necessary.
       if (this.selectedVisual.hasOwnProperty('setup')) {
         this.selectedVisual.setup();
       }
