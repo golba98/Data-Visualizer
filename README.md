@@ -167,13 +167,6 @@ Gallery -> visualisation constructor -> preload / CSV loading
 | Improved for final submission | All 19 registered charts now share validated load transitions, terminal error handling, accessible feedback, and lifecycle cleanup. |
 | Newly added | `VisualizationLoadState`, constructor/interface coverage for every Gallery object, duplicate-ID and catalogue checks, and focused success/failure/cleanup tests. |
 
-## Development documentation
-
-| File | What it holds |
-| --- | --- |
-| [documentation/DEVELOPMENT_EVIDENCE.md](documentation/DEVELOPMENT_EVIDENCE.md) | Midterm to final progression, each change checked against the Git history |
-| [documentation/USER_TESTING_PROTOCOL.md](documentation/USER_TESTING_PROTOCOL.md) | Five-task moderated usability test and a blank results template |
-
 ## Conclusion
 
 This project uses official data and clearly labelled survey data to explain inequality in South Africa
