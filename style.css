@@ -126,6 +126,7 @@ button {
 .story-mode .page-header,
 .story-mode .chart-header,
 .story-mode .chart-source,
+.story-mode .chart-insight,
 .story-mode .info-panel {
   display: none;
 }
@@ -1464,8 +1465,22 @@ summary:focus-visible,
   }
 
   .chart-card {
+    grid-template-rows: auto minmax(0, 1fr) auto auto;
     min-height: 0;
     padding: 0.75rem;
+  }
+
+  .chart-card > .chart-container {
+    grid-row: 2;
+  }
+
+  .chart-card > .chart-insight {
+    grid-row: 3;
+    margin: 0.6rem 0 0;
+  }
+
+  .chart-card > .chart-source {
+    grid-row: 4;
   }
 
   .chart-container {
@@ -1517,7 +1532,12 @@ summary:focus-visible,
 
   .chart-controls input[type="range"] {
     max-width: 100%;
+    min-height: 44px;
     width: min(13rem, 70vw);
+  }
+
+  .chart-controls select {
+    min-height: 44px;
   }
 
   .comparison-controls {
