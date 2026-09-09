@@ -4,7 +4,9 @@ function SurveyCutbackHeatmap() {
   this.name = 'Cutback heatmap';
   this.id = 'survey-cutback-heatmap';
   this.table = null;
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading cutback data...'
+  });
   this.cutbacks = [
     'Meat',
     'Eating out',
@@ -23,17 +25,11 @@ function SurveyCutbackHeatmap() {
   this.preload = function() {
     var self = this;
 
-    this.table = loadTable(
-      SurveyData.path,
-      'csv',
-      'header',
-      function(table) {
-        self.table = table;
-        self.loaded = true;
-      },
-      function(error) {
-        console.error('Could not load survey cutback data', error);
-      });
+    this.loadState.loadTables([{
+      path: SurveyData.path,
+      requiredColumns: ['status', 'cut_back_on'],
+      assign: function(table) { self.table = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -101,10 +97,7 @@ function SurveyCutbackHeatmap() {
   };
 
   this.draw = function() {
-    if (!this.loaded || !this.table) {
-      this.drawLoading();
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (this.maxCount == 0) {
       this.countCutbacks();
@@ -114,14 +107,6 @@ function SurveyCutbackHeatmap() {
     this.drawTitle();
     this.drawHeatmap();
     this.drawLegend();
-  };
-
-  this.drawLoading = function() {
-    background(SATheme.bg);
-    fill(SATheme.text);
-    noStroke();
-    textAlign(CENTER, CENTER);
-    text('Loading cutback data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -236,5 +221,9 @@ function SurveyCutbackHeatmap() {
 
   this.getExportData = function() {
     return tableToExportData(this.table);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }

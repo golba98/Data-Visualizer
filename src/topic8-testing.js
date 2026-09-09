@@ -456,6 +456,220 @@
       t.assertTrue(SurveyData.source.indexOf('Real survey data') !== -1, 'the source does not claim the data is synthetic');
     });
 
+    t.suite('unit: registered visualisation constructor interface');
+
+    t.test('the Gallery contains exactly the 19 catalogue visualisations', function() {
+      var catalogueIds = [];
+      for (var section = 0; section < gallery.catalogue.length; section++) {
+        for (var item = 0; item < gallery.catalogue[section].items.length; item++) {
+          catalogueIds.push(gallery.catalogue[section].items[item].id);
+        }
+      }
+
+      var registeredIds = gallery.visuals.map(function(vis) { return vis.id; });
+      t.assertEqual(registeredIds.length, 19, 'registered constructor count');
+      t.assertEqual(registeredIds.slice().sort().join('|'), catalogueIds.slice().sort().join('|'),
+        'registered ids match the catalogue');
+    });
+
+    t.test('registered visualisation ids are unique', function() {
+      var ids = gallery.visuals.map(function(vis) { return vis.id; });
+      t.assertEqual(new Set(ids).size, ids.length, 'no duplicate Gallery ids');
+    });
+
+    gallery.visuals.forEach(function(registered) {
+      t.test(registered.id + ' can be constructed and fulfils the lifecycle contract', function() {
+        var visualisation = new registered.constructor();
+
+        t.assertTrue(visualisation instanceof registered.constructor,
+          'constructor returns its own object type');
+        t.assertEqual(visualisation.id, registered.id, 'constructor preserves its registered id');
+        t.assertTrue(typeof visualisation.id === 'string' && visualisation.id.length > 0,
+          'id is a non-empty string');
+        t.assertTrue(typeof visualisation.name === 'string' && visualisation.name.length > 0,
+          'name is a non-empty string');
+        t.assertEqual(typeof visualisation.preload, 'function', 'preload is a function');
+        t.assertEqual(typeof visualisation.setup, 'function', 'setup is a function');
+        t.assertEqual(typeof visualisation.draw, 'function', 'draw is a function');
+        t.assertEqual(typeof visualisation.destroy, 'function', 'destroy is a function');
+        t.assertTrue(visualisation.loadState instanceof VisualizationLoadState,
+          'the constructor composes a load-state object');
+
+        if (registered.id === 'sa-population-group-census'
+            || registered.id === 'sa-sex-age-2022'
+            || registered.id === 'sa-age-sex-bubble-2022') {
+          t.assertEqual(typeof visualisation.onResize, 'function',
+            'chart-specific resize hook is a function');
+        }
+
+        visualisation.destroy();
+      });
+    });
+
+    t.suite('unit: VisualizationLoadState lifecycle');
+
+    function makeLoadStateOwner(id) {
+      var owner = { id: id || 'load-state-test', name: 'Load state test' };
+      owner.loadState = new VisualizationLoadState(owner, {
+        loadingMessage: 'Loading test data...'
+      });
+      return owner;
+    }
+
+    function withMockedLoadTable(mock, testFunction) {
+      var originalLoadTable = window.loadTable;
+      try {
+        window.loadTable = mock;
+        testFunction();
+      } finally {
+        window.loadTable = originalLoadTable;
+      }
+    }
+
+    t.test('a valid table transitions from loading to ready', function() {
+      var owner = makeLoadStateOwner('load-success');
+      var table = makeTable(['value'], [[1]]);
+
+      withMockedLoadTable(function(path, type, header, success) {
+        t.assertEqual(owner.loadState.status, 'loading', 'request starts in loading');
+        success(table);
+      }, function() {
+        owner.loadState.loadTables([{
+          path: 'valid.csv',
+          requiredColumns: ['value'],
+          numericColumns: ['value']
+        }]);
+      });
+
+      t.assertEqual(owner.loadState.status, 'ready', 'valid data is ready');
+      t.assertTrue(owner.loaded, 'legacy loaded property stays synchronized');
+      t.assertEqual(owner.loadProgress, 1, 'progress is complete');
+      t.assertEqual(owner.loadState.draw(), false, 'ready state permits normal drawing');
+      t.assertEqual(document.getElementById('chart-load-status').getAttribute('role'), 'status',
+        'ready uses status semantics');
+      t.assertTrue(document.getElementById('chart-load-status').textContent.indexOf('ready') !== -1,
+        'ready state is announced once');
+      owner.loadState.destroy();
+    });
+
+    t.test('multiple resources stay loading until every table succeeds', function() {
+      var owner = makeLoadStateOwner('load-multiple');
+      var callbacks = [];
+
+      withMockedLoadTable(function(path, type, header, success) {
+        callbacks.push(success);
+      }, function() {
+        owner.loadState.loadTables([{ path: 'one.csv' }, { path: 'two.csv' }]);
+        callbacks[0](makeTable(['value'], [[1]]));
+        t.assertEqual(owner.loadState.status, 'loading', 'one pending table keeps loading');
+        t.assertClose(owner.loadProgress, 0.5, 1e-9, 'partial progress is visible');
+        callbacks[1](makeTable(['value'], [[2]]));
+      });
+
+      t.assertEqual(owner.loadState.status, 'ready', 'all resources are ready');
+    });
+
+    t.test('a failed request reaches a terminal error state', function() {
+      var owner = makeLoadStateOwner('load-failure');
+
+      withMockedLoadTable(function(path, type, header, success, failure) {
+        failure(new Error('network 404 detail'));
+      }, function() {
+        owner.loadState.loadTables([{ path: 'missing.csv' }]);
+      });
+
+      t.assertEqual(owner.loadState.status, 'error', 'failure is terminal');
+      t.assertEqual(owner.isLoading, false, 'failure cannot remain loading');
+      t.assertTrue(owner.loadError.indexOf('404') === -1, 'raw detail is not public');
+
+      owner.loadState.draw();
+      t.assertEqual(document.getElementById('chart-load-status').getAttribute('role'), 'alert',
+        'terminal failure uses alert semantics');
+      owner.loadState.destroy();
+    });
+
+    t.test('a late success cannot overwrite a terminal failure', function() {
+      var owner = makeLoadStateOwner('load-terminal');
+      var callbacks = [];
+
+      withMockedLoadTable(function(path, type, header, success, failure) {
+        callbacks.push({ success: success, failure: failure });
+      }, function() {
+        owner.loadState.loadTables([{ path: 'one.csv' }, { path: 'two.csv' }]);
+        callbacks[0].failure(new Error('first request failed'));
+        callbacks[1].success(makeTable(['value'], [[2]]));
+      });
+
+      t.assertEqual(owner.loadState.status, 'error', 'late success is ignored');
+      t.assertEqual(owner.loaded, false, 'owner never becomes drawable');
+    });
+
+    t.test('empty or malformed tables become terminal errors', function() {
+      var emptyOwner = makeLoadStateOwner('load-empty');
+      var malformedOwner = makeLoadStateOwner('load-malformed');
+
+      withMockedLoadTable(function(path, type, header, success) {
+        success(makeTable(['value'], []));
+      }, function() {
+        emptyOwner.loadState.loadTables([{ path: 'empty.csv', requiredColumns: ['value'] }]);
+      });
+
+      withMockedLoadTable(function(path, type, header, success) {
+        success(makeTable(['wrong'], [[1]]));
+      }, function() {
+        malformedOwner.loadState.loadTables([{ path: 'malformed.csv', requiredColumns: ['value'] }]);
+      });
+
+      t.assertEqual(emptyOwner.loadState.status, 'error', 'empty table rejected');
+      t.assertEqual(malformedOwner.loadState.status, 'error', 'missing column rejected');
+    });
+
+    t.test('an exception during successful-load processing becomes an error', function() {
+      var owner = makeLoadStateOwner('load-processing-error');
+
+      withMockedLoadTable(function(path, type, header, success) {
+        success(makeTable(['value'], [[1]]));
+      }, function() {
+        owner.loadState.loadTables([{ path: 'valid.csv', requiredColumns: ['value'] }], function() {
+          throw new Error('processing failed');
+        });
+      });
+
+      t.assertEqual(owner.loadState.status, 'error', 'processing exception is terminal');
+      t.assertEqual(owner.loaded, false, 'chart is not marked drawable');
+    });
+
+    t.test('an explicit new load may recover from an earlier error', function() {
+      var owner = makeLoadStateOwner('load-retry');
+      var attempt = 0;
+
+      withMockedLoadTable(function(path, type, header, success, failure) {
+        attempt++;
+        if (attempt === 1) failure(new Error('temporary failure'));
+        else success(makeTable(['value'], [[1]]));
+      }, function() {
+        owner.loadState.loadTables([{ path: 'retry.csv', requiredColumns: ['value'] }]);
+        t.assertEqual(owner.loadState.status, 'error', 'first attempt failed');
+        owner.loadState.loadTables([{ path: 'retry.csv', requiredColumns: ['value'] }]);
+      });
+
+      t.assertEqual(owner.loadState.status, 'ready', 'explicit retry reached ready');
+    });
+
+    t.test('destroy removes only the owner load-state announcement', function() {
+      var owner = makeLoadStateOwner('load-cleanup');
+      var region = document.getElementById('chart-load-status');
+
+      owner.loadState.announce('loading', owner.loadState.loadingMessage);
+      t.assertEqual(region.getAttribute('role'), 'status', 'loading uses status semantics');
+      t.assertEqual(region.dataset.visualisationId, owner.id, 'announcement records its owner');
+
+      owner.loadState.destroy();
+      t.assertEqual(region.textContent, '', 'announcement text removed');
+      t.assertNull(region.getAttribute('role'), 'live-region role removed');
+      t.assertEqual(region.dataset.visualisationId, undefined, 'ownership marker removed');
+    });
+
     t.suite('unit: Waffle counting and allocation (waffle/waffle.js)');
 
     function makeWaffle(categories, values, across, down) {
@@ -1045,13 +1259,12 @@
         + 'a plain-English sentence telling the user to check their connection and '
         + 'refresh. No stack trace, status code, or raw error object is shown to the '
         + 'user, and the rest of the page stays usable.',
-      actualResult: 'The canvas showed "This chart is unavailable" in red, followed '
-        + 'by "This chart could not load its data. Check your connection and refresh '
-        + 'the page." No status code, stack trace, or error object appeared on the '
-        + 'canvas. The sidebar kept all 20 buttons and stayed clickable, and the '
-        + 'info panel still showed the chart description and source.',
+      actualResult: 'The canvas showed "This chart is unavailable" followed by '
+        + '"Unable to load this visualisation. Check your connection and refresh '
+        + 'the page." The hidden live region used role="alert" with the same plain '
+        + 'message. All 19 registered charts reached error under ?failData=1.',
       status: 'Pass',
-      notes: 'describeLoadState() reported isLoading false, isReady false, '
+      notes: 'describeLoadState() reported status error, isLoading false, isReady false, '
         + 'loadProgress 0, rowCount null, and loadError set to the user-facing '
         + 'sentence. The underlying 404 is only written to the console, and only '
         + 'when ?debug=1 is also set.'
@@ -1138,27 +1351,34 @@
     };
   }
 
-  function describeLoadState() {
+  function describeLoadState(visId) {
     if (typeof gallery === 'undefined' || gallery === null) {
       return null;
     }
 
-    var visIndex = gallery.findVisIndex('za-gini-trend');
+    var visIndex = gallery.findVisIndex(visId || 'za-gini-trend');
     if (visIndex === null) {
       return null;
     }
 
     var chart = gallery.visuals[visIndex];
 
+    var table = chart.data || chart.table;
     return {
       id: chart.id,
       dataPath: chart.dataPath,
+      status: chart.loadState ? chart.loadState.status : null,
       isLoading: chart.isLoading,
       isReady: chart.isReady,
       loadProgress: chart.loadProgress,
       loadError: chart.loadError,
-      rowCount: chart.data ? chart.data.getRowCount() : null
+      rowCount: table ? table.getRowCount() : null
     };
+  }
+
+  function describeAllLoadStates() {
+    if (typeof gallery === 'undefined' || gallery === null) return [];
+    return gallery.visuals.map(function(vis) { return describeLoadState(vis.id); });
   }
 
   function describeRenderState() {
@@ -1173,6 +1393,7 @@
   global.cm1010Testing = {
     runAll: runAll,
     describeLoadState: describeLoadState,
+    describeAllLoadStates: describeAllLoadStates,
     describeRenderState: describeRenderState,
     systemTestCases: systemTestCases,
     TestRunner: TestRunner

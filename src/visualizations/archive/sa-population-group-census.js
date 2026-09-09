@@ -4,19 +4,20 @@ function SAPopulationGroupCensus() {
   this.name = 'Population group by census year';
   this.id = 'sa-population-group-census';
 
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading census data...'
+  });
   this.years = ['1996', '2001', '2011', '2022'];
   this.pie = null;
 
   this.preload = function() {
     var self = this;
-    this.data = loadTable(
-      './data/archive/population_group_census_1996_2022.csv',
-      'csv',
-      'header',
-      function(table) {
-        self.loaded = true;
-      });
+    this.loadState.loadTables([{
+      path: './data/archive/population_group_census_1996_2022.csv',
+      requiredColumns: ['population_group', '1996', '2001', '2011', '2022'],
+      numericColumns: ['1996', '2001', '2011', '2022'],
+      assign: function(table) { self.data = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -43,6 +44,7 @@ function SAPopulationGroupCensus() {
   };
 
   this.destroy = function() {
+    this.loadState.destroy();
     if (this.select) {
       this.select.remove();
       this.select = null;
@@ -73,10 +75,7 @@ function SAPopulationGroupCensus() {
   };
 
   this.draw = function() {
-    if (!this.loaded) {
-      debugLog('Data not yet loaded');
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (!this.select || !this.pie) {
       this.setup();

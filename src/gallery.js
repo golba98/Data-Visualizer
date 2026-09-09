@@ -1131,19 +1131,30 @@ function Gallery() {
 
 
   this.addVisual = function(vis) {
+    var hasIdentity = vis
+      && typeof vis.id === 'string'
+      && vis.id.length > 0
+      && typeof vis.name === 'string'
+      && vis.name.length > 0;
+    var hasLifecycle = vis
+      && typeof vis.preload === 'function'
+      && typeof vis.setup === 'function'
+      && typeof vis.draw === 'function'
+      && typeof vis.destroy === 'function';
 
-    if (!vis.hasOwnProperty('id')
-        || !vis.hasOwnProperty('name')) {
-      alert('Make sure your visualisation has an id and name!');
+    if (!hasIdentity || !hasLifecycle) {
+      alert('Make sure your visualisation has an id, name, preload, setup, draw, and destroy!');
+      return;
     }
 
     if (this.findVisIndex(vis.id) != null) {
       alert(`Vis '${vis.name}' has a duplicate id: '${vis.id}'`);
+      return;
     }
 
     this.visuals.push(vis);
 
-    if (vis.hasOwnProperty('preload')) {
+    if (typeof vis.preload === 'function') {
       vis.preload();
     }
   };
@@ -1170,7 +1181,7 @@ function Gallery() {
         if (tour) tour.classList.add('hidden');
       }
       if (this.selectedVisual != null
-          && this.selectedVisual.hasOwnProperty('destroy')) {
+          && typeof this.selectedVisual.destroy === 'function') {
         this.selectedVisual.destroy();
       }
       this.clearChartControls();
@@ -1182,7 +1193,7 @@ function Gallery() {
         queueChartResize();
       }
 
-      if (this.selectedVisual.hasOwnProperty('setup')) {
+      if (typeof this.selectedVisual.setup === 'function') {
         this.selectedVisual.setup();
       }
 

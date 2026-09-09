@@ -3,7 +3,9 @@ function ZAPovertyContext() {
 
   this.name = 'Poverty context';
   this.id = 'za-poverty-context';
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading poverty context...'
+  });
   this.series = {};
   this.seriesNames = [
     'Relative poverty below 50 percent of median',
@@ -40,10 +42,12 @@ function ZAPovertyContext() {
 
   this.preload = function() {
     var self = this;
-    this.data = loadTable('data/inequality/za_poverty_indicators.csv', 'csv', 'header', function(table) {
-      self.data = table;
-      self.loaded = true;
-    });
+    this.loadState.loadTables([{
+      path: 'data/inequality/za_poverty_indicators.csv',
+      requiredColumns: ['year', 'indicator', 'value_percent'],
+      numericColumns: ['year', 'value_percent'],
+      assign: function(table) { self.data = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -73,10 +77,7 @@ function ZAPovertyContext() {
   };
 
   this.draw = function() {
-    if (!this.loaded) {
-      this.drawLoading();
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (Object.keys(this.series).length == 0) {
       this.setup();
@@ -98,14 +99,6 @@ function ZAPovertyContext() {
     this.drawAnnotations();
     this.drawSeries();
     this.drawLegend();
-  };
-
-  this.drawLoading = function() {
-    background(SATheme.bg);
-    fill(SATheme.text);
-    noStroke();
-    textAlign(CENTER, CENTER);
-    text('Loading poverty context...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -275,5 +268,9 @@ function ZAPovertyContext() {
 
   this.getExportData = function() {
     return tableToExportData(this.data);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }

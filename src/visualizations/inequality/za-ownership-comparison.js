@@ -3,7 +3,9 @@ function ZAOwnershipComparison() {
 
   this.name = 'Population vs ownership';
   this.id = 'za-ownership-comparison';
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading ownership comparison...'
+  });
   this.population = null;
   this.income = null;
   this.wealth = null;
@@ -11,25 +13,26 @@ function ZAOwnershipComparison() {
 
   this.preload = function() {
     var self = this;
-    this.population = loadTable('data/inequality/za_population_groups.csv', 'csv', 'header', function(table) {
-      self.population = table;
-      self.checkLoaded();
-    });
-    this.income = loadTable('data/inequality/za_income_distribution.csv', 'csv', 'header', function(table) {
-      self.income = table;
-      self.checkLoaded();
-    });
-    this.wealth = loadTable('data/inequality/za_wealth_distribution.csv', 'csv', 'header', function(table) {
-      self.wealth = table;
-      self.checkLoaded();
-    });
-  };
-
-  this.checkLoaded = function() {
-    this.loaded = this.population && this.income && this.wealth
-        && this.population.getRowCount() > 0
-        && this.income.getRowCount() > 0
-        && this.wealth.getRowCount() > 0;
+    this.loadState.loadTables([
+      {
+        path: 'data/inequality/za_population_groups.csv',
+        requiredColumns: ['group', 'population_share_percent'],
+        numericColumns: ['population_share_percent'],
+        assign: function(table) { self.population = table; }
+      },
+      {
+        path: 'data/inequality/za_income_distribution.csv',
+        requiredColumns: ['year', 'top_10_income_share_percent'],
+        numericColumns: ['year', 'top_10_income_share_percent'],
+        assign: function(table) { self.income = table; }
+      },
+      {
+        path: 'data/inequality/za_wealth_distribution.csv',
+        requiredColumns: ['year', 'top_10_wealth_share_percent'],
+        numericColumns: ['year', 'top_10_wealth_share_percent'],
+        assign: function(table) { self.wealth = table; }
+      }
+    ]);
   };
 
   this.setup = function() {
@@ -62,10 +65,7 @@ function ZAOwnershipComparison() {
   };
 
   this.draw = function() {
-    if (!this.loaded) {
-      this.drawLoading();
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (this.rows.length == 0) {
       this.setup();
@@ -79,14 +79,6 @@ function ZAOwnershipComparison() {
     this.drawTitle();
     this.drawAnnotations();
     this.drawBars();
-  };
-
-  this.drawLoading = function() {
-    background(SATheme.bg);
-    fill(SATheme.text);
-    noStroke();
-    textAlign(CENTER, CENTER);
-    text('Loading ownership comparison...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -193,5 +185,9 @@ function ZAOwnershipComparison() {
 
   this.getExportData = function() {
     return rowsToExportData(this.rows);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }

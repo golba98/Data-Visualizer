@@ -25,6 +25,228 @@ function resolveDataPath(path) {
   return path;
 }
 
+// Owns the loading, ready, and error lifecycle for one visualisation.
+function VisualizationLoadState(owner, options) {
+  options = options || {};
+
+  this.owner = owner;
+  this.status = 'idle';
+  this.loadingMessage = options.loadingMessage || 'Loading visualisation data...';
+  this.errorMessage = options.errorMessage
+    || 'Unable to load this visualisation. Check your connection and refresh the page.';
+  this.completedResources = 0;
+  this.totalResources = 0;
+  this.rawError = null;
+  this.lastAnnouncement = null;
+
+  this.syncOwner();
+}
+
+VisualizationLoadState.prototype.syncOwner = function() {
+  if (!this.owner) return;
+
+  this.owner.loaded = this.status === 'ready';
+  this.owner.isLoading = this.status === 'loading';
+  this.owner.isReady = this.status === 'ready';
+  this.owner.loadError = this.status === 'error' ? this.errorMessage : null;
+  this.owner.loadProgress = this.totalResources > 0
+    ? this.completedResources / this.totalResources
+    : 0;
+};
+
+VisualizationLoadState.prototype.requestRender = function() {
+  if (typeof gallery !== 'undefined'
+      && gallery
+      && gallery.selectedVisual === this.owner
+      && typeof requestChartRender === 'function') {
+    requestChartRender();
+  }
+};
+
+VisualizationLoadState.prototype.start = function(totalResources) {
+  this.status = 'loading';
+  this.completedResources = 0;
+  this.totalResources = Math.max(1, Number(totalResources) || 1);
+  this.rawError = null;
+  this.lastAnnouncement = null;
+  this.syncOwner();
+  this.requestRender();
+};
+
+VisualizationLoadState.prototype.validateTable = function(table, request) {
+  if (!table || typeof table.getRowCount !== 'function') {
+    throw new Error('The data loader did not return a table.');
+  }
+
+  if (table.getRowCount() === 0) {
+    throw new Error('The data table is empty.');
+  }
+
+  var columns = Array.isArray(table.columns) ? table.columns : [];
+  var requiredColumns = request.requiredColumns || [];
+  for (var c = 0; c < requiredColumns.length; c++) {
+    if (columns.indexOf(requiredColumns[c]) === -1) {
+      throw new Error('Missing required column: ' + requiredColumns[c]);
+    }
+  }
+
+  var numericColumns = request.numericColumns || [];
+  for (var row = 0; row < table.getRowCount(); row++) {
+    for (var n = 0; n < numericColumns.length; n++) {
+      var value = Number(table.getString(row, numericColumns[n]));
+      if (!isFinite(value)) {
+        throw new Error('Invalid number in column: ' + numericColumns[n]);
+      }
+    }
+  }
+
+  if (typeof request.validate === 'function' && request.validate(table) === false) {
+    throw new Error('The data table failed visualisation validation.');
+  }
+};
+
+VisualizationLoadState.prototype.completeResource = function() {
+  if (this.status !== 'loading') return;
+
+  this.completedResources++;
+  if (this.completedResources >= this.totalResources) {
+    this.status = 'ready';
+  }
+  this.syncOwner();
+  this.requestRender();
+};
+
+VisualizationLoadState.prototype.fail = function(error, path) {
+  if (this.status !== 'loading') return;
+
+  this.status = 'error';
+  this.completedResources = 0;
+  this.rawError = error || new Error('Unknown data-loading error.');
+  this.syncOwner();
+  debugLog('Data load failed for', this.owner ? this.owner.id : 'visualisation', path, this.rawError);
+  this.requestRender();
+};
+
+VisualizationLoadState.prototype.loadTables = function(requests, onReady) {
+  var self = this;
+  var list = Array.isArray(requests) ? requests : [];
+
+  this.start(list.length);
+  if (list.length === 0) {
+    this.fail(new Error('No data resources were configured.'));
+    return;
+  }
+
+  list.forEach(function(request) {
+    try {
+      loadTable(
+        resolveDataPath(request.path),
+        'csv',
+        'header',
+        function(table) {
+          if (self.status !== 'loading') return;
+
+          try {
+            self.validateTable(table, request);
+            if (typeof request.assign === 'function') {
+              request.assign(table);
+            }
+
+            var isLast = self.completedResources + 1 >= self.totalResources;
+            if (isLast && typeof onReady === 'function') {
+              onReady();
+            }
+            self.completeResource();
+          } catch (error) {
+            self.fail(error, request.path);
+          }
+        },
+        function(error) {
+          self.fail(error, request.path);
+        });
+    } catch (error) {
+      self.fail(error, request.path);
+    }
+  });
+};
+
+VisualizationLoadState.prototype.announce = function(status, message) {
+  if (typeof document === 'undefined') return;
+
+  var region = document.getElementById('chart-load-status');
+  if (!region) return;
+
+  var announcement = status + ':' + message;
+  if (this.lastAnnouncement === announcement
+      && region.dataset.visualisationId === this.owner.id) {
+    return;
+  }
+
+  region.dataset.visualisationId = this.owner.id;
+  region.setAttribute('role', status === 'error' ? 'alert' : 'status');
+  region.setAttribute('aria-live', status === 'error' ? 'assertive' : 'polite');
+  region.textContent = message;
+  this.lastAnnouncement = announcement;
+};
+
+VisualizationLoadState.prototype.draw = function() {
+  if (this.status === 'ready') {
+    this.announce('ready', this.owner.name + ' ready.');
+    return false;
+  }
+
+  background(SATheme.bg);
+  noStroke();
+  textAlign(CENTER, CENTER);
+
+  if (this.status === 'error') {
+    fill(SATheme.red);
+    textStyle(BOLD);
+    chartTextSize(16);
+    text('This chart is unavailable', width / 2, (height / 2) - 22);
+
+    fill(SATheme.textMuted);
+    textStyle(NORMAL);
+    chartTextSize(13);
+    text(this.errorMessage, width * 0.1, (height / 2) + 4, width * 0.8, 60);
+    this.announce('error', this.errorMessage);
+    return true;
+  }
+
+  fill(SATheme.text);
+  textStyle(NORMAL);
+  chartTextSize(14);
+  text(this.loadingMessage, width / 2, (height / 2) - 16);
+
+  var barWidth = Math.min(220, width * 0.4);
+  var barX = (width - barWidth) / 2;
+  var barY = (height / 2) + 8;
+  noFill();
+  stroke(SATheme.axis);
+  strokeWeight(1);
+  rect(barX, barY, barWidth, 8);
+  noStroke();
+  fill(SATheme.blue);
+  rect(barX, barY, barWidth * Math.max(0.08, this.owner.loadProgress), 8);
+
+  this.announce('loading', this.loadingMessage);
+  return true;
+};
+
+VisualizationLoadState.prototype.destroy = function() {
+  if (typeof document !== 'undefined') {
+    var region = document.getElementById('chart-load-status');
+    if (region && region.dataset.visualisationId === this.owner.id) {
+      region.textContent = '';
+      region.removeAttribute('role');
+      region.setAttribute('aria-live', 'polite');
+      delete region.dataset.visualisationId;
+    }
+  }
+
+  this.lastAnnouncement = null;
+};
+
 var CHART_PHONE_WIDTH = 520;
 var CHART_COMPACT_WIDTH = 720;
 var CHART_SHORT_HEIGHT = 320;

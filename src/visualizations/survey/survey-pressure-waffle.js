@@ -4,7 +4,9 @@ function SurveyPressureWaffle() {
   this.name = 'Survey pressure waffle';
   this.id = 'survey-pressure-waffle';
   this.table = null;
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading survey data...'
+  });
   this.waffle = null;
   this.categories = ['Food', 'Transport', 'Data', 'Rent', 'Tuition', 'Debt', 'Electricity'];
   this.colours = SATheme.pressure;
@@ -17,14 +19,11 @@ function SurveyPressureWaffle() {
   this.preload = function() {
     var self = this;
 
-    this.table = loadTable(SurveyData.path, 'csv', 'header', function(table) {
-      self.table = table;
-      self.loaded = true;
-    }, function(error) {
-      console.error('Could not load survey data for the pressure waffle', error);
-      self.table = null;
-      self.loaded = false;
-    });
+    this.loadState.loadTables([{
+      path: SurveyData.path,
+      requiredColumns: ['pressure'],
+      assign: function(table) { self.table = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -86,10 +85,7 @@ function SurveyPressureWaffle() {
   };
 
   this.draw = function() {
-    if (!this.loaded || !this.table) {
-      this.drawLoading();
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (!this.waffle || this.layoutWidth != width || this.layoutHeight != height) {
       this.buildWaffle();
@@ -105,14 +101,6 @@ function SurveyPressureWaffle() {
     if (hoveredCategory) {
       this.drawTooltip(hoveredCategory);
     }
-  };
-
-  this.drawLoading = function() {
-    background(SATheme.bg);
-    fill(SATheme.text);
-    noStroke();
-    textAlign(CENTER, CENTER);
-    text('Loading survey data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -178,5 +166,9 @@ function SurveyPressureWaffle() {
 
   this.getExportData = function() {
     return tableToExportData(this.table);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }

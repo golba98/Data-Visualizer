@@ -4,7 +4,9 @@ function SurveyIncomeRealityGap() {
   this.name = 'Income reality gap';
   this.id = 'survey-income-reality-gap';
   this.table = null;
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading income gap data...'
+  });
   this.statuses = ['Overall', 'Student', 'Employed', 'Unemployed', 'Studying and working'];
   this.rows = [];
   this.representedRows = 0;
@@ -12,17 +14,12 @@ function SurveyIncomeRealityGap() {
   this.preload = function() {
     var self = this;
 
-    this.table = loadTable(
-      SurveyData.path,
-      'csv',
-      'header',
-      function(table) {
-        self.table = table;
-        self.loaded = true;
-      },
-      function(error) {
-        console.error('Could not load income reality gap data', error);
-      });
+    this.loadState.loadTables([{
+      path: SurveyData.path,
+      requiredColumns: ['status', 'work_worry', 'income_keeps_up'],
+      numericColumns: ['work_worry', 'income_keeps_up'],
+      assign: function(table) { self.table = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -70,10 +67,7 @@ function SurveyIncomeRealityGap() {
   };
 
   this.draw = function() {
-    if (!this.loaded || !this.table) {
-      this.drawLoading();
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (this.rows.length == 0) {
       this.calculateRows();
@@ -83,14 +77,6 @@ function SurveyIncomeRealityGap() {
     this.drawTitle();
     this.drawScale();
     this.drawGapRows();
-  };
-
-  this.drawLoading = function() {
-    background(SATheme.bg);
-    fill(SATheme.text);
-    noStroke();
-    textAlign(CENTER, CENTER);
-    text('Loading income gap data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -210,5 +196,9 @@ function SurveyIncomeRealityGap() {
 
   this.getExportData = function() {
     return rowsToExportData(this.rows);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }

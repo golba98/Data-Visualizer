@@ -59,7 +59,9 @@ function chartNeedsMoreFrames(vis) {
   if (typeof vis.isAnimating === 'function' && vis.isAnimating()) return true;
   if (vis.pie && typeof vis.pie.isAnimating === 'function' && vis.pie.isAnimating()) return true;
 
-  var waitingForData = vis.isLoading === true || (vis.loaded === false && !vis.loadError);
+  var waitingForData = vis.loadState
+    ? vis.loadState.status === 'loading'
+    : (vis.isLoading === true || (vis.loaded === false && !vis.loadError));
   return waitingForData && millis() - chartLoopStartedAt < 10000;
 }
 

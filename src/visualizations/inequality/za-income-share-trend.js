@@ -3,7 +3,9 @@ function ZAIncomeShareTrend() {
 
   this.name = 'Top income share';
   this.id = 'za-income-share-trend';
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading income-share data...'
+  });
   this.xAxisLabel = 'year';
   this.yAxisLabel = '% of income';
 
@@ -33,10 +35,12 @@ function ZAIncomeShareTrend() {
 
   this.preload = function() {
     var self = this;
-    this.data = loadTable('data/inequality/za_income_distribution.csv', 'csv', 'header', function(table) {
-      self.data = table;
-      self.loaded = true;
-    });
+    this.loadState.loadTables([{
+      path: 'data/inequality/za_income_distribution.csv',
+      requiredColumns: ['year', 'top_10_income_share_percent'],
+      numericColumns: ['year', 'top_10_income_share_percent'],
+      assign: function(table) { self.data = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -51,10 +55,7 @@ function ZAIncomeShareTrend() {
   };
 
   this.draw = function() {
-    if (!this.loaded) {
-      this.drawLoading();
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (this.startYear == null) {
       this.setup();
@@ -72,14 +73,6 @@ function ZAIncomeShareTrend() {
     this.drawYearLabels();
     this.drawAnnotations();
     this.drawLine();
-  };
-
-  this.drawLoading = function() {
-    background(SATheme.bg);
-    fill(SATheme.text);
-    noStroke();
-    textAlign(CENTER, CENTER);
-    text('Loading income-share data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -219,5 +212,9 @@ function ZAIncomeShareTrend() {
 
   this.getExportData = function() {
     return tableToExportData(this.data);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }

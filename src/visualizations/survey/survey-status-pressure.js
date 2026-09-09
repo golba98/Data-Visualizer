@@ -4,7 +4,9 @@ function SurveyStatusPressure() {
   this.name = 'Student vs worker';
   this.id = 'survey-status-pressure';
   this.table = null;
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading status pressure data...'
+  });
   this.statuses = ['Student', 'Employed', 'Unemployed', 'Studying and working'];
   this.pressures = ['Food', 'Transport', 'Data', 'Rent', 'Tuition', 'Debt', 'Electricity'];
   this.colours = SATheme.pressure;
@@ -15,17 +17,11 @@ function SurveyStatusPressure() {
   this.preload = function() {
     var self = this;
 
-    this.table = loadTable(
-      SurveyData.path,
-      'csv',
-      'header',
-      function(table) {
-        self.table = table;
-        self.loaded = true;
-      },
-      function(error) {
-        console.error('Could not load status pressure data', error);
-      });
+    this.loadState.loadTables([{
+      path: SurveyData.path,
+      requiredColumns: ['status', 'pressure'],
+      assign: function(table) { self.table = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -64,10 +60,7 @@ function SurveyStatusPressure() {
   };
 
   this.draw = function() {
-    if (!this.loaded || !this.table) {
-      this.drawLoading();
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (!this.counts.Student) {
       this.countPressures();
@@ -78,14 +71,6 @@ function SurveyStatusPressure() {
     this.drawTitle();
     this.drawStackedBars();
     this.drawLegend();
-  };
-
-  this.drawLoading = function() {
-    background(SATheme.bg);
-    fill(SATheme.text);
-    noStroke();
-    textAlign(CENTER, CENTER);
-    text('Loading status pressure data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -204,5 +189,9 @@ function SurveyStatusPressure() {
 
   this.getExportData = function() {
     return tableToExportData(this.table);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }

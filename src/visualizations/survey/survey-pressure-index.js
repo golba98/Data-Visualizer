@@ -4,24 +4,22 @@ function SurveyPressureIndex() {
   this.name = 'Pressure index';
   this.id = 'survey-pressure-index';
   this.table = null;
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading survey data...'
+  });
   this.index = 0;
   this.components = [];
 
   this.preload = function() {
     var self = this;
 
-    this.table = loadTable(
-      SurveyData.path,
-      'csv',
-      'header',
-      function(table) {
-        self.table = table;
-        self.loaded = true;
-      },
-      function(error) {
-        console.error('Could not load survey pressure index data', error);
-      });
+    this.loadState.loadTables([{
+      path: SurveyData.path,
+      requiredColumns: ['pressure', 'work_worry', 'income_keeps_up',
+                        'transport_cost', 'food_cost'],
+      numericColumns: ['work_worry', 'income_keeps_up'],
+      assign: function(table) { self.table = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -117,10 +115,7 @@ function SurveyPressureIndex() {
   };
 
   this.draw = function() {
-    if (!this.loaded || !this.table) {
-      this.drawLoading();
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (this.components.length == 0) {
       this.calculateIndex();
@@ -137,15 +132,6 @@ function SurveyPressureIndex() {
     this.drawComponentBars();
   };
 
-
-  this.drawLoading = function() {
-    background(SATheme.bg);
-    fill(SATheme.text);
-    noStroke();
-    textAlign(CENTER, CENTER);
-    chartTextSize(14);
-    text('Loading survey data...', width / 2, height / 2);
-  };
 
   this.drawTitle = function() {
     noStroke();
@@ -269,5 +255,9 @@ function SurveyPressureIndex() {
 
   this.getExportData = function() {
     return tableToExportData(this.table);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }
