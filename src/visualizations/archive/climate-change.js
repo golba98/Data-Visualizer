@@ -32,15 +32,18 @@ function ClimateChange() {
     numYTickLabels: 8,
   };
 
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading temperature data...'
+  });
 
   this.preload = function() {
     var self = this;
-    this.data = loadTable(
-      './data/archive/global_temperature_anomaly_1880_2025.csv', 'csv', 'header',
-      function(table) {
-        self.loaded = true;
-      });
+    this.loadState.loadTables([{
+      path: './data/archive/global_temperature_anomaly_1880_2025.csv',
+      requiredColumns: ['year', 'temperature_anomaly_c'],
+      numericColumns: ['year', 'temperature_anomaly_c'],
+      assign: function(table) { self.data = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -99,6 +102,7 @@ function ClimateChange() {
   };
 
   this.destroy = function() {
+    this.loadState.destroy();
     if (this.startSlider) {
       this.startSlider.remove();
       this.startSlider = null;
@@ -118,10 +122,7 @@ function ClimateChange() {
   };
 
   this.draw = function() {
-    if (!this.loaded) {
-      debugLog('Data not yet loaded');
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (!this.startSlider || !this.endSlider) {
       this.setup();

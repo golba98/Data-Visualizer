@@ -3,15 +3,21 @@ function ZADwellingOwnershipByGroup() {
 
   this.name = 'Dwelling ownership';
   this.id = 'za-dwelling-ownership-by-group';
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading dwelling ownership data...'
+  });
   this.rows = [];
 
   this.preload = function() {
     var self = this;
-    this.data = loadTable('data/inequality/za_dwelling_ownership_by_group.csv', 'csv', 'header', function(table) {
-      self.data = table;
-      self.loaded = true;
-    });
+    this.loadState.loadTables([{
+      path: 'data/inequality/za_dwelling_ownership_by_group.csv',
+      requiredColumns: ['population_group', 'owned_percent', 'rented_percent',
+                        'occupied_rent_free_percent', 'other_or_unknown_percent'],
+      numericColumns: ['owned_percent', 'rented_percent',
+                       'occupied_rent_free_percent', 'other_or_unknown_percent'],
+      assign: function(table) { self.data = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -32,10 +38,7 @@ function ZADwellingOwnershipByGroup() {
   };
 
   this.draw = function() {
-    if (!this.loaded) {
-      this.drawLoading();
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (this.rows.length == 0) {
       this.setup();
@@ -46,14 +49,6 @@ function ZADwellingOwnershipByGroup() {
     this.drawAnnotations();
     this.drawStackedBars();
     this.drawLegend();
-  };
-
-  this.drawLoading = function() {
-    background(SATheme.bg);
-    fill(SATheme.text);
-    noStroke();
-    textAlign(CENTER, CENTER);
-    text('Loading dwelling ownership data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -200,5 +195,9 @@ function ZADwellingOwnershipByGroup() {
 
   this.getExportData = function() {
     return tableToExportData(this.data);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }

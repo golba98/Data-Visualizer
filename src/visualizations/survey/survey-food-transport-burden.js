@@ -4,7 +4,9 @@ function SurveyFoodTransportBurden() {
   this.name = 'Food vs transport';
   this.id = 'survey-food-transport-burden';
   this.table = null;
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading burden data...'
+  });
   this.foodBands = ['R0-R500', 'R501-R1000', 'R1001-R2000', 'R2001-R3000', 'R3000+'];
   this.transportBands = ['R0-R300', 'R301-R600', 'R601-R1000', 'R1001-R1500', 'R1500+'];
   this.counts = {};
@@ -14,17 +16,11 @@ function SurveyFoodTransportBurden() {
   this.preload = function() {
     var self = this;
 
-    this.table = loadTable(
-      SurveyData.path,
-      'csv',
-      'header',
-      function(table) {
-        self.table = table;
-        self.loaded = true;
-      },
-      function(error) {
-        console.error('Could not load food and transport burden data', error);
-      });
+    this.loadState.loadTables([{
+      path: SurveyData.path,
+      requiredColumns: ['food_cost', 'transport_cost'],
+      assign: function(table) { self.table = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -65,10 +61,7 @@ function SurveyFoodTransportBurden() {
   };
 
   this.draw = function() {
-    if (!this.loaded || !this.table) {
-      this.drawLoading();
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (this.maxCount == 0) {
       this.countBurden();
@@ -77,14 +70,6 @@ function SurveyFoodTransportBurden() {
     background(SATheme.bg);
     this.drawTitle();
     this.drawGrid();
-  };
-
-  this.drawLoading = function() {
-    background(SATheme.bg);
-    fill(SATheme.text);
-    noStroke();
-    textAlign(CENTER, CENTER);
-    text('Loading burden data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -207,5 +192,9 @@ function SurveyFoodTransportBurden() {
 
   this.getExportData = function() {
     return tableToExportData(this.table);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }

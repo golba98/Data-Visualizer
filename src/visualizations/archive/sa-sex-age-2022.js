@@ -23,15 +23,18 @@ function SAPopulationSexAge2022() {
   this.midX = (this.layout.plotWidth() / 2) + this.layout.leftMargin;
   this.femaleColour = color(SATheme.red);
   this.maleColour = color(SATheme.blue);
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading population by sex and age...'
+  });
 
   this.preload = function() {
     var self = this;
-    this.data = loadTable(
-      './data/archive/sex_by_age_2022.csv', 'csv', 'header',
-      function(table) {
-        self.loaded = true;
-      });
+    this.loadState.loadTables([{
+      path: './data/archive/sex_by_age_2022.csv',
+      requiredColumns: ['age_group', 'Female', 'Male'],
+      numericColumns: ['Female', 'Male'],
+      assign: function(table) { self.data = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -47,10 +50,7 @@ function SAPopulationSexAge2022() {
   };
 
   this.draw = function() {
-    if (!this.loaded) {
-      debugLog('Data not yet loaded');
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     this.femaleColour = color(SATheme.red);
     this.maleColour = color(SATheme.blue);
@@ -117,5 +117,9 @@ function SAPopulationSexAge2022() {
 
   this.getExportData = function() {
     return tableToExportData(this.data);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }

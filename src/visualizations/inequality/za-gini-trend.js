@@ -9,11 +9,9 @@ function ZAGiniTrend() {
 
   this.dataPath = 'data/inequality/za_gini_trend.csv';
   this.data = null;
-  this.isLoading = false;
-  this.isReady = false;
-  this.loadError = null;
-  this.loadProgress = 0;
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading inequality data...'
+  });
 
   var marginSize = 42;
   var rightPadding = 78;
@@ -47,45 +45,37 @@ function ZAGiniTrend() {
     this.startYear = undefined;
     this.endYear = undefined;
 
-    this.isLoading = true;
-    this.isReady = false;
-    this.loaded = false;
-    this.loadError = null;
-    this.loadProgress = 0;
-
-    loadTable(
-      resolveDataPath(this.dataPath),
-      'csv',
-      'header',
-      function(table) {
-        self.handleDataLoaded(table);
-      },
-      function(error) {
-        self.handleDataError(error);
-      });
+    this.loadState.loadTables([{
+      path: this.dataPath,
+      requiredColumns: ['year', 'gini_coefficient'],
+      numericColumns: ['year', 'gini_coefficient'],
+      assign: function(table) {
+        self.data = table;
+      }
+    }], function() {
+      self.deriveScales();
+    });
   };
 
   this.handleDataLoaded = function(table) {
-    this.data = table;
-    this.isLoading = false;
-    this.isReady = true;
-    this.loaded = true;
-    this.loadProgress = 1;
-    this.loadError = null;
-
-    this.deriveScales();
+    this.loadState.start(1);
+    try {
+      this.loadState.validateTable(table, {
+        requiredColumns: ['year', 'gini_coefficient'],
+        numericColumns: ['year', 'gini_coefficient']
+      });
+      this.data = table;
+      this.deriveScales();
+      this.loadState.completeResource();
+    } catch (error) {
+      this.loadState.fail(error, this.dataPath);
+    }
   };
 
   this.handleDataError = function(error) {
     this.data = null;
-    this.isLoading = false;
-    this.isReady = false;
-    this.loaded = false;
-    this.loadProgress = 0;
-    this.loadError = 'This chart could not load its data. '
-        + 'Check your connection and refresh the page.';
-
-    debugLog('ZAGiniTrend: loadTable failed for', this.dataPath, error);
+    if (this.loadState.status !== 'loading') this.loadState.start(1);
+    this.loadState.fail(error, this.dataPath);
   };
 
   this.retryLoad = function() {
@@ -95,7 +85,7 @@ function ZAGiniTrend() {
 
   // Sets chart scales from loaded data
   this.deriveScales = function() {
-    if (!this.isReady) {
+    if (!this.data || this.data.getRowCount() === 0) {
       return;
     }
 
@@ -110,15 +100,7 @@ function ZAGiniTrend() {
   };
 
   this.draw = function() {
-    if (this.loadError != null) {
-      this.drawLoadError();
-      return;
-    }
-
-    if (!this.isReady) {
-      this.drawLoading();
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (this.startYear == null) {
       this.deriveScales();
@@ -136,45 +118,6 @@ function ZAGiniTrend() {
     this.drawYearLabels();
     this.drawAnnotations();
     this.drawLine();
-  };
-
-  this.drawLoading = function() {
-    background(SATheme.bg);
-    noStroke();
-    fill(SATheme.text);
-    textAlign(CENTER, CENTER);
-    textStyle(NORMAL);
-    chartTextSize(14);
-    text('Loading inequality data...', width / 2, (height / 2) - 16);
-
-    var barWidth = Math.min(220, width * 0.4);
-    var barX = (width - barWidth) / 2;
-    var barY = (height / 2) + 8;
-
-    noFill();
-    stroke(170);
-    strokeWeight(1);
-    rect(barX, barY, barWidth, 8);
-
-    noStroke();
-    fill(SATheme.blue);
-    rect(barX, barY, barWidth * Math.max(0.08, this.loadProgress), 8);
-  };
-
-  this.drawLoadError = function() {
-    background(SATheme.bg);
-    noStroke();
-    textAlign(CENTER, CENTER);
-
-    fill(SATheme.red);
-    textStyle(BOLD);
-    chartTextSize(16);
-    text('This chart is unavailable', width / 2, (height / 2) - 22);
-
-    fill(SATheme.textMuted);
-    textStyle(NORMAL);
-    chartTextSize(13);
-    text(this.loadError, width * 0.1, (height / 2) + 4, width * 0.8, 60);
   };
 
   this.drawTitle = function() {
@@ -308,5 +251,9 @@ function ZAGiniTrend() {
 
   this.getExportData = function() {
     return tableToExportData(this.data);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }

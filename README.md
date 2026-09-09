@@ -136,6 +136,28 @@ The `cut_back_on` answers were standardised and checked by hand
 
 Each chart loads a CSV with `loadTable()` and draws on a responsive canvas
 
+## Topic 1 object orientation evidence
+
+The `Gallery` object controls registration selection and teardown. Each visualisation is created with a JavaScript constructor function and owns its data derived values layout and drawing behaviour. The objects use a common behavioural interface: `preload()` loads data, `setup()` prepares the chart, `draw()` renders it, and `destroy()` removes chart-owned state. `onResize()` is an optional hook for charts with extra responsive work.
+
+`VisualizationLoadState` is a reusable constructor-function object composed inside every visualisation. It validates CSV tables and encapsulates the shared `loading`, `ready`, and terminal `error` transitions. It also owns the canvas feedback and accessible live-region message. Raw failures remain available through debug logging while visitors receive a concise message.
+
+Composition is also used where `SurveyPressureWaffle` contains a `Waffle`, a `Waffle` contains `Box` objects, and `SAPopulationGroupCensus` contains a `PieChart`. These are cooperating objects rather than an inheritance hierarchy.
+
+```text
+Gallery -> visualisation constructor -> preload / CSV loading
+                                      -> loading -> ready
+                                                 -> error
+                                      -> setup -> draw -> onResize
+                                                           -> destroy
+```
+
+| Coursework stage | Evidence |
+| --- | --- |
+| Already existed | Gallery and visualisation constructors, responsive drawing, Waffle/Box/PieChart composition, survey transformations, and the Topic 8 test harness. |
+| Improved for final submission | All 19 registered charts now share validated load transitions, terminal error handling, accessible feedback, and lifecycle cleanup. |
+| Newly added | `VisualizationLoadState`, constructor/interface coverage for every Gallery object, duplicate-ID and catalogue checks, and focused success/failure/cleanup tests. |
+
 ## Conclusion
 
 This project uses official data and clearly labelled survey data to explain inequality in South Africa

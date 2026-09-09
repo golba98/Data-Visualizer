@@ -3,15 +3,19 @@ function ZALandOwnershipByGroup() {
 
   this.name = 'Land ownership';
   this.id = 'za-land-ownership-by-group';
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading land ownership data...'
+  });
   this.rows = [];
 
   this.preload = function() {
     var self = this;
-    this.data = loadTable('data/inequality/za_land_ownership_by_group.csv', 'csv', 'header', function(table) {
-      self.data = table;
-      self.loaded = true;
-    });
+    this.loadState.loadTables([{
+      path: 'data/inequality/za_land_ownership_by_group.csv',
+      requiredColumns: ['population_group', 'share_percent', 'hectares'],
+      numericColumns: ['share_percent', 'hectares'],
+      assign: function(table) { self.data = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -30,10 +34,7 @@ function ZALandOwnershipByGroup() {
   };
 
   this.draw = function() {
-    if (!this.loaded) {
-      this.drawLoading();
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (this.rows.length == 0) {
       this.setup();
@@ -43,14 +44,6 @@ function ZALandOwnershipByGroup() {
     this.drawTitle();
     this.drawAnnotations();
     this.drawBars();
-  };
-
-  this.drawLoading = function() {
-    background(SATheme.bg);
-    fill(SATheme.text);
-    noStroke();
-    textAlign(CENTER, CENTER);
-    text('Loading land ownership data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -171,5 +164,9 @@ function ZALandOwnershipByGroup() {
 
   this.getExportData = function() {
     return tableToExportData(this.data);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }

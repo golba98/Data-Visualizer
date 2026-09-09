@@ -30,17 +30,18 @@ function SAYouthUnemployment() {
     numYTickLabels: 8,
   };
 
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading youth unemployment data...'
+  });
 
   this.preload = function() {
     var self = this;
-    this.data = loadTable(
-      './data/archive/sa_youth_unemployment_1991_2025.csv',
-      'csv',
-      'header',
-      function(table) {
-        self.loaded = true;
-      });
+    this.loadState.loadTables([{
+      path: './data/archive/sa_youth_unemployment_1991_2025.csv',
+      requiredColumns: ['year', 'youth_unemployment_rate'],
+      numericColumns: ['year', 'youth_unemployment_rate'],
+      assign: function(table) { self.data = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -61,10 +62,7 @@ function SAYouthUnemployment() {
   };
 
   this.draw = function() {
-    if (!this.loaded) {
-      debugLog('Data not yet loaded');
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (this.startYear == null) {
       this.setup();
@@ -149,5 +147,9 @@ function SAYouthUnemployment() {
 
   this.getExportData = function() {
     return tableToExportData(this.data);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }

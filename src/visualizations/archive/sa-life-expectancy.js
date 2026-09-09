@@ -30,7 +30,9 @@ function SALifeExpectancy() {
     numYTickLabels: 8,
   };
 
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading life expectancy data...'
+  });
 
   this.seriesColours = {
     'Female': SATheme.red,
@@ -40,13 +42,20 @@ function SALifeExpectancy() {
 
   this.preload = function() {
     var self = this;
-    this.data = loadTable(
-      './data/archive/sa_life_expectancy_1960_2024.csv',
-      'csv',
-      'header',
-      function(table) {
-        self.loaded = true;
-      });
+    this.loadState.loadTables([{
+      path: './data/archive/sa_life_expectancy_1960_2024.csv',
+      requiredColumns: ['series'],
+      validate: function(table) {
+        if (table.columns.length < 2) return false;
+        for (var row = 0; row < table.getRowCount(); row++) {
+          for (var col = 1; col < table.columns.length; col++) {
+            if (!isFinite(Number(table.getString(row, table.columns[col])))) return false;
+          }
+        }
+        return true;
+      },
+      assign: function(table) { self.data = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -86,10 +95,7 @@ function SALifeExpectancy() {
   };
 
   this.draw = function() {
-    if (!this.loaded) {
-      debugLog('Data not yet loaded');
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (!this.series) {
       this.setup();
@@ -202,5 +208,9 @@ function SALifeExpectancy() {
 
   this.getExportData = function() {
     return tableToExportData(this.data);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }

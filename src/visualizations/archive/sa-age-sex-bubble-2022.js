@@ -4,7 +4,9 @@ function SAAgeSexBubble2022() {
   this.name = 'Age group size and female share';
   this.id = 'sa-age-sex-bubble-2022';
 
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading age and sex data...'
+  });
   this.pad = 58;
   this.dotSizeMin = 12;
   this.dotSizeMax = 42;
@@ -13,11 +15,12 @@ function SAAgeSexBubble2022() {
 
   this.preload = function() {
     var self = this;
-    this.data = loadTable(
-      './data/archive/age_sex_bubble_2022.csv', 'csv', 'header',
-      function(table) {
-        self.loaded = true;
-      });
+    this.loadState.loadTables([{
+      path: './data/archive/age_sex_bubble_2022.csv',
+      requiredColumns: ['age_group', 'age_midpoint', 'female_percent', 'total_population'],
+      numericColumns: ['age_midpoint', 'female_percent', 'total_population'],
+      assign: function(table) { self.data = table; }
+    }]);
   };
 
   this.setup = function() {
@@ -31,10 +34,7 @@ function SAAgeSexBubble2022() {
   };
 
   this.draw = function() {
-    if (!this.loaded) {
-      debugLog('Data not yet loaded');
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     this.addAxes();
 
@@ -125,5 +125,9 @@ function SAAgeSexBubble2022() {
 
   this.getExportData = function() {
     return tableToExportData(this.data);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }

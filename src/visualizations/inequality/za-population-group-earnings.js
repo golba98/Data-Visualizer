@@ -3,27 +3,29 @@ function ZAPopulationGroupEarnings() {
 
   this.name = 'Population group earnings';
   this.id = 'za-population-group-earnings';
-  this.loaded = false;
+  this.loadState = new VisualizationLoadState(this, {
+    loadingMessage: 'Loading population-group earnings data...'
+  });
   this.population = null;
   this.earnings = null;
   this.rows = [];
 
   this.preload = function() {
     var self = this;
-    this.population = loadTable('data/inequality/za_population_group_shares.csv', 'csv', 'header', function(table) {
-      self.population = table;
-      self.checkLoaded();
-    });
-    this.earnings = loadTable('data/inequality/za_population_group_earnings.csv', 'csv', 'header', function(table) {
-      self.earnings = table;
-      self.checkLoaded();
-    });
-  };
-
-  this.checkLoaded = function() {
-    this.loaded = this.population && this.earnings
-        && this.population.getRowCount() > 0
-        && this.earnings.getRowCount() > 0;
+    this.loadState.loadTables([
+      {
+        path: 'data/inequality/za_population_group_shares.csv',
+        requiredColumns: ['population_group', 'population_share_percent'],
+        numericColumns: ['population_share_percent'],
+        assign: function(table) { self.population = table; }
+      },
+      {
+        path: 'data/inequality/za_population_group_earnings.csv',
+        requiredColumns: ['population_group', 'mean_real_monthly_earnings_rand'],
+        numericColumns: ['mean_real_monthly_earnings_rand'],
+        assign: function(table) { self.earnings = table; }
+      }
+    ]);
   };
 
   this.setup = function() {
@@ -49,10 +51,7 @@ function ZAPopulationGroupEarnings() {
   };
 
   this.draw = function() {
-    if (!this.loaded) {
-      this.drawLoading();
-      return;
-    }
+    if (this.loadState.draw()) return;
 
     if (this.rows.length == 0) {
       this.setup();
@@ -61,14 +60,6 @@ function ZAPopulationGroupEarnings() {
     background(SATheme.bg);
     this.drawTitle();
     this.drawChart();
-  };
-
-  this.drawLoading = function() {
-    background(SATheme.bg);
-    fill(SATheme.text);
-    noStroke();
-    textAlign(CENTER, CENTER);
-    text('Loading population-group earnings data...', width / 2, height / 2);
   };
 
   this.drawTitle = function() {
@@ -235,5 +226,9 @@ function ZAPopulationGroupEarnings() {
 
   this.getExportData = function() {
     return rowsToExportData(this.rows);
+  };
+
+  this.destroy = function() {
+    this.loadState.destroy();
   };
 }
