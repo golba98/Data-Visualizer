@@ -121,7 +121,7 @@ function SurveyPressureWaffle() {
   this.drawLegend = function() {
     var startX = this.legendBelow ? 26 : this.waffle.x + this.waffle.width + 30;
     var y = this.legendBelow ? this.waffle.y + this.waffle.height + 30 : this.waffle.y + 4;
-    var total = this.table.getRowCount();
+    var total = this.representedTotal();
     var itemWidth = this.legendBelow ? Math.max(150, Math.floor((width - 52) / 2)) : 116;
     var valueOffset = this.legendBelow ? 78 : 102;
 
@@ -156,12 +156,19 @@ function SurveyPressureWaffle() {
     }
   };
 
+  // The denominator the grid itself uses: rows whose pressure is a known category.
+  this.representedTotal = function() {
+    if (this.waffle && isFinite(this.waffle.representedRows)) {
+      return this.waffle.representedRows;
+    }
+    return this.table ? this.table.getRowCount() : 0;
+  };
+
   this.drawTooltip = function(category) {
     var count = this.waffle.counts[category] || 0;
-    var percent = this.table.getRowCount() > 0
-        ? ((count / this.table.getRowCount()) * 100).toFixed(1)
-        : '0.0';
-    drawChartTooltip(category, count + ' responses', percent + '%');
+    var total = this.representedTotal();
+    var percent = total > 0 ? ((count / total) * 100).toFixed(1) : '0.0';
+    drawChartTooltip(category, count + ' responses', percent + '% of ' + total);
   };
 
   this.getExportData = function() {

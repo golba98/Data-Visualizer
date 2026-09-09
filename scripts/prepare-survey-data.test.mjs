@@ -12,8 +12,11 @@ test('prepares safe chart rows and counts them', () => {
   assert.equal(prepared.rows[0].cut_back_on, 'Eating out; Transport');
   assert.deepEqual(prepared.metadata, {
     totalRows: 2,
+    inputRows: 2,
+    excludedRows: 0,
     latestTimestamp: '2026-05-30 06:37:01'
   });
+  assert.deepEqual(prepared.issues, []);
 });
 
 test('public CSV excludes private export fields', () => {

@@ -259,9 +259,9 @@
       t.assertEqual(index.getPressureScore('Debt'), 1.00, 'highest weight in table');
     });
 
-    t.test('getPressureScore falls back for an unknown answer', function() {
-      t.assertEqual(index.getPressureScore('Childcare'), 0.55, 'answer not in table');
-      t.assertEqual(index.getPressureScore(undefined), 0.55, 'missing answer');
+    t.test('getPressureScore rejects an unknown answer', function() {
+      t.assertNull(index.getPressureScore('Childcare'), 'answer not in table');
+      t.assertNull(index.getPressureScore(undefined), 'missing answer');
     });
 
     t.test('getFoodScore returns the weight for a known band', function() {
@@ -269,13 +269,13 @@
     });
 
     t.test('getFoodScore boundaries: cheapest and dearest bands', function() {
-      t.assertEqual(index.getFoodScore('R501-R1000'), 0.35, 'lowest band');
+      t.assertEqual(index.getFoodScore('R0-R500'), 0.15, 'lowest band');
       t.assertEqual(index.getFoodScore('R3000+'), 1.00, 'highest band');
     });
 
-    t.test('getFoodScore falls back for an unrecognised band', function() {
-      t.assertEqual(index.getFoodScore('R99'), 0.25, 'band not in table');
-      t.assertEqual(index.getFoodScore(''), 0.25, 'blank cell');
+    t.test('getFoodScore rejects an unrecognised band', function() {
+      t.assertNull(index.getFoodScore('R99'), 'band not in table');
+      t.assertNull(index.getFoodScore(''), 'blank cell');
     });
 
     t.test('getTransportScore boundaries: cheapest and dearest bands', function() {
@@ -283,8 +283,8 @@
       t.assertEqual(index.getTransportScore('R1500+'), 1.00, 'highest band');
     });
 
-    t.test('getTransportScore falls back for an unrecognised band', function() {
-      t.assertEqual(index.getTransportScore('free'), 0.25, 'band not in table');
+    t.test('getTransportScore rejects an unrecognised band', function() {
+      t.assertNull(index.getTransportScore('free'), 'band not in table');
     });
 
     t.suite('unit: PieChart.get_radians (pie-chart.js)');
