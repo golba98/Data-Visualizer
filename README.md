@@ -23,9 +23,18 @@ npm run start
 Other scripts
 
 ```bash
-npm run data:survey
-npm run test:data
+npm run data:survey -- --input raw_export.csv   # validate and publish a survey export
+npm run data:survey -- --input raw.csv --lenient  # exclude bad rows instead of stopping
+npm run test:data                                # 31 preprocessing tests
 ```
+
+The browser test suite runs by opening `index.html?test=1` and reading the console
+
+## Reading a chart without a mouse
+
+Every chart states its main result in text above the canvas, computed from that chart's own
+data. `About this chart` adds how to read the encoding where it is not obvious, where the
+data came from, and a data table with the same numbers the chart draws
 
 ## URL options
 
@@ -157,6 +166,13 @@ Gallery -> visualisation constructor -> preload / CSV loading
 | Already existed | Gallery and visualisation constructors, responsive drawing, Waffle/Box/PieChart composition, survey transformations, and the Topic 8 test harness. |
 | Improved for final submission | All 19 registered charts now share validated load transitions, terminal error handling, accessible feedback, and lifecycle cleanup. |
 | Newly added | `VisualizationLoadState`, constructor/interface coverage for every Gallery object, duplicate-ID and catalogue checks, and focused success/failure/cleanup tests. |
+
+## Development documentation
+
+| File | What it holds |
+| --- | --- |
+| [documentation/DEVELOPMENT_EVIDENCE.md](documentation/DEVELOPMENT_EVIDENCE.md) | Midterm to final progression, each change checked against the Git history |
+| [documentation/USER_TESTING_PROTOCOL.md](documentation/USER_TESTING_PROTOCOL.md) | Five-task moderated usability test and a blank results template |
 
 ## Conclusion
 
