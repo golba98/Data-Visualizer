@@ -213,7 +213,22 @@ function ClimateChange() {
       previous = current;
     }
 
+    this.drawColourKey();
+
     this.frameCount++;
+  };
+
+  this.drawColourKey = function() {
+    var self = this;
+
+    drawColourRampKey(this.layout.leftMargin, this.layout.bottomMargin + 34, {
+      title: isPhoneChart() ? 'Column' : 'Column colour = anomaly',
+      lowValue: this.minTemperature,
+      highValue: this.maxTemperature,
+      steps: 5,
+      format: function(value) { return value.toFixed(1) + '\u00b0C'; },
+      colourFor: function(value) { return self.mapTemperatureToColour(value); }
+    });
   };
 
   this.mapYearToWidth = function(value) {

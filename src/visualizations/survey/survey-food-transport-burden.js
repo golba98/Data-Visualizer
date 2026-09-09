@@ -90,11 +90,53 @@ function SurveyFoodTransportBurden() {
          isPhoneChart() ? 46 : 32);
   };
 
+  // Shared by the bubbles and by the size key, so the two cannot disagree.
+  this.bubbleDiameter = function(count, colWidth, rowHeight) {
+    return map(count, 1, this.maxCount, 16, Math.min(colWidth, rowHeight) * 0.68);
+  };
+
+  // Representative counts drawn from the data, not invented round numbers.
+  this.legendCounts = function() {
+    return sizeLegendValues(1, this.maxCount, 3);
+  };
+
+  // Height reserved above the grid for the size key. Fixed, so the cell geometry
+  // the key depends on is not itself a function of the key's height.
+  this.sizeKeyReserve = function() {
+    return this.showSizeKey() ? 84 : 0;
+  };
+
+  // A key needs room and needs more than one distinct size to be worth drawing.
+  // Where it is skipped, "How to read this chart" still explains the encoding.
+  this.showSizeKey = function() {
+    return this.maxCount > 1 && !isPhoneChart() && height >= 420;
+  };
+
+  this.drawSizeKey = function(colWidth, rowHeight, keyTop) {
+    if (!this.showSizeKey()) return;
+
+    var self = this;
+    var counts = this.legendCounts();
+    var largest = this.bubbleDiameter(this.maxCount, colWidth, rowHeight);
+    var keyWidth = counts.length * (largest + 12);
+    var keyX = Math.max(24, width - keyWidth - 24);
+
+    drawSizeLegend(keyX, keyTop, {
+      title: 'Circle size = respondents',
+      values: counts,
+      diameterFor: function(value) {
+        return self.bubbleDiameter(value, colWidth, rowHeight);
+      },
+      fill: SATheme.withAlpha(SATheme.blueRGB, 150)
+    });
+  };
+
   this.drawGrid = function() {
     var isCompact = isCompactChart();
     var isPhone = isPhoneChart();
     var gridLeft = isCompact ? 94 : 130;
-    var gridTop = isPhone ? 108 : 96;
+    var keyTop = isPhone ? 108 : 96;
+    var gridTop = keyTop + this.sizeKeyReserve();
     var gridRight = width - 28;
     var gridBottom = height - 72;
     var gridW = gridRight - gridLeft;
@@ -155,6 +197,8 @@ function SurveyFoodTransportBurden() {
     text('Food cost', 0, 0);
     pop();
 
+    this.drawSizeKey(colWidth, rowHeight, keyTop);
+
     for (var f = 0; f < this.foodBands.length; f++) {
       var foodName = this.foodBands[f];
 
@@ -166,7 +210,7 @@ function SurveyFoodTransportBurden() {
           continue;
         }
 
-        var bubbleDiameter = map(cellCount, 1, this.maxCount, 16, Math.min(colWidth, rowHeight) * 0.68);
+        var bubbleDiameter = this.bubbleDiameter(cellCount, colWidth, rowHeight);
         var bubbleCenterX = gridLeft + (t * colWidth) + (colWidth / 2);
         var bubbleCenterY = gridTop + (f * rowHeight) + (rowHeight / 2);
 
@@ -183,8 +227,12 @@ function SurveyFoodTransportBurden() {
         text(cellCount, bubbleCenterX, bubbleCenterY);
 
         if (dist(cursor.x, cursor.y, bubbleCenterX, bubbleCenterY) < Math.max(16, bubbleDiameter / 2)) {
-          var percentageOfAll = this.representedRows > 0 ? ((cellCount / this.representedRows) * 100).toFixed(1) : '0.0';
-          drawChartTooltip(foodName + ' food, ' + transName + ' transport', cellCount + ' respondents', percentageOfAll + '% of survey');
+          var percentageShown = this.representedRows > 0
+            ? ((cellCount / this.representedRows) * 100).toFixed(1)
+            : '0.0';
+          drawChartTooltip(foodName + ' food, ' + transName + ' transport',
+                           cellCount + ' respondents',
+                           percentageShown + '% of ' + this.representedRows + ' shown');
         }
       }
     }

@@ -155,11 +155,11 @@ function ZALandOwnershipByGroup() {
     textStyle(NORMAL);
     chartTextSize(11);
     textAlign(LEFT, isPhoneChart() ? TOP : BOTTOM);
-    text('Limitation: this is a land-audit measure for individually owned farms/agricultural holdings, not all homes or all wealth.',
+    text('Limitation: this is a land-audit measure for individually owned farms/agricultural holdings, not all homes or all wealth. Colour only highlights the largest holder; it does not encode a second value.',
          24,
-         isPhoneChart() ? height - 54 : height - 30,
+         isPhoneChart() ? height - 62 : height - 34,
          width - 48,
-         isPhoneChart() ? 50 : 28);
+         isPhoneChart() ? 58 : 32);
   };
 
   this.getExportData = function() {
