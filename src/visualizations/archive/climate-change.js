@@ -93,6 +93,19 @@ function ClimateChange() {
     this.endLabel.appendChild(this.endValue);
   };
 
+  // Two coupled sliders with no way back to the full range: the one chart where
+  // a reset is genuinely useful. Restores the documented default, which is the
+  // whole series, without reloading the visualisation.
+  this.resetControls = function() {
+    if (!this.startSlider || !this.endSlider) return;
+
+    this.startSlider.value(this.minYear);
+    this.endSlider.value(this.maxYear);
+    this.startYear = this.minYear;
+    this.endYear = this.maxYear;
+    this.restartAnimation();
+  };
+
   // Lets the accessible summary refresh when the year range changes.
   this.summaryKey = function() {
     if (!this.startSlider || !this.endSlider) return '';

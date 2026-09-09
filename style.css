@@ -1013,6 +1013,45 @@ button {
   margin-bottom: 0;
 }
 
+/* Comparison mode: selected-chart names and a textual summary of both charts */
+
+.comparison-header-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.comparison-summary {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  margin-bottom: 0.85rem;
+  padding: 0.7rem 0.8rem;
+}
+
+.comparison-summary[hidden] {
+  display: none;
+}
+
+.comparison-summary h4 {
+  margin: 0 0 0.25rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-family: var(--font-mono);
+  color: var(--muted-text);
+}
+
+.comparison-summary p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
 /* Accessible chart summary, provenance list, and data table */
 
 .chart-insight {
@@ -1413,6 +1452,7 @@ summary:focus-visible,
   .chart-action-button,
   .about-chart-toggle,
   .comparison-header button,
+  .comparison-header-actions button,
   .dataset-card button,
   .menu-button,
   .section-tab-btn,

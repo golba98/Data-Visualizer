@@ -114,6 +114,15 @@ VisualizationLoadState.prototype.completeResource = function() {
   }
   this.syncOwner();
   this.requestRender();
+
+  // Comparison panes are iframes, so the parent never draws these charts and
+  // their summaries would otherwise stay empty after a late load.
+  if (this.status === 'ready'
+      && typeof gallery !== 'undefined'
+      && gallery
+      && typeof gallery.refreshComparisonSummary === 'function') {
+    gallery.refreshComparisonSummary();
+  }
 };
 
 VisualizationLoadState.prototype.fail = function(error, path) {

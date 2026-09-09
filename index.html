@@ -174,9 +174,13 @@
               <h2>Compare visualisations</h2>
               <p>Two live charts can be explored side by side.</p>
             </div>
-            <button id="comparison-close" type="button">Exit comparison</button>
+            <div class="comparison-header-actions">
+              <button id="comparison-reset" type="button">Reset comparison</button>
+              <button id="comparison-close" type="button" aria-keyshortcuts="Escape">Exit comparison</button>
+            </div>
           </div>
           <div id="comparison-controls" class="comparison-controls"></div>
+          <section id="comparison-summary" class="comparison-summary" aria-label="Comparison summary" hidden></section>
           <div id="comparison-panes" class="comparison-panes"></div>
         </section>
       </main>

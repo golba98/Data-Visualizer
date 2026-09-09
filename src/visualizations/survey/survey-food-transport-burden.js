@@ -92,7 +92,15 @@ function SurveyFoodTransportBurden() {
 
   // Shared by the bubbles and by the size key, so the two cannot disagree.
   this.bubbleDiameter = function(count, colWidth, rowHeight) {
-    return map(count, 1, this.maxCount, 16, Math.min(colWidth, rowHeight) * 0.68);
+    var largest = Math.min(colWidth, rowHeight) * 0.68;
+
+    // Every cell holding the same count leaves no range to map across, and
+    // map() would divide by zero. Draw them all at the largest size instead.
+    if (this.maxCount <= 1) {
+      return largest;
+    }
+
+    return map(count, 1, this.maxCount, 16, largest);
   };
 
   // Representative counts drawn from the data, not invented round numbers.
