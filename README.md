@@ -25,10 +25,23 @@ Other scripts
 ```bash
 npm run data:survey -- --input raw_export.csv   # validate and publish a survey export
 npm run data:survey -- --input raw.csv --lenient  # exclude bad rows instead of stopping
-npm run test:data                                # 31 preprocessing tests
 ```
 
-The browser test suite runs by opening `index.html?test=1` and reading the console
+## Tests
+
+```bash
+npm run test:unit      # 31 data preprocessing tests (node --test)
+npm run test:browser   # the browser suite, driven by Playwright in Chromium
+npm test               # both, non-zero exit if anything fails
+```
+
+`npm run test:browser` starts the dev server itself, opens `?test=1`, waits for the suite
+to finish and fails if any test failed. On first use run `npx playwright install chromium`
+
+The suite can still be run by hand: open `index.html?test=1` and read the console report
+
+Continuous integration runs both suites and the production build on every push and pull
+request to `main`, defined in `.github/workflows/ci.yml`
 
 ## Reading a chart without a mouse
 

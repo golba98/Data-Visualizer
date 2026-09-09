@@ -1727,8 +1727,53 @@
     };
   }
 
+  // The harness itself failing has to look like a failing run, otherwise an
+  // automated runner waiting on the results would simply hang.
+  function harnessFailure(message) {
+    var record = {
+      suite: 'harness',
+      name: 'the test run started',
+      passed: false,
+      message: message
+    };
+
+    return {
+      total: 1,
+      passed: 0,
+      failed: 1,
+      results: [record],
+      failures: [record]
+    };
+  }
+
+  // Runs the suite and publishes a finished, machine-readable result on
+  // window.cm1010TestResults. The `complete` flag is the signal a command line
+  // runner waits on; the console report above stays exactly as it was for
+  // anyone reading the results by hand.
+  function runAllAndPublish() {
+    var results;
+
+    try {
+      results = runAll();
+    } catch (error) {
+      results = harnessFailure('the test run threw before it could finish -- '
+          + ((error && error.message) ? error.message : String(error)));
+    }
+
+    if (!results) {
+      results = harnessFailure('the gallery was not built, so no test ran -- '
+          + 'setup() must finish before the suite starts.');
+    }
+
+    results.complete = true;
+    global.cm1010TestResults = results;
+
+    return results;
+  }
+
   global.cm1010Testing = {
     runAll: runAll,
+    runAllAndPublish: runAllAndPublish,
     describeLoadState: describeLoadState,
     describeAllLoadStates: describeAllLoadStates,
     describeRenderState: describeRenderState,
@@ -1738,7 +1783,7 @@
 
   if (typeof hasQueryFlag === 'function' && hasQueryFlag('test')) {
     global.addEventListener('load', function() {
-      global.cm1010TestResults = runAll();
+      runAllAndPublish();
     });
   }
 
