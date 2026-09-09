@@ -178,17 +178,19 @@ function validateRecord(source, rowNumber, issues) {
       // An empty multi-select is a real answer, not a malformed one.
       chosen = [];
     } else {
+      // A separate flag rather than a null sentinel: JSON "null" is itself a
+      // value the export can contain, and it is not a valid selection.
       let parsed;
+      let unparsed = false;
       try {
         parsed = JSON.parse(raw);
       } catch {
-        fatal.push({ rowNumber, field: column, value: raw, kind: 'invalid-cut-back-on' });
-        parsed = null;
+        unparsed = true;
       }
 
-      if (parsed !== null && !Array.isArray(parsed)) {
+      if (unparsed || !Array.isArray(parsed)) {
         fatal.push({ rowNumber, field: column, value: raw, kind: 'invalid-cut-back-on' });
-      } else if (Array.isArray(parsed)) {
+      } else {
         for (const entry of parsed) {
           const option = String(entry).trim();
           if (allowed.includes(option)) {

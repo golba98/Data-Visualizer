@@ -168,12 +168,13 @@
     return table;
   }
 
-  var SURVEY_HEADERS = ['id', 'age', 'status', 'pressure', 'cost_increased',
+  // Matches the published CSV exactly: data/survey/za_survey_responses.csv.
+  var SURVEY_HEADERS = ['age', 'status', 'pressure', 'cost_increased',
                         'work_worry', 'income_keeps_up', 'transport_cost',
-                        'food_cost'];
+                        'food_cost', 'cut_back_on'];
   var SURVEY_ROWS = [
-    [1, '18-21', 'Student', 'Food', 'Yes', 5, 1, 'R0-R300', 'R3000+'],
-    [2, '18-21', 'Student', 'Data', 'Yes', 2, 4, 'R0-R300', 'R501-R1000']
+    ['18-21', 'Student', 'Food', 'Yes', 5, 1, 'R0-R300', 'R3000+', 'Eating out; Transport'],
+    ['18-21', 'Student', 'Data', 'Yes', 2, 4, 'R0-R300', 'R501-R1000', 'Data']
   ];
 
   var CENSUS_2022_SHARES = ['81.4', '8.2', '2.7', '7.3', '0.4'];
@@ -999,6 +1000,341 @@
   }
 
 
+  // Tests for the accessible summary layer: the insight text, the data table
+  // models, the size keys and the DOM rendering that exposes them.
+  function runAccessibilityTests(t) {
+
+    // Builds a loaded visualisation without going through preload/loadState.
+    function readyVisual(vis, assign) {
+      assign(vis);
+      vis.loaded = true;
+      if (vis.loadState) vis.loadState.status = 'ready';
+      if (typeof vis.setup === 'function') vis.setup();
+      return vis;
+    }
+
+    function looksBroken(text) {
+      return /NaN|undefined|Infinity|null/.test(String(text));
+    }
+
+
+    t.suite('unit: ChartInsights summary models (chart-insights.js)');
+
+    t.test('every registered visualisation has an insight builder', function() {
+      for (var i = 0; i < gallery.visuals.length; i++) {
+        t.assertTrue(ChartInsights.has(gallery.visuals[i].id),
+                     'builder exists for ' + gallery.visuals[i].id);
+      }
+    });
+
+    t.test('a loaded chart produces a usable insight sentence', function() {
+      var chart = readyVisual(new SurveyFoodTransportBurden(), function(vis) {
+        vis.table = makeTable(SURVEY_HEADERS, SURVEY_ROWS);
+      });
+      var model = ChartInsights.build(chart);
+
+      t.assertTrue(model !== null, 'a model is returned');
+      t.assertTrue(model.insight.length > 0, 'the insight is not empty');
+      t.assertTrue(model.insight.indexOf('R0-R300') !== -1,
+                   'the insight names the busiest transport band');
+    });
+
+    t.test('summaries never print NaN, undefined or Infinity', function() {
+      var charts = [
+        readyVisual(new SurveyFoodTransportBurden(), function(vis) {
+          vis.table = makeTable(SURVEY_HEADERS, SURVEY_ROWS);
+        }),
+        readyVisual(new SurveyPressureIndex(), function(vis) {
+          vis.table = makeTable(SURVEY_HEADERS, SURVEY_ROWS);
+        }),
+        readyVisual(new SurveyStatusPressure(), function(vis) {
+          vis.table = makeTable(SURVEY_HEADERS, SURVEY_ROWS);
+        })
+      ];
+
+      for (var i = 0; i < charts.length; i++) {
+        var model = ChartInsights.build(charts[i]);
+        t.assertTrue(model !== null, charts[i].id + ' builds a model');
+        t.assertTrue(!looksBroken(model.insight), charts[i].id + ' insight is clean');
+        t.assertTrue(!looksBroken(model.caveat), charts[i].id + ' caveat is clean');
+      }
+    });
+
+    t.test('quoted figures stay inside the range of the source data', function() {
+      var chart = readyVisual(new SurveyIncomeRealityGap(), function(vis) {
+        vis.table = makeTable(SURVEY_HEADERS, SURVEY_ROWS);
+      });
+      var model = ChartInsights.build(chart);
+
+      for (var i = 0; i < chart.rows.length; i++) {
+        t.assertTrue(chart.rows[i].worry >= 1 && chart.rows[i].worry <= 5,
+                     chart.rows[i].label + ' work-worry mean is on the 1-5 scale');
+        t.assertTrue(chart.rows[i].income >= 1 && chart.rows[i].income <= 5,
+                     chart.rows[i].label + ' income mean is on the 1-5 scale');
+      }
+
+      t.assertTrue(model.insight.indexOf('out of 5') !== -1, 'the scale is stated');
+    });
+
+    t.test('an unloaded chart yields no summary rather than a broken one', function() {
+      var chart = new SurveyFoodTransportBurden();
+      t.assertNull(ChartInsights.build(chart), 'nothing is built before data arrives');
+    });
+
+    t.test('an empty dataset yields no summary rather than zeroes', function() {
+      var chart = readyVisual(new SurveyFoodTransportBurden(), function(vis) {
+        vis.table = makeTable(SURVEY_HEADERS, []);
+      });
+      t.assertNull(ChartInsights.build(chart), 'an empty table produces no insight');
+    });
+
+    t.test('a builder that throws is contained, not propagated', function() {
+      var chart = readyVisual(new SurveyFoodTransportBurden(), function(vis) {
+        vis.table = makeTable(SURVEY_HEADERS, SURVEY_ROWS);
+      });
+      chart.foodBands = null;
+
+      var threw = false;
+      var model;
+      try {
+        model = ChartInsights.build(chart);
+      } catch (error) {
+        threw = true;
+      }
+
+      t.assertTrue(!threw, 'the failure does not escape the builder');
+      t.assertNull(model, 'no model is returned');
+    });
+
+
+    t.suite('unit: SummaryStats guards (chart-summary.js)');
+
+    t.test('formatting a non-finite value gives a dash, not NaN', function() {
+      t.assertEqual(SummaryStats.format(NaN, 2), '—', 'NaN');
+      t.assertEqual(SummaryStats.format(undefined, 2), '—', 'missing value');
+      t.assertEqual(SummaryStats.formatCount(Infinity), '—', 'non-finite count');
+    });
+
+    t.test('a percentage of zero respondents is a dash, not a division by zero', function() {
+      t.assertEqual(SummaryStats.percent(3, 0), '—', 'empty denominator');
+      t.assertEqual(SummaryStats.percent(1, 4), '25.0', 'ordinary case');
+    });
+
+    t.test('extremes ignore unusable values instead of returning NaN', function() {
+      var items = [{ v: 3 }, { v: NaN }, { v: 9 }, { v: null }];
+      t.assertEqual(SummaryStats.highest(items, function(i) { return i.v; }).value, 9, 'highest');
+      t.assertEqual(SummaryStats.lowest(items, function(i) { return i.v; }).value, 3, 'lowest');
+      t.assertNull(SummaryStats.highest([], function(i) { return i.v; }), 'nothing to compare');
+    });
+
+    t.test('a change is described with its direction', function() {
+      t.assertEqual(SummaryStats.describeChange(0.59, 0.54, 2, 'points'),
+                    '0.05 points lower', 'a fall');
+      t.assertEqual(SummaryStats.describeChange(1, 2, 0), '1 higher', 'a rise');
+      t.assertEqual(SummaryStats.describeChange(2, 2, 0), 'unchanged', 'no change');
+    });
+
+
+    t.suite('unit: data table models (chart-insights.js)');
+
+    t.test('a table model has headers and rows for every chart category', function() {
+      var chart = readyVisual(new SurveyStatusPressure(), function(vis) {
+        vis.table = makeTable(SURVEY_HEADERS, SURVEY_ROWS);
+      });
+      var model = ChartInsights.build(chart);
+
+      t.assertEqual(model.table.rows.length, chart.statuses.length,
+                    'one row per status group');
+      t.assertEqual(model.table.columns.length, chart.pressures.length + 2,
+                    'a label column, one per pressure, and a total');
+      t.assertTrue(model.table.caption.length > 0, 'the table is captioned');
+    });
+
+    t.test('table totals reconcile with the input row count', function() {
+      var chart = readyVisual(new SurveyStatusPressure(), function(vis) {
+        vis.table = makeTable(SURVEY_HEADERS, SURVEY_ROWS);
+      });
+      var model = ChartInsights.build(chart);
+
+      var total = 0;
+      for (var i = 0; i < model.table.rows.length; i++) {
+        total += model.table.rows[i].total;
+      }
+
+      t.assertEqual(total, chart.representedRows, 'group totals sum to the responses shown');
+      t.assertEqual(total, SURVEY_ROWS.length, 'and to the rows supplied');
+    });
+
+    t.test('the burden grid totals match the responses counted', function() {
+      var chart = readyVisual(new SurveyFoodTransportBurden(), function(vis) {
+        vis.table = makeTable(SURVEY_HEADERS, SURVEY_ROWS);
+      });
+      var model = ChartInsights.build(chart);
+
+      var total = 0;
+      for (var i = 0; i < model.table.rows.length; i++) {
+        total += model.table.rows[i].total;
+      }
+
+      t.assertEqual(total, chart.representedRows, 'cell counts sum to the responses shown');
+    });
+
+    t.test('every table column key resolves to a value in every row', function() {
+      var chart = readyVisual(new SurveyCutbackHeatmap(), function(vis) {
+        vis.table = makeTable(SURVEY_HEADERS, SURVEY_ROWS);
+      });
+      var model = ChartInsights.build(chart);
+
+      for (var r = 0; r < model.table.rows.length; r++) {
+        for (var c = 0; c < model.table.columns.length; c++) {
+          var key = model.table.columns[c].key;
+          t.assertTrue(model.table.rows[r][key] !== undefined,
+                       'row ' + r + ' has a value for "' + key + '"');
+        }
+      }
+    });
+
+
+    t.suite('unit: size legend values (helper-functions.js)');
+
+    t.test('legend values stay inside the data range', function() {
+      var values = sizeLegendValues(1, 10, 3);
+      t.assertTrue(values.length > 0, 'some values are produced');
+
+      for (var i = 0; i < values.length; i++) {
+        t.assertTrue(values[i] >= 1 && values[i] <= 10, values[i] + ' is within 1-10');
+      }
+
+      t.assertEqual(values[0], 1, 'starts at the minimum');
+      t.assertEqual(values[values.length - 1], 10, 'ends at the maximum');
+    });
+
+    t.test('a flat range collapses to one value rather than repeating', function() {
+      t.assertEqual(sizeLegendValues(5, 5, 3).length, 1, 'one distinct value');
+      t.assertEqual(sizeLegendValues(NaN, 10, 3).length, 0, 'no values for bad input');
+    });
+
+    t.test('the legend uses the same mapping as the marks it explains', function() {
+      var chart = readyVisual(new SurveyFoodTransportBurden(), function(vis) {
+        vis.table = makeTable(SURVEY_HEADERS, SURVEY_ROWS);
+      });
+
+      var counts = chart.legendCounts();
+      for (var i = 0; i < counts.length; i++) {
+        t.assertTrue(counts[i] >= 1 && counts[i] <= chart.maxCount,
+                     counts[i] + ' is a count the chart can actually draw');
+      }
+
+      t.assertEqual(chart.bubbleDiameter(chart.maxCount, 100, 100),
+                    Math.min(100, 100) * 0.68,
+                    'the largest count maps to the largest bubble');
+    });
+
+
+    t.suite('unit: reset restores documented defaults');
+
+    t.test('the climate chart returns to its full year range', function() {
+      var chart = gallery.visuals.filter(function(vis) {
+        return vis.id === 'climate-change';
+      })[0];
+
+      if (!chart || !chart.startSlider) {
+        t.assertTrue(true, 'skipped: the chart is not currently mounted');
+        return;
+      }
+
+      chart.startSlider.value(1950);
+      chart.endSlider.value(1980);
+      chart.resetControls();
+
+      t.assertEqual(chart.startSlider.value(), chart.minYear, 'start returns to the first year');
+      t.assertEqual(chart.endSlider.value(), chart.maxYear, 'end returns to the last year');
+    });
+
+    t.test('the comparison default pair is a valid, non-archived selection', function() {
+      var left = 'za-gini-trend';
+      var right = gallery.getDefaultComparisonId(left);
+
+      t.assertTrue(right !== left, 'the two panes differ');
+      t.assertTrue(gallery.findVisIndex(right) !== null, 'the default chart exists');
+    });
+
+
+    t.suite('integration: accessible summary rendering (chart-summary.js)');
+
+    function giniFixture() {
+      return readyVisual(new ZAGiniTrend(), function(vis) {
+        vis.data = makeTable(['year', 'gini_coefficient'],
+                             [[1993, 0.59], [2005, 0.65], [2022, 0.54]]);
+      });
+    }
+
+    t.test('rendering fills the insight, the provenance list and the table', function() {
+      ChartSummary.render(giniFixture());
+
+      var section = document.getElementById('chart-insight');
+      var text = document.getElementById('chart-insight-text');
+      var table = document.getElementById('chart-data-table');
+
+      t.assertTrue(section.hidden === false, 'the insight section is shown');
+      t.assertTrue(text.textContent.length > 0, 'the insight has text');
+      t.assertTrue(!looksBroken(text.textContent), 'the rendered text is clean');
+      t.assertTrue(document.getElementById('info-how').textContent.length > 0,
+                   'the how-to-read note is filled');
+      t.assertTrue(table.querySelectorAll('tbody tr').length > 0, 'the table has rows');
+    });
+
+    t.test('the rendered table uses semantic headers', function() {
+      ChartSummary.render(giniFixture());
+
+      var table = document.getElementById('chart-data-table');
+      var columnHeaders = table.querySelectorAll('thead th[scope="col"]');
+      var rowHeaders = table.querySelectorAll('tbody th[scope="row"]');
+
+      t.assertTrue(table.querySelector('caption') !== null, 'the table has a caption');
+      t.assertTrue(columnHeaders.length > 0, 'column headers are scoped');
+      t.assertTrue(rowHeaders.length > 0, 'row headers are scoped');
+      t.assertEqual(rowHeaders.length, table.querySelectorAll('tbody tr').length,
+                    'every row is identified by a row header');
+    });
+
+    t.test('the data table is a keyboard-operable disclosure', function() {
+      ChartSummary.render(giniFixture());
+
+      var details = document.getElementById('chart-data-details');
+      var summary = details.querySelector('summary');
+
+      t.assertEqual(details.tagName, 'DETAILS', 'a native disclosure is used');
+      t.assertTrue(summary !== null, 'it has a summary control');
+      t.assertTrue(summary.textContent.trim().length > 0, 'the control is labelled');
+
+      details.open = true;
+      t.assertTrue(details.open === true, 'it reports its expanded state');
+      details.open = false;
+    });
+
+    t.test('switching charts clears the previous summary', function() {
+      ChartSummary.render(giniFixture());
+      ChartSummary.clear();
+
+      t.assertEqual(document.getElementById('chart-insight-text').textContent, '',
+                    'the insight text is emptied');
+      t.assertTrue(document.getElementById('chart-insight').hidden, 'the section is hidden');
+      t.assertTrue(document.getElementById('chart-data-details').hidden, 'the table is hidden');
+      t.assertEqual(document.getElementById('chart-data-table').children.length, 0,
+                    'no stale rows remain');
+    });
+
+    t.test('a failed load shows no summary rather than a broken one', function() {
+      var chart = new ZAGiniTrend();
+      chart.handleDataError(new Error('simulated network failure'));
+
+      t.assertEqual(chart.loadState.status, 'error', 'the chart is in its error state');
+      t.assertNull(ChartInsights.build(chart), 'no summary is produced');
+    });
+  }
+
+
   function runIntegrationTests(t) {
 
     t.suite('integration: CSV row -> sliceRowNumbers -> mean -> formatThousands');
@@ -1338,6 +1674,7 @@
     var t = new TestRunner();
 
     runUnitTests(t);
+    runAccessibilityTests(t);
     runIntegrationTests(t);
 
     t.report();
