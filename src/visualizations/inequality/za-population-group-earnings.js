@@ -1,3 +1,7 @@
+// Uses the template's visualisation interface: name, id, preload, setup, draw, destroy.
+// Everything below is own.
+/* Start - own code */
+
 // Compares population share and earnings
 function ZAPopulationGroupEarnings() {
 
@@ -232,3 +236,5 @@ function ZAPopulationGroupEarnings() {
     this.loadState.destroy();
   };
 }
+
+/* End - own code */

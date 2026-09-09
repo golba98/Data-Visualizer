@@ -1,3 +1,7 @@
+// Uses the template's visualisation interface: name, id, preload, setup, draw, destroy.
+// Everything below is own.
+/* Start - own code */
+
 // Compares income pressure and worry
 function SurveyIncomeRealityGap() {
 
@@ -202,3 +206,5 @@ function SurveyIncomeRealityGap() {
     this.loadState.destroy();
   };
 }
+
+/* End - own code */

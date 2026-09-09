@@ -1,3 +1,6 @@
+// Based on the template's pay-gap-1997-2017.js.
+// Template parts are outside the markers below.
+/* Start - own code */
 // Draws the top income share trend
 function ZAIncomeShareTrend() {
 
@@ -12,7 +15,9 @@ function ZAIncomeShareTrend() {
   var marginSize = 42;
   var rightPadding = 82;
   var bottomPadding = 84;
+  /* End - own code */
 
+  // Template: layout object.
   this.layout = {
     marginSize: marginSize,
     rightPadding: rightPadding,
@@ -33,6 +38,8 @@ function ZAIncomeShareTrend() {
     numYTickLabels: 7
   };
 
+  // Based on the template's preload().
+  /* Start - own code */
   this.preload = function() {
     var self = this;
     this.loadState.loadTables([{
@@ -42,7 +49,10 @@ function ZAIncomeShareTrend() {
       assign: function(table) { self.data = table; }
     }]);
   };
+  /* End - own code */
 
+  // Based on the template's setup().
+  /* Start - own code */
   this.setup = function() {
     if (!this.loaded) {
       return;
@@ -53,7 +63,9 @@ function ZAIncomeShareTrend() {
     this.minValue = 0;
     this.maxValue = 70;
   };
+  /* End - own code */
 
+  /* Start - own code */
   this.draw = function() {
     if (this.loadState.draw()) return;
 
@@ -156,7 +168,10 @@ function ZAIncomeShareTrend() {
     var previous = null;
     var hovered = null;
     var pointer = getChartPointer();
+    /* End - own code */
 
+    // Based on the template's draw loop.
+    /* Start - own code */
     for (var i = 0; i < this.data.getRowCount(); i++) {
       var current = {
         year: this.data.getNum(i, 'year'),
@@ -180,6 +195,8 @@ function ZAIncomeShareTrend() {
         hovered = current;
       }
       previous = current;
+      /* End - own code */
+    /* Start - own code */
     }
 
     if (hovered) {
@@ -201,11 +218,14 @@ function ZAIncomeShareTrend() {
            this.mapValueToHeight(last.value));
     }
   };
+  /* End - own code */
 
+  // Template: mapYearToWidth().
   this.mapYearToWidth = function(value) {
     return map(value, this.startYear, this.endYear, this.layout.leftMargin, this.layout.rightMargin);
   };
 
+  /* Start - own code */
   this.mapValueToHeight = function(value) {
     return map(value, this.minValue, this.maxValue, this.layout.bottomMargin, this.layout.topMargin);
   };
@@ -218,3 +238,4 @@ function ZAIncomeShareTrend() {
     this.loadState.destroy();
   };
 }
+  /* End - own code */

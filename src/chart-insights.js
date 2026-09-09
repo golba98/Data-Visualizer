@@ -1,3 +1,5 @@
+/* Start - own code */
+
 
 // One summary-model builder per visualisation.
 // Every number here is computed from the visualisation's own loaded data, so the
@@ -1093,3 +1095,5 @@
 
   global.ChartInsights = ChartInsights;
 }(window));
+
+/* End - own code */

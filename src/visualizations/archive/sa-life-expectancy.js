@@ -1,9 +1,14 @@
+// Based on the template's climate-change.js.
+// Template parts are outside the markers below.
+/* Start - own code */
 // Draws life expectancy over time
 function SALifeExpectancy() {
 
   this.name = 'Life expectancy by sex';
   this.id = 'sa-life-expectancy';
 
+/* End - own code */
+  // Template: axis labels and layout object.
   this.xAxisLabel = 'year';
   this.yAxisLabel = 'years';
 
@@ -29,6 +34,7 @@ function SALifeExpectancy() {
     numXTickLabels: 9,
     numYTickLabels: 8,
   };
+/* Start - own code */
 
   this.loadState = new VisualizationLoadState(this, {
     loadingMessage: 'Loading life expectancy data...'
@@ -39,7 +45,10 @@ function SALifeExpectancy() {
     'Male': SATheme.blue,
     'Total': SATheme.green
   };
+  /* End - own code */
 
+  // Based on the template's preload().
+  /* Start - own code */
   this.preload = function() {
     var self = this;
     this.loadState.loadTables([{
@@ -57,7 +66,10 @@ function SALifeExpectancy() {
       assign: function(table) { self.data = table; }
     }]);
   };
+  /* End - own code */
 
+  // Based on the template's setup().
+  /* Start - own code */
   this.setup = function() {
     if (!this.loaded) {
       debugLog('Data not yet loaded');
@@ -93,7 +105,9 @@ function SALifeExpectancy() {
     this.minLife = floor((minValue - padding) * 10) / 10;
     this.maxLife = ceil((maxValue + padding) * 10) / 10;
   };
+  /* End - own code */
 
+  /* Start - own code */
   this.draw = function() {
     if (this.loadState.draw()) return;
 
@@ -189,7 +203,9 @@ function SALifeExpectancy() {
          this.layout.leftMargin,
          this.layout.topMargin + 6);
   };
+  /* End - own code */
 
+  // Template: mapYearToWidth().
   this.mapYearToWidth = function(value) {
     return map(value,
                this.startYear,
@@ -198,6 +214,7 @@ function SALifeExpectancy() {
                this.layout.rightMargin);
   };
 
+  /* Start - own code */
   this.mapValueToHeight = function(value) {
     return map(value,
                this.minLife,
@@ -214,3 +231,4 @@ function SALifeExpectancy() {
     this.loadState.destroy();
   };
 }
+  /* End - own code */

@@ -1,9 +1,14 @@
+// Based on the template's tech-diversity-gender.js.
+// Template parts are outside the markers below.
+/* Start - own code */
 // Draws the age and sex pyramid
 function SAPopulationSexAge2022() {
 
   this.name = 'Population by sex and age';
   this.id = 'sa-sex-age-2022';
+  /* End - own code */
 
+  // Template: layout object.
   this.layout = {
     leftMargin: 130,
     rightMargin: width,
@@ -20,13 +25,18 @@ function SAPopulationSexAge2022() {
     numYTickLabels: 8,
   };
 
+  // Template: midX for the 50% line.
   this.midX = (this.layout.plotWidth() / 2) + this.layout.leftMargin;
+  /* Start - own code */
   this.femaleColour = color(SATheme.red);
   this.maleColour = color(SATheme.blue);
   this.loadState = new VisualizationLoadState(this, {
     loadingMessage: 'Loading population by sex and age...'
   });
+  /* End - own code */
 
+  // Based on the template's preload().
+  /* Start - own code */
   this.preload = function() {
     var self = this;
     this.loadState.loadTables([{
@@ -36,19 +46,27 @@ function SAPopulationSexAge2022() {
       assign: function(table) { self.data = table; }
     }]);
   };
+  /* End - own code */
 
+  // Based on the template's setup().
+  /* Start - own code */
   this.setup = function() {
     chartTextSize(16);
     this.onResize();
   };
+  /* End - own code */
 
+  /* Start - own code */
   this.onResize = function() {
     this.layout.leftMargin = isPhoneChart() ? 62 : 130;
     this.layout.rightMargin = width - 12;
     this.layout.bottomMargin = height - (isPhoneChart() ? 12 : 0);
     this.midX = (this.layout.plotWidth() / 2) + this.layout.leftMargin;
   };
+  /* End - own code */
 
+  // Based on the template's drawCategoryLabels().
+  /* Start - own code */
   this.draw = function() {
     if (this.loadState.draw()) return;
 
@@ -95,7 +113,10 @@ function SAPopulationSexAge2022() {
          this.midX,
          this.layout.bottomMargin);
   };
+  /* End - own code */
 
+  // Based on the template's drawCategoryLabels().
+  /* Start - own code */
   this.drawCategoryLabels = function() {
     fill(SATheme.text);
     noStroke();
@@ -106,7 +127,9 @@ function SAPopulationSexAge2022() {
     textAlign('right', 'top');
     text('Male', this.layout.rightMargin, this.layout.pad);
   };
+  /* End - own code */
 
+  // Template: mapPercentToWidth().
   this.mapPercentToWidth = function(percent) {
     return map(percent,
                0,
@@ -115,6 +138,7 @@ function SAPopulationSexAge2022() {
                this.layout.plotWidth());
   };
 
+  /* Start - own code */
   this.getExportData = function() {
     return tableToExportData(this.data);
   };
@@ -123,3 +147,4 @@ function SAPopulationSexAge2022() {
     this.loadState.destroy();
   };
 }
+  /* End - own code */

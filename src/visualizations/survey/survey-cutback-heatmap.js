@@ -1,3 +1,7 @@
+// Uses the template's visualisation interface: name, id, preload, setup, draw, destroy.
+// Everything below is own.
+/* Start - own code */
+
 // Shows cuts by employment status
 function SurveyCutbackHeatmap() {
 
@@ -220,3 +224,5 @@ function SurveyCutbackHeatmap() {
     this.loadState.destroy();
   };
 }
+
+/* End - own code */

@@ -1,3 +1,5 @@
+/* Start - own code */
+
 var SATheme = {
   bg: '#121316',
   text: '#F5F7FA',
@@ -28,3 +30,5 @@ var SATheme = {
     Electricity: '#22C55E'
   }
 };
+
+/* End - own code */

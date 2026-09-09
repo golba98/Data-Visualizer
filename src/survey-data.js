@@ -1,3 +1,5 @@
+/* Start - own code */
+
 var SurveyData = {
   "path": "data/survey/za_survey_responses.csv",
   "totalRows": 48,
@@ -6,3 +8,5 @@ var SurveyData = {
   "note": "48 Survey App rows: Real survey data.",
   "source": "Project Survey App export: Real survey data."
 };
+
+/* End - own code */

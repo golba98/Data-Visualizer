@@ -1,3 +1,8 @@
+// Uses the template's visualisation interface: name, id, preload, setup, draw, destroy.
+// Everything below is own.
+// Template: the PieChart construction.
+/* Start - own code */
+
 // Draws census groups as a pie chart
 function SAPopulationGroupCensus() {
 
@@ -107,3 +112,5 @@ function SAPopulationGroupCensus() {
     return tableToExportData(this.data);
   };
 }
+
+/* End - own code */

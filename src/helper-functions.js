@@ -1,3 +1,5 @@
+/* Start - own code */
+
 
 // Checks for a URL flag
 function hasQueryFlag(name) {
@@ -278,7 +280,10 @@ function chartTextSize(size) {
   textSize(Math.max(CHART_MIN_TEXT_SIZE, size));
 }
 
-// Adds all values in an array
+
+/* End - own code */
+
+// Template: sum, mean, sliceRowNumbers, stringsToNumbers.
 function sum(data) {
   var total = 0;
 
@@ -315,6 +320,7 @@ function stringsToNumbers (array) {
   return array.map(Number);
 }
 
+/* Start - own code */
 // Formats a number with commas
 function formatThousands(value) {
   var num = Number(value);
@@ -340,8 +346,11 @@ function formatThousands(value) {
 
   return isNegative ? '-' + result : result;
 }
+/* End - own code */
 
 
+// Based on the template's axis helpers.
+/* Start - own code */
 // Draws the chart border
 function drawAxis(layout, colour) {
   push();
@@ -427,7 +436,9 @@ function drawXAxisTickLabel(value, layout, mapFunction) {
          layout.bottomMargin);
   }
 }
+/* End - own code */
 
+/* Start - own code */
 
 function drawBar(x, y, w, h, col) {
   push();
@@ -877,3 +888,5 @@ function exportHighResolutionPNG(vis) {
   pixelDensity(previousDensity);
   redraw();
 }
+
+/* End - own code */

@@ -4,6 +4,8 @@ function Gallery() {
 
   this.visuals = [];
   this.selectedVisual = null;
+
+  /* Start - own code */
   this.activeSectionId = 'overview';
   this.isAboutOpen = false;
   this.isEmbedded = typeof URLSearchParams !== 'undefined'
@@ -15,8 +17,12 @@ function Gallery() {
   this.tourResizeFrame = null;
   this.tourIndex = 0;
   this.annotationsEnabled = true;
+  /* End - own code */
+
 
   var self = this;
+
+  /* Start - own code */
 
 
   this.catalogue = [
@@ -1244,7 +1250,11 @@ function Gallery() {
     });
   };
 
+  /* End - own code */
 
+
+  // Based on the template's addVisual().
+  /* Start - own code */
   this.addVisual = function(vis) {
     var hasIdentity = vis
       && typeof vis.id === 'string'
@@ -1273,6 +1283,8 @@ function Gallery() {
       vis.preload();
     }
   };
+  /* End - own code */
+
 
   this.findVisIndex = function(visId) {
     for (var i = 0; i < this.visuals.length; i++) {
@@ -1284,6 +1296,8 @@ function Gallery() {
     return null;
   };
 
+  // Based on the template's selectVisual().
+  /* Start - own code */
   // Opens the chosen chart
   this.selectVisual = function(visId, fromHash, keepTour) {
     var visIndex = this.findVisIndex(visId);
@@ -1317,8 +1331,11 @@ function Gallery() {
       if (!keepTour) this.scrollMobileViewToTop();
     }
   };
+  /* End - own code */
 
+  /* Start - own code */
   this.buildMenu();
   this.initComparison();
   this.initTour();
+  /* End - own code */
 }

@@ -1,3 +1,7 @@
+// Uses the template's visualisation interface: name, id, preload, setup, draw, destroy.
+// Everything below is own.
+/* Start - own code */
+
 // Shows housing tenure by population group
 function ZADwellingOwnershipByGroup() {
 
@@ -201,3 +205,5 @@ function ZADwellingOwnershipByGroup() {
     this.loadState.destroy();
   };
 }
+
+/* End - own code */

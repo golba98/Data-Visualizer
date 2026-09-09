@@ -1,3 +1,6 @@
+// Based on the template's pay-gap-1997-2017.js.
+// Template parts are outside the markers below.
+/* Start - own code */
 // Draws the Gini trend chart
 function ZAGiniTrend() {
 
@@ -17,6 +20,8 @@ function ZAGiniTrend() {
   var rightPadding = 78;
   var bottomPadding = 84;
 
+/* End - own code */
+  // Template: layout object.
   this.layout = {
     marginSize: marginSize,
     rightPadding: rightPadding,
@@ -36,6 +41,7 @@ function ZAGiniTrend() {
     numXTickLabels: 6,
     numYTickLabels: 5
   };
+/* Start - own code */
 
 
   this.preload = function() {
@@ -89,8 +95,11 @@ function ZAGiniTrend() {
       return;
     }
 
+/* End - own code */
+    // Template: the startYear/endYear lines.
     this.startYear = this.data.getNum(0, 'year');
     this.endYear = this.data.getNum(this.data.getRowCount() - 1, 'year');
+    /* Start - own code */
     this.minValue = 0.5;
     this.maxValue = 0.7;
   };
@@ -196,6 +205,9 @@ function ZAGiniTrend() {
     var hovered = null;
     var pointer = getChartPointer();
 
+/* End - own code */
+    // Based on the template's draw loop.
+    /* Start - own code */
     for (var i = 0; i < this.data.getRowCount(); i++) {
       var current = {
         year: this.data.getNum(i, 'year'),
@@ -219,6 +231,8 @@ function ZAGiniTrend() {
         hovered = current;
       }
       previous = current;
+      /* End - own code */
+    /* Start - own code */
     }
 
     if (hovered) {
@@ -241,9 +255,12 @@ function ZAGiniTrend() {
     }
   };
 
+/* End - own code */
+  // Template: mapYearToWidth().
   this.mapYearToWidth = function(value) {
     return map(value, this.startYear, this.endYear, this.layout.leftMargin, this.layout.rightMargin);
   };
+/* Start - own code */
 
   this.mapValueToHeight = function(value) {
     return map(value, this.minValue, this.maxValue, this.layout.bottomMargin, this.layout.topMargin);
@@ -257,3 +274,4 @@ function ZAGiniTrend() {
     this.loadState.destroy();
   };
 }
+/* End - own code */

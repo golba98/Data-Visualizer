@@ -1,3 +1,5 @@
+/* Start - own code */
+
 
 (function(global) {
   'use strict';
@@ -1788,3 +1790,5 @@
   }
 
 }(window));
+
+/* End - own code */

@@ -1,3 +1,7 @@
+// Own implementation. The Topic 6 'Data Waffles' lecture supplied only a starting
+// sketch with no Box object; this constructor is written from scratch.
+/* Start - own code */
+
 // Draws one waffle chart cell
 function Box(x, y, width, height, category, colour) {
   this.x = x;
@@ -18,3 +22,5 @@ function Box(x, y, width, height, category, colour) {
     return mouseIsOverRect(this.x, this.y, this.width, this.height);
   };
 }
+
+/* End - own code */
