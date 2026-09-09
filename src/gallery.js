@@ -920,6 +920,10 @@ function Gallery() {
     if (controls) {
       controls.innerHTML = '';
     }
+
+    if (typeof clearChartSummary === 'function') {
+      clearChartSummary();
+    }
   };
 
   this.showChartDetails = function(vis) {
@@ -946,6 +950,10 @@ function Gallery() {
     if (infoFindingElem) infoFindingElem.textContent = meta.finding;
     if (infoSourceElem) infoSourceElem.textContent = meta.source;
     if (chartSourceElem) chartSourceElem.textContent = meta.chartSource;
+
+    if (typeof renderChartSummary === 'function') {
+      renderChartSummary(vis);
+    }
 
     var controlsPanel = document.getElementById('chart-controls');
     if (controlsPanel) {

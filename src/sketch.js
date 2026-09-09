@@ -142,6 +142,10 @@ function setup() {
   chartCanvas = createCanvas(size.width, size.height);
   chartCanvas.parent('chart-container');
 
+  if (typeof DataProvenance !== 'undefined') {
+    DataProvenance.load();
+  }
+
   gallery = new Gallery();
 
   gallery.addVisual(new ZAGiniTrend());
@@ -226,6 +230,11 @@ function draw() {
     clearChartTooltip();
     gallery.selectedVisual.draw();
     drawPendingChartTooltip();
+
+    if (typeof ChartSummary !== 'undefined') {
+      ChartSummary.sync(gallery.selectedVisual);
+    }
+
     if (!chartNeedsMoreFrames(gallery.selectedVisual)) noLoop();
   }
 }

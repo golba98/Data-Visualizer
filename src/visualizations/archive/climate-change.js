@@ -93,6 +93,12 @@ function ClimateChange() {
     this.endLabel.appendChild(this.endValue);
   };
 
+  // Lets the accessible summary refresh when the year range changes.
+  this.summaryKey = function() {
+    if (!this.startSlider || !this.endSlider) return '';
+    return this.startSlider.value() + '-' + this.endSlider.value();
+  };
+
   this.restartAnimation = function() {
     this.frameCount = 0;
   };

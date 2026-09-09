@@ -458,9 +458,25 @@ button {
   background: var(--bg-card);
   padding: var(--panel-padding);
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr) auto;
+  grid-template-rows: auto auto minmax(0, 1fr) auto;
   min-height: 0;
   width: 100%;
+}
+
+.chart-card > .chart-header {
+  grid-row: 1;
+}
+
+.chart-card > .chart-insight {
+  grid-row: 2;
+}
+
+.chart-card > .chart-container {
+  grid-row: 3;
+}
+
+.chart-card > .chart-source {
+  grid-row: 4;
 }
 
 .chart-header {
@@ -997,6 +1013,174 @@ button {
   margin-bottom: 0;
 }
 
+/* Accessible chart summary, provenance list, and data table */
+
+.chart-insight {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  padding: 0.55rem 0.7rem;
+  margin: 0 0 0.6rem;
+}
+
+.chart-insight[hidden] {
+  display: none;
+}
+
+.chart-insight h3 {
+  margin: 0 0 0.25rem;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  color: var(--muted-text);
+}
+
+.chart-insight p {
+  margin: 0;
+  font-size: 0.85rem;
+  line-height: 1.45;
+  color: var(--text-primary);
+}
+
+.chart-insight-caveat {
+  margin-top: 0.3rem !important;
+  font-size: 0.78rem !important;
+  color: var(--muted-text) !important;
+}
+
+.chart-insight-caveat[hidden] {
+  display: none;
+}
+
+.info-data-details {
+  margin: 0 0 0.85rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.info-data-details dt {
+  color: var(--muted-text);
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.info-data-details dd {
+  color: var(--text-secondary);
+  margin: 0.1rem 0 0.5rem;
+  overflow-wrap: anywhere;
+}
+
+.info-data-details dd:last-child {
+  margin-bottom: 0;
+}
+
+.chart-data-details {
+  border-top: 1px solid var(--border-color);
+  padding-top: 0.6rem;
+}
+
+.chart-data-details[hidden] {
+  display: none;
+}
+
+.chart-data-details > summary {
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-pill);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: inline-block;
+  font-size: 0.8rem;
+  list-style: none;
+  padding: 0.35rem 0.75rem;
+}
+
+.chart-data-details > summary::-webkit-details-marker {
+  display: none;
+}
+
+.chart-data-details > summary::before {
+  content: "\25B8\00a0";
+  color: var(--muted-text);
+}
+
+.chart-data-details[open] > summary::before {
+  content: "\25BE\00a0";
+}
+
+.chart-data-details > summary:hover {
+  background: #ffffff;
+  border-color: #ffffff;
+  color: #000000;
+}
+
+.chart-data-table-wrap {
+  margin-top: 0.6rem;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+#chart-data-table {
+  border-collapse: collapse;
+  font-size: 0.76rem;
+  min-width: 100%;
+}
+
+#chart-data-table caption {
+  caption-side: top;
+  color: var(--muted-text);
+  font-size: 0.75rem;
+  line-height: 1.4;
+  padding-bottom: 0.45rem;
+  text-align: left;
+}
+
+#chart-data-table th,
+#chart-data-table td {
+  border: 1px solid var(--border-color);
+  padding: 0.3rem 0.45rem;
+  text-align: right;
+  white-space: nowrap;
+}
+
+#chart-data-table thead th {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+#chart-data-table tbody th[scope="row"] {
+  color: var(--text-primary);
+  font-weight: 500;
+  text-align: left;
+}
+
+#chart-data-table tbody td {
+  color: var(--text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+
+.embedded-chart .chart-insight {
+  display: none !important;
+}
+
+/* A visible keyboard ring. Several older rules set outline: none on :focus, which
+   left keyboard users with only a border colour change. :focus-visible restores a
+   ring for keyboard use without showing it on mouse clicks. */
+a:focus-visible,
+button:focus-visible,
+select:focus-visible,
+input:focus-visible,
+summary:focus-visible,
+[tabindex="0"]:focus-visible {
+  outline: 2px solid var(--border-focus);
+  outline-offset: 2px;
+}
+
 @media (max-width: 1100px) {
   .card-grid {
     grid-template-columns: repeat(2, minmax(220px, 1fr));
@@ -1236,6 +1420,12 @@ button {
   .info-panel-close,
   .start-tour-button,
   .tour-actions button {
+    min-height: 44px;
+  }
+
+  .chart-data-details > summary {
+    align-items: center;
+    display: flex;
     min-height: 44px;
   }
 
