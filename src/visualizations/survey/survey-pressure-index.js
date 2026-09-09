@@ -9,6 +9,8 @@ function SurveyPressureIndex() {
   });
   this.index = 0;
   this.components = [];
+  this.validRows = 0;
+  this.skippedRows = 0;
 
   this.preload = function() {
     var self = this;
@@ -42,20 +44,33 @@ function SurveyPressureIndex() {
     var validRows = 0;
     var rowCount = this.table.getRowCount();
 
+    this.skippedRows = 0;
+
     for (var r = 0; r < rowCount; r++) {
       var pScore = this.getPressureScore(this.table.getString(r, 'pressure'));
-      var wScore = this.table.getNum(r, 'work_worry') / 5.0;
-      var gapScore = (6.0 - this.table.getNum(r, 'income_keeps_up')) / 5.0;
       var fScore = this.getFoodScore(this.table.getString(r, 'food_cost'));
       var tScore = this.getTransportScore(this.table.getString(r, 'transport_cost'));
+      var worry = this.table.getNum(r, 'work_worry');
+      var income = this.table.getNum(r, 'income_keeps_up');
+
+      // A row only contributes when every component is recognised. Previously an
+      // unknown answer was scored with a fallback weight and still counted, so
+      // invalid data moved the index instead of being excluded from it.
+      if (pScore === null || fScore === null || tScore === null
+          || !this.isValidRating(worry) || !this.isValidRating(income)) {
+        this.skippedRows++;
+        continue;
+      }
 
       totals.pressure += pScore;
-      totals.worry += wScore;
-      totals.incomeGap += gapScore;
+      totals.worry += worry / 5.0;
+      totals.incomeGap += (6.0 - income) / 5.0;
       totals.food += fScore;
       totals.transport += tScore;
       validRows++;
     }
+
+    this.validRows = validRows;
 
     if (validRows === 0) {
       this.index = 0;
@@ -79,6 +94,11 @@ function SurveyPressureIndex() {
     this.index = Math.round((sumComponents / this.components.length) * 100);
   };
 
+  // The survey uses a 1-5 scale; anything else is not a rating.
+  this.isValidRating = function(value) {
+    return typeof value === 'number' && isFinite(value) && value >= 1 && value <= 5;
+  };
+
   this.getPressureScore = function(value) {
     switch (value) {
       case 'Debt': return 1.00;
@@ -88,7 +108,7 @@ function SurveyPressureIndex() {
       case 'Electricity': return 0.82;
       case 'Tuition': return 0.78;
       case 'Data': return 0.70;
-      default: return 0.55;
+      default: return null;
     }
   };
 
@@ -99,7 +119,7 @@ function SurveyPressureIndex() {
       case 'R1001-R2000': return 0.60;
       case 'R501-R1000': return 0.35;
       case 'R0-R500': return 0.15;
-      default: return 0.25;
+      default: return null;
     }
   };
 
@@ -110,7 +130,7 @@ function SurveyPressureIndex() {
       case 'R601-R1000': return 0.62;
       case 'R301-R600': return 0.40;
       case 'R0-R300': return 0.20;
-      default: return 0.25;
+      default: return null;
     }
   };
 

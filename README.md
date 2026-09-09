@@ -23,9 +23,18 @@ npm run start
 Other scripts
 
 ```bash
-npm run data:survey
-npm run test:data
+npm run data:survey -- --input raw_export.csv   # validate and publish a survey export
+npm run data:survey -- --input raw.csv --lenient  # exclude bad rows instead of stopping
+npm run test:data                                # 31 preprocessing tests
 ```
+
+The browser test suite runs by opening `index.html?test=1` and reading the console
+
+## Reading a chart without a mouse
+
+Every chart states its main result in text above the canvas, computed from that chart's own
+data. `About this chart` adds how to read the encoding where it is not obvious, where the
+data came from, and a data table with the same numbers the chart draws
 
 ## URL options
 

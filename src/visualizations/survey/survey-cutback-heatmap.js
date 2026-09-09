@@ -185,23 +185,16 @@ function SurveyCutbackHeatmap() {
   };
 
   this.drawLegend = function() {
-    var x = 24;
-    var y = height - 28;
-
-    noStroke();
-    textAlign(LEFT, CENTER);
-    chartTextSize(11);
-    fill(SATheme.textMuted);
-    text('Count per group', x, y);
-
-    for (var i = 0; i < 5; i++) {
-      var strength = i / 4;
-      fill(SATheme.withAlpha(SATheme.redRGB, strength * 255));
-      stroke(SATheme.axis);
-      strokeWeight(1);
-      rect(x + 92 + (i * 22), y - 8, 20, 16);
-      noStroke();
-    }
+    drawColourRampKey(24, height - 36, {
+      title: isPhoneChart() ? 'Respondents' : 'Respondents in cell',
+      lowValue: 0,
+      highValue: this.maxCount,
+      steps: 5,
+      format: function(value) { return String(Math.round(value)); },
+      colourFor: function(value, position) {
+        return SATheme.withAlpha(SATheme.redRGB, position * 255);
+      }
+    });
   };
 
   this.getShortStatus = function(status) {

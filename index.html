@@ -20,6 +20,8 @@
     <script src="src/visualizations/survey/waffle/waffle.js"></script>
 
     <script src="src/gallery.js"></script>
+    <script src="src/chart-summary.js"></script>
+    <script src="src/chart-insights.js"></script>
 
 
     <script src="src/visualizations/inequality/za-gini-trend.js"></script>
@@ -117,6 +119,11 @@
                   <div id="chart-controls" class="chart-controls"></div>
                 </div>
               </div>
+              <section id="chart-insight" class="chart-insight" aria-labelledby="chart-insight-title" hidden>
+                <h3 id="chart-insight-title">Key insight</h3>
+                <p id="chart-insight-text"></p>
+                <p id="chart-insight-caveat" class="chart-insight-caveat" hidden></p>
+              </section>
               <div id="chart-container" class="chart-container"></div>
               <p id="chart-load-status" class="visually-hidden" aria-live="polite"></p>
               <p id="chart-source" class="chart-source"></p>
@@ -134,8 +141,26 @@
               <h3>Main point</h3>
               <p id="info-finding"></p>
 
+              <section id="info-how-section" hidden>
+                <h3>How to read this chart</h3>
+                <p id="info-how"></p>
+              </section>
+
               <h3>Source</h3>
               <p id="info-source"></p>
+
+              <section id="info-data-section" hidden>
+                <h3>About this data</h3>
+                <dl id="info-data-details" class="info-data-details"></dl>
+              </section>
+
+              <details id="chart-data-details" class="chart-data-details" hidden>
+                <summary>View data table</summary>
+                <p id="chart-data-caption" class="chart-data-caption" aria-hidden="true"></p>
+                <div class="chart-data-table-wrap">
+                  <table id="chart-data-table"></table>
+                </div>
+              </details>
             </aside>
           </div>
         </section>
@@ -150,9 +175,13 @@
               <h2>Compare visualisations</h2>
               <p>Two live charts can be explored side by side.</p>
             </div>
-            <button id="comparison-close" type="button">Exit comparison</button>
+            <div class="comparison-header-actions">
+              <button id="comparison-reset" type="button">Reset comparison</button>
+              <button id="comparison-close" type="button" aria-keyshortcuts="Escape">Exit comparison</button>
+            </div>
           </div>
           <div id="comparison-controls" class="comparison-controls"></div>
+          <section id="comparison-summary" class="comparison-summary" aria-label="Comparison summary" hidden></section>
           <div id="comparison-panes" class="comparison-panes"></div>
         </section>
       </main>

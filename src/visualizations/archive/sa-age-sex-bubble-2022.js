@@ -47,6 +47,8 @@ function SAAgeSexBubble2022() {
     var totalMin = min(totals);
     var totalMax = max(totals);
 
+    this.drawSizeKey(totalMin, totalMax);
+
     fill(SATheme.withAlpha(SATheme.blueRGB, 140));
     stroke(SATheme.axis);
     strokeWeight(1);
@@ -59,8 +61,7 @@ function SAAgeSexBubble2022() {
                   this.yMax,
                   height - this.pad,
                   this.pad);
-      var size = map(totals[i], totalMin, totalMax,
-                     this.dotSizeMin, this.dotSizeMax);
+      var size = this.bubbleDiameter(totals[i], totalMin, totalMax);
 
       ellipse(x, y, size, size);
 
@@ -73,6 +74,25 @@ function SAAgeSexBubble2022() {
         stroke(SATheme.axis);
       }
     }
+  };
+
+  // Shared by the bubbles and by the size key, so the two cannot disagree.
+  this.bubbleDiameter = function(total, totalMin, totalMax) {
+    return map(total, totalMin, totalMax, this.dotSizeMin, this.dotSizeMax);
+  };
+
+  this.drawSizeKey = function(totalMin, totalMax) {
+    var self = this;
+
+    drawSizeLegend(this.pad + 10, this.pad + 4, {
+      title: 'Circle size = people in the age group',
+      values: sizeLegendValues(totalMin, totalMax, 3),
+      diameterFor: function(value) {
+        return self.bubbleDiameter(value, totalMin, totalMax);
+      },
+      format: function(value) { return formatThousands(value); },
+      fill: SATheme.withAlpha(SATheme.blueRGB, 140)
+    });
   };
 
   this.addAxes = function() {
@@ -119,8 +139,6 @@ function SAAgeSexBubble2022() {
     text('Female %', 0, 0);
     pop();
 
-    textAlign('left', 'top');
-    text('Bigger circles = larger age groups', this.pad + 10, this.pad);
   };
 
   this.getExportData = function() {

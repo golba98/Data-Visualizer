@@ -43,6 +43,13 @@ function SAPopulationGroupCensus() {
     this.onResize();
   };
 
+  // Lets the accessible summary refresh when the selected year changes.
+  this.summaryKey = function() {
+    return (this.select && typeof this.select.value === 'function')
+      ? String(this.select.value())
+      : '';
+  };
+
   this.destroy = function() {
     this.loadState.destroy();
     if (this.select) {

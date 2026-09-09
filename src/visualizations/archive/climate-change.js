@@ -93,6 +93,25 @@ function ClimateChange() {
     this.endLabel.appendChild(this.endValue);
   };
 
+  // Two coupled sliders with no way back to the full range: the one chart where
+  // a reset is genuinely useful. Restores the documented default, which is the
+  // whole series, without reloading the visualisation.
+  this.resetControls = function() {
+    if (!this.startSlider || !this.endSlider) return;
+
+    this.startSlider.value(this.minYear);
+    this.endSlider.value(this.maxYear);
+    this.startYear = this.minYear;
+    this.endYear = this.maxYear;
+    this.restartAnimation();
+  };
+
+  // Lets the accessible summary refresh when the year range changes.
+  this.summaryKey = function() {
+    if (!this.startSlider || !this.endSlider) return '';
+    return this.startSlider.value() + '-' + this.endSlider.value();
+  };
+
   this.restartAnimation = function() {
     this.frameCount = 0;
   };
@@ -207,7 +226,22 @@ function ClimateChange() {
       previous = current;
     }
 
+    this.drawColourKey();
+
     this.frameCount++;
+  };
+
+  this.drawColourKey = function() {
+    var self = this;
+
+    drawColourRampKey(this.layout.leftMargin, this.layout.bottomMargin + 34, {
+      title: isPhoneChart() ? 'Column' : 'Column colour = anomaly',
+      lowValue: this.minTemperature,
+      highValue: this.maxTemperature,
+      steps: 5,
+      format: function(value) { return value.toFixed(1) + '\u00b0C'; },
+      colourFor: function(value) { return self.mapTemperatureToColour(value); }
+    });
   };
 
   this.mapYearToWidth = function(value) {

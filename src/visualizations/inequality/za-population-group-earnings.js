@@ -163,11 +163,11 @@ function ZAPopulationGroupEarnings() {
     textStyle(NORMAL);
     chartTextSize(11);
     textAlign(LEFT, BOTTOM);
-    text('Note: earnings are not wealth. This chart shows labour-market earnings by official population group.',
+    text('Note: earnings are not wealth. This chart shows labour-market earnings by official population group. Colour only highlights the highest-earning group; it does not encode a second value.',
          24,
-         isPhoneChart() ? height - 46 : height - 30,
+         isPhoneChart() ? height - 58 : height - 34,
          width - 48,
-         isPhoneChart() ? 42 : 28);
+         isPhoneChart() ? 54 : 32);
   };
 
   this.drawPhoneChart = function() {

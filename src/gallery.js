@@ -9,6 +9,7 @@ function Gallery() {
   this.isEmbedded = typeof URLSearchParams !== 'undefined'
       && new URLSearchParams(window.location.search).get('embedded') === '1';
   this.isComparison = false;
+  this.comparisonPair = null;
   this.isTourActive = false;
   this.isTourTransitioning = false;
   this.tourResizeFrame = null;
@@ -894,6 +895,8 @@ function Gallery() {
       this.selectedVisual.destroy();
     }
 
+    this.isComparison = false;
+
     this.selectedVisual = null;
     this.clearChartControls();
     clear();
@@ -919,6 +922,10 @@ function Gallery() {
     var controls = document.getElementById('chart-controls');
     if (controls) {
       controls.innerHTML = '';
+    }
+
+    if (typeof clearChartSummary === 'function') {
+      clearChartSummary();
     }
   };
 
@@ -947,6 +954,10 @@ function Gallery() {
     if (infoSourceElem) infoSourceElem.textContent = meta.source;
     if (chartSourceElem) chartSourceElem.textContent = meta.chartSource;
 
+    if (typeof renderChartSummary === 'function') {
+      renderChartSummary(vis);
+    }
+
     var controlsPanel = document.getElementById('chart-controls');
     if (controlsPanel) {
       var saveBtn = this.makeActionButton('Save high-res PNG', 'Export this chart as a 3x PNG image', function() {
@@ -970,6 +981,17 @@ function Gallery() {
 
       controlsPanel.appendChild(saveBtn);
       controlsPanel.appendChild(csvBtn);
+
+      if (typeof vis.resetControls === 'function') {
+        controlsPanel.appendChild(this.makeActionButton(
+          'Reset view',
+          'Return this chart to its default settings',
+          function() {
+            vis.resetControls();
+            if (typeof requestChartRender === 'function') requestChartRender(true);
+          }
+        ));
+      }
       if (!this.isTourActive) {
         controlsPanel.appendChild(annotBtn);
       }
@@ -1042,7 +1064,9 @@ function Gallery() {
     document.getElementById('chart-view').classList.add('hidden');
     document.getElementById('tour-view').classList.add('hidden');
     document.getElementById('comparison-view').classList.remove('hidden');
+    this.comparisonPair = [leftId, rightId];
     this.renderComparisonControls(leftId, rightId);
+    this.renderComparisonSummary(leftId, rightId);
     this.renderComparisonPanes(leftId, rightId);
     if (!fromHash) this.updateHash('compare/' + leftId + '/' + rightId);
     this.scrollMobileViewToTop();
@@ -1088,18 +1112,80 @@ function Gallery() {
     });
   };
 
+  // Reuses the per-chart insight builders so the comparison states both results
+  // in text. Charts whose data has not loaded are simply left out.
+  this.renderComparisonSummary = function(leftId, rightId) {
+    var container = document.getElementById('comparison-summary');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    if (typeof ChartInsights === 'undefined') {
+      container.hidden = true;
+      return;
+    }
+
+    var written = 0;
+
+    [leftId, rightId].forEach(function(id, index) {
+      var visIndex = self.findVisIndex(id);
+      if (visIndex === null) return;
+
+      var vis = self.visuals[visIndex];
+      var model = ChartInsights.build(vis);
+
+      if (!model && vis.loaded && typeof vis.setup === 'function') {
+        try {
+          vis.setup();
+          model = ChartInsights.build(vis);
+        } catch (error) {
+          model = null;
+        }
+      }
+
+      if (!model) return;
+
+      var item = self.getCatalogueItem(id);
+      var entry = document.createElement('div');
+      entry.className = 'comparison-summary-item';
+
+      var heading = document.createElement('h4');
+      heading.textContent = (index === 0 ? 'Chart 1' : 'Chart 2')
+        + ': ' + ((item && item.name) || vis.name);
+
+      var body = document.createElement('p');
+      body.textContent = model.insight;
+
+      entry.appendChild(heading);
+      entry.appendChild(body);
+      container.appendChild(entry);
+      written++;
+    });
+
+    container.hidden = written === 0;
+  };
+
+  this.refreshComparisonSummary = function() {
+    if (!this.isComparison || !this.comparisonPair) return;
+    this.renderComparisonSummary(this.comparisonPair[0], this.comparisonPair[1]);
+  };
+
   this.renderComparisonPanes = function(leftId, rightId) {
     var panes = document.getElementById('comparison-panes');
     var lazy = this.isMobileViewport();
     panes.innerHTML = '';
 
     [leftId, rightId].forEach(function(id, index) {
+      var item = self.getCatalogueItem(id);
+      var label = (index === 0 ? 'Chart 1' : 'Chart 2')
+        + ': ' + ((item && item.name) || id);
+
       var pane = document.createElement('article');
       pane.className = 'comparison-pane';
       var title = document.createElement('h3');
-      title.textContent = index === 0 ? 'Chart 1' : 'Chart 2';
+      title.textContent = label;
       var frame = document.createElement('iframe');
-      frame.title = 'Live ' + (index === 0 ? 'left' : 'right') + ' comparison chart';
+      frame.title = 'Live chart, ' + label;
       frame.src = window.location.pathname + '?embedded=1&vis=' + encodeURIComponent(id);
       frame.loading = (lazy && index === 1) ? 'lazy' : 'eager';
       pane.appendChild(title);
@@ -1108,13 +1194,42 @@ function Gallery() {
     });
   };
 
+  this.exitComparison = function() {
+    this.isComparison = false;
+    this.showOverview();
+  };
+
+  this.resetComparison = function() {
+    var left = this.visuals.length ? this.visuals[0].id : null;
+    if (!left) return;
+    this.openComparison(left, this.getDefaultComparisonId(left));
+  };
+
   this.initComparison = function() {
     var closeButton = document.getElementById('comparison-close');
+    var resetButton = document.getElementById('comparison-reset');
+
     if (closeButton && !closeButton.dataset.bound) {
       closeButton.dataset.bound = 'true';
       closeButton.addEventListener('click', function() {
-        self.isComparison = false;
-        self.showOverview();
+        self.exitComparison();
+      });
+    }
+
+    if (resetButton && !resetButton.dataset.bound) {
+      resetButton.dataset.bound = 'true';
+      resetButton.addEventListener('click', function() {
+        self.resetComparison();
+      });
+    }
+
+    if (!document.comparisonKeysBound) {
+      document.comparisonKeysBound = true;
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && self.isComparison && !self.isTourActive) {
+          e.preventDefault();
+          self.exitComparison();
+        }
       });
     }
     window.addEventListener('hashchange', function() {

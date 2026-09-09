@@ -114,6 +114,15 @@ VisualizationLoadState.prototype.completeResource = function() {
   }
   this.syncOwner();
   this.requestRender();
+
+  // Comparison panes are iframes, so the parent never draws these charts and
+  // their summaries would otherwise stay empty after a late load.
+  if (this.status === 'ready'
+      && typeof gallery !== 'undefined'
+      && gallery
+      && typeof gallery.refreshComparisonSummary === 'function') {
+    gallery.refreshComparisonSummary();
+  }
 };
 
 VisualizationLoadState.prototype.fail = function(error, path) {
@@ -574,6 +583,186 @@ function drawHorizontalAnnotation(y, label, detail, left, right, colour) {
 
   drawHorizontalReferenceLine(y, left, right, colour);
   drawAnnotationBadge(label, detail, left + 8, y - 30, colour);
+}
+
+// Draws a size key for charts where a mark's width carries the value.
+// The caller passes the same mapping function the chart uses, so the key and the
+// marks cannot drift apart, and representative values taken from the real data.
+// Returns the space used so callers can lay out around it.
+function drawSizeLegend(x, y, options) {
+  var settings = options || {};
+  var values = settings.values || [];
+  var diameterFor = settings.diameterFor;
+
+  if (!values.length || typeof diameterFor !== 'function') {
+    return { width: 0, height: 0 };
+  }
+
+  var formatValue = settings.format || function(value) { return String(value); };
+  var titleSize = isPhoneChart() ? 9 : 11;
+  var labelSize = isPhoneChart() ? 8 : 10;
+  var gap = isPhoneChart() ? 8 : 12;
+
+  push();
+  noStroke();
+  textAlign(LEFT, TOP);
+  chartTextSize(titleSize);
+  fill(SATheme.textMuted);
+
+  var titleHeight = 0;
+  if (settings.title) {
+    text(settings.title, x, y);
+    titleHeight = titleSize + 6;
+  }
+
+  var diameters = [];
+  var largest = 0;
+  for (var i = 0; i < values.length; i++) {
+    var diameter = Math.max(6, diameterFor(values[i]));
+    diameters.push(diameter);
+    if (diameter > largest) largest = diameter;
+  }
+
+  var baseline = y + titleHeight + (largest / 2);
+  var cursorX = x;
+
+  for (var v = 0; v < values.length; v++) {
+    var size = diameters[v];
+    var centreX = cursorX + (largest / 2);
+
+    stroke(settings.stroke === undefined ? SATheme.axis : settings.stroke);
+    strokeWeight(1);
+    fill(settings.fill === undefined ? SATheme.withAlpha(SATheme.blueRGB, 150) : settings.fill);
+    circle(centreX, baseline, size);
+
+    noStroke();
+    fill(SATheme.textMuted);
+    textAlign(CENTER, TOP);
+    chartTextSize(labelSize);
+    text(formatValue(values[v]), centreX, baseline + (largest / 2) + 3);
+
+    cursorX += largest + gap;
+  }
+
+  pop();
+
+  return {
+    width: Math.max(0, cursorX - gap - x),
+    height: titleHeight + largest + labelSize + 5
+  };
+}
+
+// Picks a small set of representative values spanning a data range, so a size
+// key shows real magnitudes rather than invented round numbers.
+function sizeLegendValues(minValue, maxValue, count) {
+  var wanted = count || 3;
+  if (!isFinite(minValue) || !isFinite(maxValue)) return [];
+  if (maxValue <= minValue) return [maxValue];
+
+  var values = [];
+  for (var i = 0; i < wanted; i++) {
+    var value = minValue + ((maxValue - minValue) * (i / (wanted - 1)));
+    var rounded = Math.round(value);
+    if (values.indexOf(rounded) === -1) values.push(rounded);
+  }
+
+  return values;
+}
+
+// Draws a swatch key. Used where colour marks a highlight rather than a variable,
+// so the reader is told which of the two it is.
+function drawColourKey(x, y, items, options) {
+  var settings = options || {};
+  var list = items || [];
+  if (!list.length) return { width: 0, height: 0 };
+
+  var labelSize = isPhoneChart() ? 9 : 11;
+  var swatch = 12;
+  var rowHeight = swatch + 8;
+  var widest = 0;
+
+  push();
+  chartTextSize(labelSize);
+
+  if (settings.title) {
+    noStroke();
+    fill(SATheme.textMuted);
+    textAlign(LEFT, TOP);
+    text(settings.title, x, y);
+    y += labelSize + 5;
+  }
+
+  for (var i = 0; i < list.length; i++) {
+    var rowY = y + (i * rowHeight);
+
+    fill(list[i].colour);
+    stroke(SATheme.axis);
+    strokeWeight(1);
+    rect(x, rowY, swatch, swatch);
+
+    noStroke();
+    fill(SATheme.textMuted);
+    textAlign(LEFT, CENTER);
+    text(list[i].label, x + swatch + 6, rowY + (swatch / 2));
+
+    widest = Math.max(widest, swatch + 6 + textWidth(list[i].label));
+  }
+
+  pop();
+
+  return { width: widest, height: list.length * rowHeight };
+}
+
+// Draws a colour ramp with its numeric end points, so a shaded encoding can be
+// read as a quantity instead of a vague "darker means more".
+function drawColourRampKey(x, y, options) {
+  var settings = options || {};
+  var colourFor = settings.colourFor;
+  if (typeof colourFor !== 'function') return { width: 0, height: 0 };
+
+  var steps = settings.steps || 5;
+  var swatchWidth = isPhoneChart() ? 16 : 20;
+  var swatchHeight = 14;
+  var labelSize = isPhoneChart() ? 9 : 10;
+  var lowValue = settings.lowValue;
+  var highValue = settings.highValue;
+  var formatValue = settings.format || function(value) { return String(value); };
+
+  push();
+  chartTextSize(labelSize);
+  noStroke();
+  textAlign(LEFT, CENTER);
+  fill(SATheme.textMuted);
+
+  var cursorX = x;
+  if (settings.title) {
+    text(settings.title, cursorX, y + (swatchHeight / 2));
+    cursorX += textWidth(settings.title) + 8;
+  }
+
+  var lowLabel = formatValue(lowValue);
+  textAlign(RIGHT, CENTER);
+  text(lowLabel, cursorX + textWidth(lowLabel), y + (swatchHeight / 2));
+  cursorX += textWidth(lowLabel) + 6;
+
+  for (var i = 0; i < steps; i++) {
+    var position = steps === 1 ? 0 : (i / (steps - 1));
+    fill(colourFor(lowValue + ((highValue - lowValue) * position), position));
+    stroke(SATheme.axis);
+    strokeWeight(1);
+    rect(cursorX + (i * swatchWidth), y, swatchWidth, swatchHeight);
+  }
+  cursorX += steps * swatchWidth;
+
+  noStroke();
+  fill(SATheme.textMuted);
+  textAlign(LEFT, CENTER);
+  text(formatValue(highValue), cursorX + 6, y + (swatchHeight / 2));
+  cursorX += 6 + textWidth(formatValue(highValue));
+
+  pop();
+
+  return { width: cursorX - x, height: swatchHeight };
 }
 
 function mouseIsOverRect(x, y, w, h) {
