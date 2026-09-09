@@ -1,3 +1,5 @@
+/* Start - own code */
+
 
 // Turns a visualisation's own data into accessible HTML:
 // a key-insight line, a how-to-read note, a provenance list, and a data table.
@@ -359,3 +361,5 @@
   global.renderChartSummary = function(vis) { return ChartSummary.render(vis); };
   global.clearChartSummary = function() { ChartSummary.clear(); };
 }(window));
+
+/* End - own code */

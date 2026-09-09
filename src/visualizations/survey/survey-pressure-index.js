@@ -1,3 +1,7 @@
+// Uses the template's visualisation interface: name, id, preload, setup, draw, destroy.
+// Everything below is own.
+/* Start - own code */
+
 // Draws the survey pressure score
 function SurveyPressureIndex() {
 
@@ -281,3 +285,5 @@ function SurveyPressureIndex() {
     this.loadState.destroy();
   };
 }
+
+/* End - own code */

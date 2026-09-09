@@ -1,9 +1,14 @@
+// Based on the template's pay-gap-1997-2017.js.
+// Template parts are outside the markers below.
+/* Start - own code */
 // Draws youth unemployment over time
 function SAYouthUnemployment() {
 
   this.name = 'Youth unemployment trend';
   this.id = 'sa-youth-unemployment';
+  /* End - own code */
 
+  // Template: axis labels and layout object.
   this.xAxisLabel = 'year';
   this.yAxisLabel = '%';
 
@@ -30,10 +35,14 @@ function SAYouthUnemployment() {
     numYTickLabels: 8,
   };
 
+  /* Start - own code */
   this.loadState = new VisualizationLoadState(this, {
     loadingMessage: 'Loading youth unemployment data...'
   });
+  /* End - own code */
 
+  // Based on the template's preload().
+  /* Start - own code */
   this.preload = function() {
     var self = this;
     this.loadState.loadTables([{
@@ -43,7 +52,10 @@ function SAYouthUnemployment() {
       assign: function(table) { self.data = table; }
     }]);
   };
+  /* End - own code */
 
+  // Based on the template's setup().
+  /* Start - own code */
   this.setup = function() {
     if (!this.loaded) {
       debugLog('Data not yet loaded');
@@ -60,7 +72,10 @@ function SAYouthUnemployment() {
     this.minRate = 0;
     this.maxRate = ceil(max(youthRates));
   };
+  /* End - own code */
 
+  // Based on the template's draw().
+  /* Start - own code */
   this.draw = function() {
     if (this.loadState.draw()) return;
 
@@ -113,7 +128,9 @@ function SAYouthUnemployment() {
       previous = current;
     }
   };
+  /* End - own code */
 
+  /* Start - own code */
   this.drawLegend = function() {
     var x = this.layout.leftMargin + 12;
     var y = this.layout.topMargin + 14;
@@ -128,7 +145,9 @@ function SAYouthUnemployment() {
     textAlign('left', 'center');
     text('Youth unemployment (%)', x + 43, y);
   };
+  /* End - own code */
 
+  // Template: mapYearToWidth().
   this.mapYearToWidth = function(value) {
     return map(value,
                this.startYear,
@@ -137,6 +156,8 @@ function SAYouthUnemployment() {
                this.layout.rightMargin);
   };
 
+  // Based on the template's mapPayGapToHeight() stub.
+  /* Start - own code */
   this.mapValueToHeight = function(value) {
     return map(value,
                this.minRate,
@@ -144,7 +165,9 @@ function SAYouthUnemployment() {
                this.layout.bottomMargin,
                this.layout.topMargin);
   };
+  /* End - own code */
 
+  /* Start - own code */
   this.getExportData = function() {
     return tableToExportData(this.data);
   };
@@ -153,3 +176,4 @@ function SAYouthUnemployment() {
     this.loadState.destroy();
   };
 }
+  /* End - own code */

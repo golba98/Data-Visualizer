@@ -1,3 +1,7 @@
+// Uses the template's visualisation interface: name, id, preload, setup, draw, destroy.
+// Everything below is own.
+/* Start - own code */
+
 // Shows the main money worry
 function SurveyPressureWaffle() {
 
@@ -179,3 +183,5 @@ function SurveyPressureWaffle() {
     this.loadState.destroy();
   };
 }
+
+/* End - own code */

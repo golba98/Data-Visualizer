@@ -1,9 +1,12 @@
 
 var gallery;
+/* Start - own code */
 var chartCanvas;
 var chartResizeFrame = null;
 var chartLoopStartedAt = 0;
+/* End - own code */
 
+/* Start - own code */
 
 // Finds the best canvas size
 function getChartCanvasSize() {
@@ -131,6 +134,10 @@ function refreshVisualLayout(vis) {
 }
 
 
+/* End - own code */
+
+// Based on the template's addVisual().
+/* Start - own code */
 // Starts the canvas and chart gallery
 function setup() {
   var urlParams = typeof URLSearchParams !== 'undefined' ? new URLSearchParams(window.location.search) : null;
@@ -222,7 +229,11 @@ function setup() {
     if (firstBtn) firstBtn.focus();
   }
 }
+/* End - own code */
 
+
+// Based on the template's draw().
+/* Start - own code */
 // Draws the selected chart
 function draw() {
   if (gallery && gallery.selectedVisual != null) {
@@ -238,7 +249,10 @@ function draw() {
     if (!chartNeedsMoreFrames(gallery.selectedVisual)) noLoop();
   }
 }
+/* End - own code */
 
+
+/* Start - own code */
 function mouseMoved() {
   if (gallery && gallery.selectedVisual) requestChartRender();
 }
@@ -258,3 +272,4 @@ function touchEnded() {
 function windowResized() {
   queueChartResize();
 }
+/* End - own code */

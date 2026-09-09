@@ -32,10 +32,15 @@ function ClimateChange() {
     numYTickLabels: 8,
   };
 
+  // Replaces the template's loaded flag.
+  /* Start - own code */
   this.loadState = new VisualizationLoadState(this, {
     loadingMessage: 'Loading temperature data...'
   });
+  /* End - own code */
 
+  // Based on the template's preload().
+  /* Start - own code */
   this.preload = function() {
     var self = this;
     this.loadState.loadTables([{
@@ -45,7 +50,10 @@ function ClimateChange() {
       assign: function(table) { self.data = table; }
     }]);
   };
+  /* End - own code */
 
+  // Based on the template's setup().
+  /* Start - own code */
   this.setup = function() {
     if (!this.loaded) {
       debugLog('Data not yet loaded');
@@ -92,7 +100,9 @@ function ClimateChange() {
     this.endValue.className = 'control-value';
     this.endLabel.appendChild(this.endValue);
   };
+  /* End - own code */
 
+  /* Start - own code */
   // Two coupled sliders with no way back to the full range: the one chart where
   // a reset is genuinely useful. Restores the documented default, which is the
   // whole series, without reloading the visualisation.
@@ -119,7 +129,10 @@ function ClimateChange() {
   this.isAnimating = function() {
     return this.frameCount <= (this.endYear || this.maxYear) - (this.startYear || this.minYear);
   };
+  /* End - own code */
 
+  // Based on the template's destroy().
+  /* Start - own code */
   this.destroy = function() {
     this.loadState.destroy();
     if (this.startSlider) {
@@ -139,7 +152,10 @@ function ClimateChange() {
       this.endLabel = null;
     }
   };
+  /* End - own code */
 
+  // Based on the template's draw().
+  /* Start - own code */
   this.draw = function() {
     if (this.loadState.draw()) return;
 
@@ -230,7 +246,9 @@ function ClimateChange() {
 
     this.frameCount++;
   };
+  /* End - own code */
 
+  /* Start - own code */
   this.drawColourKey = function() {
     var self = this;
 
@@ -243,6 +261,7 @@ function ClimateChange() {
       colourFor: function(value) { return self.mapTemperatureToColour(value); }
     });
   };
+  /* End - own code */
 
   this.mapYearToWidth = function(value) {
     return map(value,
@@ -270,7 +289,10 @@ function ClimateChange() {
     return color(red, 0, blue, 100);
   };
 
+  // New method.
+  /* Start - own code */
   this.getExportData = function() {
     return tableToExportData(this.data);
   };
+  /* End - own code */
 }

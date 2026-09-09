@@ -5,6 +5,7 @@ function PieChart(x, y, diameter) {
   this.y = y;
   this.diameter = diameter;
   this.labelSpace = 30;
+  /* Start - own code */
   this.currentData = null;
   this.targetData = null;
   this.animation = 1;
@@ -12,6 +13,7 @@ function PieChart(x, y, diameter) {
   this.isAnimating = function() {
     return this.animation < 1;
   };
+  /* End - own code */
 
   // Changes values into pie angles
   this.get_radians = function(data) {
@@ -25,6 +27,8 @@ function PieChart(x, y, diameter) {
     return radians;
   };
 
+  // Based on the template's draw().
+  /* Start - own code */
   // Draws the pie and its legend
   this.draw = function(data, labels, colours) {
 
@@ -102,11 +106,16 @@ function PieChart(x, y, diameter) {
       drawChartTooltip(labels[hovered], shownData[hovered].toFixed(1) + '%', percent + ' of total');
     }
   };
+  /* End - own code */
 
+  /* Start - own code */
   this.phoneRowHeight = function() {
     return 34;
   };
+  /* End - own code */
 
+  // Based on the template's makeLegendItem().
+  /* Start - own code */
   this.makeLegendItem = function(label, i, colour) {
     var phoneLayout = isPhoneChart();
     var columnWidth = Math.floor((width - 48) / 2);
@@ -134,4 +143,5 @@ function PieChart(x, y, diameter) {
       text(label, x + boxWidth + 10, y + boxHeight / 2);
     }
   };
+  /* End - own code */
 }

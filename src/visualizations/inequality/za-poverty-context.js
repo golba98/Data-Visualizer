@@ -1,3 +1,6 @@
+// Based on the template's pay-gap-1997-2017.js.
+// Template parts are outside the markers below.
+/* Start - own code */
 // Draws poverty measures over time
 function ZAPovertyContext() {
 
@@ -13,6 +16,8 @@ function ZAPovertyContext() {
     'Upper-bound poverty line headcount'
   ];
   this.colours = [SATheme.blue, SATheme.gold, SATheme.red];
+  /* End - own code */
+  // Template: axis labels and layout object.
   this.xAxisLabel = 'year';
   this.yAxisLabel = '%';
 
@@ -40,6 +45,8 @@ function ZAPovertyContext() {
     numYTickLabels: 8
   };
 
+  // Based on the template's preload().
+  /* Start - own code */
   this.preload = function() {
     var self = this;
     this.loadState.loadTables([{
@@ -49,7 +56,10 @@ function ZAPovertyContext() {
       assign: function(table) { self.data = table; }
     }]);
   };
+  /* End - own code */
 
+  // Based on the template's setup().
+  /* Start - own code */
   this.setup = function() {
     if (!this.loaded) {
       return;
@@ -75,7 +85,9 @@ function ZAPovertyContext() {
       }
     }
   };
+  /* End - own code */
 
+  /* Start - own code */
   this.draw = function() {
     if (this.loadState.draw()) return;
 
@@ -257,11 +269,14 @@ function ZAPovertyContext() {
       text(this.seriesNames[i], x + 36, rowY);
     }
   };
+  /* End - own code */
 
+  // Template: mapYearToWidth().
   this.mapYearToWidth = function(value) {
     return map(value, this.startYear, this.endYear, this.layout.leftMargin, this.layout.rightMargin);
   };
 
+  /* Start - own code */
   this.mapValueToHeight = function(value) {
     return map(value, this.minValue, this.maxValue, this.layout.bottomMargin, this.layout.topMargin);
   };
@@ -274,3 +289,4 @@ function ZAPovertyContext() {
     this.loadState.destroy();
   };
 }
+  /* End - own code */

@@ -1,3 +1,6 @@
+/* Own stylesheet. Only body, .menu-item and .selected come from the template. */
+/* Start - own code */
+
 :root {
   --sidebar-width: 240px;
   --bg-main: #0c0d0e;
@@ -1645,3 +1648,5 @@ summary:focus-visible,
     transition: none;
   }
 }
+
+/* End - own code */

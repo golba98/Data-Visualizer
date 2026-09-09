@@ -1,3 +1,7 @@
+// Own implementation. The Topic 6 'Data Waffles' lecture supplied only a starting
+// sketch with no Waffle object; this constructor is written from scratch.
+/* Start - own code */
+
 // Builds and draws a waffle chart
 function Waffle(x, y, width, height, boxesAcross, boxesDown, table, columnName, categories, colours) {
 
@@ -156,3 +160,5 @@ function Waffle(x, y, width, height, boxesAcross, boxesDown, table, columnName, 
 
   this.build();
 }
+
+/* End - own code */
