@@ -198,6 +198,8 @@
     clearChildren(table);
 
     if (!data || !data.columns || !data.columns.length || !data.rows || !data.rows.length) {
+      var emptyCaption = byId('chart-data-caption');
+      if (emptyCaption) emptyCaption.textContent = '';
       details.hidden = true;
       details.open = false;
       return false;
@@ -211,8 +213,12 @@
     }
 
     var caption = document.createElement('caption');
+    caption.className = 'visually-hidden';
     caption.textContent = captionText;
     table.appendChild(caption);
+
+    var visibleCaption = byId('chart-data-caption');
+    if (visibleCaption) visibleCaption.textContent = captionText;
 
     var head = document.createElement('thead');
     var headRow = document.createElement('tr');
