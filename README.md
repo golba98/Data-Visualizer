@@ -1,124 +1,93 @@
 # South African Inequality Explained
 
-## About
+A data story about inequality in South Africa, built with p5.js.
 
-A data story about inequality in South Africa
+It brings together official statistics and a small original survey to look at income, wealth,
+earnings, housing, land, poverty, and the everyday money pressure people feel. Nineteen charts
+are grouped into three sections, and each one states its main result in plain text so the story
+can be followed without reading a single axis.
 
-It looks at income wealth earnings housing land poverty and everyday money pressure
+**Contents**
 
-## Run locally
+- [Quick start](#quick-start)
+- [Using the site](#using-the-site)
+- [The charts](#the-charts)
+- [Data and method](#data-and-method)
+- [What it shows](#what-it-shows)
+- [Limits](#limits)
+- [How the code is organised](#how-the-code-is-organised)
+- [Testing](#testing)
+- [Coursework evidence: object orientation](#coursework-evidence-object-orientation)
+
+## Quick start
+
+Install the dependencies and start the dev server:
 
 ```bash
 npm install
 npm run dev
 ```
 
-Build and preview
+To build the production bundle and preview it:
 
 ```bash
 npm run build
 npm run start
 ```
 
-Other scripts
+There is also a script for refreshing the survey data from a new Survey App export:
 
 ```bash
-npm run data:survey -- --input raw_export.csv   # validate and publish a survey export
-npm run data:survey -- --input raw.csv --lenient  # exclude bad rows instead of stopping
+# Validate a raw export and publish it to data/survey/
+npm run data:survey -- --input raw_export.csv
+
+# Same, but drop bad rows instead of stopping at the first one
+npm run data:survey -- --input raw.csv --lenient
 ```
 
-## Tests
+## Using the site
 
-```bash
-npm run test:unit      # 31 data preprocessing tests (node --test)
-npm run test:browser   # the browser suite, driven by Playwright in Chromium
-npm test               # both, non-zero exit if anything fails
-```
+**Every chart can be read without a mouse.** Above each canvas is a sentence stating that
+chart's main result, computed from the chart's own data rather than written by hand. The
+`About this chart` panel adds three things: how to read the encoding where it is not obvious,
+where the data came from, and a data table containing the same numbers the chart draws.
 
-`npm run test:browser` starts the dev server itself, opens `?test=1`, waits for the suite
-to finish and fails if any test failed. On first use run `npx playwright install chromium`
-
-The suite can still be run by hand: open `index.html?test=1` and read the console report
-
-Continuous integration runs both suites and the production build on every push and pull
-request to `main`, defined in `.github/workflows/ci.yml`
-
-## Reading a chart without a mouse
-
-Every chart states its main result in text above the canvas, computed from that chart's own
-data. `About this chart` adds how to read the encoding where it is not obvious, where the
-data came from, and a data table with the same numbers the chart draws
-
-## URL options
+**URL options.** Add any of these to the address to change what loads:
 
 | Flag | What it does |
 | --- | --- |
-| `?test=1` | Runs browser tests |
-| `?debug=1` | Shows debug logs |
-| `?failData=1` | Tests data loading errors |
-| `?embedded=1` | Opens one chart without the app shell |
 | `?vis=<id>` | Opens one chart |
 | `?section=<id>` | Opens one menu section |
-| `?about=1` | Opens chart notes |
+| `?about=1` | Opens the chart notes panel |
+| `?embedded=1` | Opens one chart without the app shell |
+| `?test=1` | Runs the browser test suite |
+| `?debug=1` | Shows debug logs in the console |
+| `?failData=1` | Simulates a data loading failure, to test error states |
 
-## Research question
+## The charts
 
-How can data help explain inequality in South Africa
+Nineteen charts in three sections.
 
-## Background
+**Official data**
 
-South Africa has major gaps in income wealth housing and land
+- **Gini trend** — national inequality over time.
+- **Population earnings** — population share compared with average pay.
+- **Dwelling ownership** — owned, rented, and rent-free homes.
+- **Land ownership** — individual farm and agricultural land ownership.
+- **Top 10 income share** — pre-tax income concentration.
+- **Top 10 concentration** — income share compared with wealth share.
+- **Poverty indicators** — poverty rates over time.
 
-Stats SA population groups are official statistical categories not biological groups
+**Survey data**
 
-Each chart shows one part of the wider picture
+- **Pressure index** — a project pressure score out of 100.
+- **Cost pressure mix** — the main money worry.
+- **Food and transport** — monthly cost bands compared.
+- **What gets cut** — spending cuts when money is tight.
+- **Worry and income** — work worry compared with income pressure.
+- **Pressure by status** — each employment group compared.
 
-## Method
-
-- Official data from WID World World Bank Our World in Data Stats SA and the 2017 Land Audit
-- A 48 response Survey App export from https://surveyapp.ink/
-- Survey sharing through friends family Reddit Facebook and Instagram
-- Clean chart files in `data/`
-- p5.js for the charts and site
-
-## Data sources
-
-| File | Source | URL | Period | Notes |
-| --- | --- | --- | --- | --- |
-| `za_gini_trend.csv` | World Bank PIP via OWID | https://ourworldindata.org/grapher/economic-inequality-gini-index | 1993-2022 | Results can differ by survey method |
-| `za_population_group_shares.csv` | Stats SA local cleaned file | Local file | 2022 | Official statistical groups |
-| `za_population_group_earnings.csv` | Stats SA | https://www.statssa.gov.za/?p=12930 | 2011-2015 | Earnings are not total wealth |
-| `za_dwelling_ownership_by_group.csv` | Stats SA GHS 2024 Table 8.6 | https://www.statssa.gov.za/publications/P0318/P03182024.pdf | 2024 | Household tenure not total property wealth |
-| `za_land_ownership_by_group.csv` | Land Audit Report | https://www.gov.za/sites/default/files/gcis_document/201802/landauditreport13feb2018.pdf | 2017 | Farms and agricultural holdings only |
-| `za_income_distribution.csv` | WID World via OWID | https://ourworldindata.org/grapher/income-share-top-10-before-tax-wid | 1993-2014 | Pre tax income |
-| `za_wealth_distribution.csv` | WID World via OWID | https://ourworldindata.org/grapher/wealth-share-richest-10-percent | 1993-2024 | Some values are modelled |
-| `za_population_groups.csv` | Local derived file | Local file | Not a time series | Top 10 middle 40 and bottom 50 groups |
-| `za_poverty_indicators.csv` | World Bank PIP OWID and Stats SA | https://ourworldindata.org/grapher/relative-poverty-share-of-people-below-50-of-the-median and https://www.statssa.gov.za/?p=19078 | 1993-2023 | Measures use different definitions |
-| `za_survey_responses.csv` | Survey App export | https://surveyapp.ink/ | Through 2026-08-25 | 48 real survey rows |
-| `za_dashboard_sources.csv` | Local source register | Local file | Project notes | Sources and limits |
-
-## Charts
-
-### Official data
-
-- Gini trend shows national inequality over time
-- Population earnings compares population share and average pay
-- Dwelling ownership shows own rent and rent free homes
-- Land ownership shows individual farm and agricultural land ownership
-- Top 10 income share shows pre tax income concentration
-- Top 10 concentration compares income and wealth shares
-- Poverty indicators show poverty rates over time
-
-### Survey data
-
-- Pressure index shows a project pressure score out of 100
-- Cost pressure mix shows the main money worry
-- Food and transport compares monthly cost bands
-- What gets cut shows spending cuts when money is tight
-- Worry and income compares work worry with income pressure
-- Pressure by status compares each employment group
-
-### Archive
+**Archive**
 
 - Population by census
 - Sex and age structure
@@ -126,45 +95,121 @@ Each chart shows one part of the wider picture
 - Life expectancy
 - Global temperature anomaly
 
-## Survey data
+## Data and method
 
-The data has 48 Survey App responses
+**Research question:** how can data help explain inequality in South Africa?
 
-Private fields such as `ip_hash` `user_agent` `timestamp` and `comment` were removed
+South Africa has major gaps in income, wealth, housing, and land. Each chart shows one part of
+that wider picture. Note that the Stats SA population groups used throughout are official
+statistical categories, not biological ones.
 
-The `cut_back_on` answers were standardised and checked by hand
+**How the data was gathered:**
+
+- Official data from WID World, the World Bank, Our World in Data, Stats SA, and the 2017 Land
+  Audit.
+- A 48-response survey, exported from [Survey App](https://surveyapp.ink/) and shared through
+  friends, family, Reddit, Facebook, and Instagram.
+- Cleaned chart files live in `data/inequality/`, `data/survey/`, and `data/archive/`.
+- p5.js draws the charts and powers the site.
+
+### Sources
+
+| File | Source | URL | Period | Notes |
+| --- | --- | --- | --- | --- |
+| `data/inequality/za_gini_trend.csv` | World Bank PIP via OWID | https://ourworldindata.org/grapher/economic-inequality-gini-index | 1993-2022 | Results can differ by survey method |
+| `data/inequality/za_population_group_shares.csv` | Stats SA local cleaned file | Local file | 2022 | Official statistical groups |
+| `data/inequality/za_population_group_earnings.csv` | Stats SA | https://www.statssa.gov.za/?p=12930 | 2011-2015 | Earnings are not total wealth |
+| `data/inequality/za_dwelling_ownership_by_group.csv` | Stats SA GHS 2024 Table 8.6 | https://www.statssa.gov.za/publications/P0318/P03182024.pdf | 2024 | Household tenure, not total property wealth |
+| `data/inequality/za_land_ownership_by_group.csv` | Land Audit Report | https://www.gov.za/sites/default/files/gcis_document/201802/landauditreport13feb2018.pdf | 2017 | Farms and agricultural holdings only |
+| `data/inequality/za_income_distribution.csv` | WID World via OWID | https://ourworldindata.org/grapher/income-share-top-10-before-tax-wid | 1993-2014 | Pre-tax income |
+| `data/inequality/za_wealth_distribution.csv` | WID World via OWID | https://ourworldindata.org/grapher/wealth-share-richest-10-percent | 1993-2024 | Some values are modelled |
+| `data/inequality/za_population_groups.csv` | Local derived file | Local file | Not a time series | Top 10, middle 40, and bottom 50 groups |
+| `data/inequality/za_poverty_indicators.csv` | World Bank PIP, OWID, and Stats SA | https://ourworldindata.org/grapher/relative-poverty-share-of-people-below-50-of-the-median and https://www.statssa.gov.za/?p=19078 | 1993-2023 | Measures use different definitions |
+| `data/survey/za_survey_responses.csv` | Survey App export | https://surveyapp.ink/ | Through 2026-08-25 | 48 real survey rows |
+| `data/inequality/za_dashboard_sources.csv` | Local source register | Local file | Project notes | Sources and limits |
+
+### About the survey data
+
+The survey holds 48 real Survey App responses. Private fields — `ip_hash`, `user_agent`,
+`timestamp`, and `comment` — were removed before the data was published. The free-text
+`cut_back_on` answers were standardised and checked by hand.
 
 ## What it shows
 
-- Inequality is clear when population income and wealth shares are compared
-- National figures point to wider structural inequality
-- Official data shows gaps in earnings housing and land
-- Survey data connects these gaps to daily money pressure
+- Inequality is clear when population, income, and wealth shares are compared side by side.
+- National figures point to wider structural inequality.
+- Official data shows gaps in earnings, housing, and land.
+- Survey data connects those gaps to daily money pressure.
 
 ## Limits
 
-- Sources measure things in different ways
-- Charts simplify complex social and economic issues
-- Some income and wealth estimates are modelled
-- Housing data measures tenure not full property wealth
-- Land data covers individual farms and agricultural holdings only
-- Datasets use different years
+- Sources measure things in different ways.
+- Charts simplify complex social and economic issues.
+- Some income and wealth estimates are modelled.
+- Housing data measures tenure, not full property wealth.
+- Land data covers individual farms and agricultural holdings only.
+- Datasets use different years.
 
-## Technical notes
+## How the code is organised
 
-`index.html` loads p5.js chart files and `src/sketch.js`
+`index.html` loads the p5.js chart files together with `src/sketch.js`, which registers every
+visualisation. `src/gallery.js` controls chart titles, menu items, source notes, and sections.
+Each chart loads its CSV with `loadTable()` and draws onto a responsive canvas.
 
-`src/gallery.js` controls chart titles menu items source notes and sections
+```text
+index.html            Entry point; loads p5.js and the sketch
+src/
+  sketch.js           Registers all 19 visualisations with the gallery
+  gallery.js          Menu, sections, titles, source notes, teardown
+  visualizations/     One file per chart, grouped by section
+    inequality/
+    survey/
+    archive/
+  survey-data.js      Survey transformations
+  chart-summary.js    The plain-text result above each canvas
+  topic8-testing.js   Browser test harness
+data/                 Cleaned CSVs, grouped the same way as the charts
+scripts/              Survey export validation and its unit tests
+tests/browser/        Playwright spec that drives the browser suite
+```
 
-Each chart loads a CSV with `loadTable()` and draws on a responsive canvas
+## Testing
 
-## Topic 1 object orientation evidence
+```bash
+npm run test:unit      # 31 data preprocessing tests (node --test)
+npm run test:browser   # the browser suite, driven by Playwright in Chromium
+npm test               # both; exits non-zero if anything fails
+```
 
-The `Gallery` object controls registration selection and teardown. Each visualisation is created with a JavaScript constructor function and owns its data derived values layout and drawing behaviour. The objects use a common behavioural interface: `preload()` loads data, `setup()` prepares the chart, `draw()` renders it, and `destroy()` removes chart-owned state. `onResize()` is an optional hook for charts with extra responsive work.
+`npm run test:browser` starts the dev server itself, opens `?test=1`, waits for the suite to
+finish, and fails if any test failed. Before the first run, install the browser with
+`npx playwright install chromium`.
 
-`VisualizationLoadState` is a reusable constructor-function object composed inside every visualisation. It validates CSV tables and encapsulates the shared `loading`, `ready`, and terminal `error` transitions. It also owns the canvas feedback and accessible live-region message. Raw failures remain available through debug logging while visitors receive a concise message.
+The browser suite can also be run by hand: open `index.html?test=1` and read the console report.
 
-Composition is also used where `SurveyPressureWaffle` contains a `Waffle`, a `Waffle` contains `Box` objects, and `SAPopulationGroupCensus` contains a `PieChart`. These are cooperating objects rather than an inheritance hierarchy.
+Continuous integration runs both suites and the production build on every push and pull request
+to `main`. It is defined in `.github/workflows/ci.yml`.
+
+## Coursework evidence: object orientation
+
+This section is the Topic 1 evidence for marking. It describes how the project uses objects, and
+which parts were written for this submission.
+
+The `Gallery` object controls registration, selection, and teardown. Each visualisation is
+created with a JavaScript constructor function and owns its data, derived values, layout, and
+drawing behaviour. The objects use a common behavioural interface: `preload()` loads data,
+`setup()` prepares the chart, `draw()` renders it, and `destroy()` removes chart-owned state.
+`onResize()` is an optional hook for charts with extra responsive work.
+
+`VisualizationLoadState` is a reusable constructor-function object composed inside every
+visualisation. It validates CSV tables and encapsulates the shared `loading`, `ready`, and
+terminal `error` transitions. It also owns the canvas feedback and accessible live-region
+message. Raw failures remain available through debug logging while visitors receive a concise
+message.
+
+Composition is also used where `SurveyPressureWaffle` contains a `Waffle`, a `Waffle` contains
+`Box` objects, and `SAPopulationGroupCensus` contains a `PieChart`. These are cooperating
+objects rather than an inheritance hierarchy.
 
 ```text
 Gallery -> visualisation constructor -> preload / CSV loading
@@ -182,4 +227,5 @@ Gallery -> visualisation constructor -> preload / CSV loading
 
 ## Conclusion
 
-This project uses official data and clearly labelled survey data to explain inequality in South Africa
+This project uses official data and clearly labelled survey data to explain inequality in South
+Africa.
