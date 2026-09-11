@@ -165,6 +165,10 @@ export function probeCanvasText(target) {
       call += 1;
       return originalText.apply(this, arguments);
     };
+    // A tooltip left by an earlier pointer position overlays the chart by
+    // design; tooltips are checked by the touch tooltip test instead.
+    const originalTooltip = window.drawPendingChartTooltip;
+    window.drawPendingChartTooltip = function() {};
     renderer._renderText = function(p, line, x, y, maxY) {
       const str = String(line);
       if (str.trim()) {
@@ -195,6 +199,7 @@ export function probeCanvasText(target) {
       window.redraw();
     } finally {
       window.text = originalText;
+      window.drawPendingChartTooltip = originalTooltip;
       renderer._renderText = originalRender;
     }
 
