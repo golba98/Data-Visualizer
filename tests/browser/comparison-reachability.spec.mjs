@@ -13,6 +13,11 @@ for (const viewport of [
       hasTouch: viewport.width < 821 });
     const page = await context.newPage();
     await page.goto(route);
+    if (viewport.width > 820) {
+      // Programmatic scrollIntoView can scroll overflow:hidden containers too;
+      // require a scroll container users can actually operate.
+      await expect(page.locator('.comparison-view')).toHaveCSS('overflow-y', 'auto');
+    }
     for (let index = 0; index < 2; index++) {
       const iframe = page.locator('.comparison-pane iframe').nth(index);
       await iframe.scrollIntoViewIfNeeded();
@@ -38,8 +43,21 @@ for (const viewport of [
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     if (viewport.width < 821) {
-      await page.setViewportSize({ width: 844, height: 390 });
-      await page.setViewportSize(viewport);
+      for (const rotated of [{ width: 844, height: 390 }, viewport]) {
+        await page.setViewportSize(rotated);
+        for (let index = 0; index < 2; index++) {
+          const iframe = page.locator('iframe').nth(index);
+          await expect.poll(async () => {
+            const metrics = await iframe.contentFrame().locator('canvas').evaluate(e => ({
+              shown: e.getBoundingClientRect().height,
+              drawn: parseFloat(e.style.height),
+              bottom: document.querySelector('.chart-card').getBoundingClientRect().bottom
+            }));
+            return Math.abs(metrics.shown - metrics.drawn) < 2
+              && metrics.bottom <= (await iframe.boundingBox()).height + 1;
+          }).toBe(true);
+        }
+      }
       await page.locator('.comparison-select').first().selectOption('za-dwelling-ownership-by-group');
       await expect(page.locator('.comparison-select').first()).toHaveValue('za-dwelling-ownership-by-group');
       await page.getByRole('button', { name: 'Reset comparison' }).click();
