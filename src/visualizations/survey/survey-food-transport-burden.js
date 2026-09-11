@@ -72,26 +72,22 @@ function SurveyFoodTransportBurden() {
     }
 
     background(SATheme.bg);
-    this.drawTitle();
-    this.drawGrid();
+    this.drawGrid(this.drawTitle() + 12);
   };
 
+  // Returns the y below the title block.
   this.drawTitle = function() {
     noStroke();
     fill(SATheme.text);
-    textAlign(LEFT, TOP);
     textStyle(BOLD);
     chartTextSize(isPhoneChart() ? 13 : 17);
-    text('Food cost against transport cost', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
+    var y = 18 + drawWrappedText('Food cost against transport cost', 24, 18, width - 48);
 
     textStyle(NORMAL);
     chartTextSize(12);
     fill(SATheme.textMuted);
-    text(SurveyData.chartLabel,
-         24,
-         isPhoneChart() ? 54 : 44,
-         width - 48,
-         isPhoneChart() ? 46 : 32);
+    y += 6;
+    return y + drawWrappedText(SurveyData.chartLabel, 24, y, width - 48);
   };
 
   // Shared by the bubbles and by the size key, so the two cannot disagree.
@@ -143,11 +139,17 @@ function SurveyFoodTransportBurden() {
     });
   };
 
-  this.drawGrid = function() {
+  // Draws the grid below keyTop. Its left edge clears the widest food-band
+  // label and the rotated 'Food cost' title beside them.
+  this.drawGrid = function(keyTop) {
     var isCompact = isCompactChart();
     var isPhone = isPhoneChart();
-    var gridLeft = isCompact ? 94 : 130;
-    var keyTop = isPhone ? 108 : 96;
+    chartTextSize(isCompact ? 9 : 11);
+    var widestBand = 0;
+    for (var band = 0; band < this.foodBands.length; band++) {
+      widestBand = Math.max(widestBand, textWidth(this.foodBands[band]));
+    }
+    var gridLeft = Math.max(isCompact ? 94 : 130, 24 + 16 + widestBand + 10);
     var gridTop = keyTop + this.sizeKeyReserve();
     var gridRight = width - 28;
     var gridBottom = height - 72;
