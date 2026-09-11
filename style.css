@@ -1611,8 +1611,10 @@ summary:focus-visible,
     min-height: 320px;
   }
 
-    .story-mode .chart-container {
-    height: clamp(200px, 42dvh, 400px);
+  /* Charts are laid out for 360px and up on a narrow canvas; the story
+     scrolls within .main-content if that does not leave room for its text. */
+  .story-mode .chart-container {
+    height: clamp(360px, calc(100dvh - 290px), 480px);
   }
 }
 
@@ -1643,7 +1645,7 @@ summary:focus-visible,
   /* The story cannot scroll the chart into view without hiding the
      buttons, so its text and buttons sit beside the chart instead. */
   .main-content.tour-active {
-    grid-template-columns: minmax(12rem, 34%) minmax(0, 1fr);
+    grid-template-columns: minmax(11rem, 32%) minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr) auto;
     overflow: hidden;
   }
