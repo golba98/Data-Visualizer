@@ -152,9 +152,13 @@ function SurveyIncomeRealityGap() {
       fill(SATheme.red);
       circle(worryDotX, rowCenterY, 14);
 
-      if (dist(cursor.x, cursor.y, incomeDotX, rowCenterY) < 12) {
+      // The nearer of the two dots within reach.
+      var incomeDistance = dist(cursor.x, cursor.y, incomeDotX, rowCenterY);
+      var worryDistance = dist(cursor.x, cursor.y, worryDotX, rowCenterY);
+      var reach = chartHitRadius(12);
+      if (incomeDistance < reach && incomeDistance <= worryDistance) {
         drawChartTooltip(itemData.label, itemData.income.toFixed(2), 'income keeps up');
-      } else if (dist(cursor.x, cursor.y, worryDotX, rowCenterY) < 12) {
+      } else if (worryDistance < reach) {
         drawChartTooltip(itemData.label, itemData.worry.toFixed(2), 'work worry');
       }
 

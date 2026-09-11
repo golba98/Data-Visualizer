@@ -240,7 +240,7 @@ function SurveyFoodTransportBurden() {
         chartTextSize(12);
         text(cellCount, bubbleCenterX, bubbleCenterY);
 
-        if (dist(cursor.x, cursor.y, bubbleCenterX, bubbleCenterY) < Math.max(16, bubbleDiameter / 2)) {
+        if (dist(cursor.x, cursor.y, bubbleCenterX, bubbleCenterY) < chartHitRadius(Math.max(16, bubbleDiameter / 2))) {
           var percentageShown = this.representedRows > 0
             ? ((cellCount / this.representedRows) * 100).toFixed(1)
             : '0.0';

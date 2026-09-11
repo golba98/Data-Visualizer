@@ -825,8 +825,31 @@ function drawColourRampKey(x, y, options) {
   return { width: cursorX - x, height: swatchHeight };
 }
 
+// A fingertip covers far more than a mouse pointer, so on touch screens
+// small marks answer to a finger-sized target.
+var TOUCH_HIT_RADIUS = 22;
+var TOUCH_MIN_HIT_SIZE = 28;
+
+function usesCoarsePointer() {
+  return typeof window !== 'undefined' && !!window.matchMedia
+      && window.matchMedia('(pointer: coarse)').matches;
+}
+
+// The distance from a point mark within which it counts as hit.
+function chartHitRadius(mouseRadius) {
+  return usesCoarsePointer() ? Math.max(mouseRadius, TOUCH_HIT_RADIUS) : mouseRadius;
+}
+
 function mouseIsOverRect(x, y, w, h) {
   var pointer = getChartPointer();
+  if (usesCoarsePointer()) {
+    var growX = Math.max(0, (TOUCH_MIN_HIT_SIZE - w) / 2);
+    var growY = Math.max(0, (TOUCH_MIN_HIT_SIZE - h) / 2);
+    x -= growX;
+    w += growX * 2;
+    y -= growY;
+    h += growY * 2;
+  }
   return pointer.x >= x && pointer.x <= x + w
       && pointer.y >= y && pointer.y <= y + h;
 }

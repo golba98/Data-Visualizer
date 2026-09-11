@@ -215,6 +215,7 @@ function ZAGiniTrend() {
 
     var previous = null;
     var hovered = null;
+    var hoveredDistance = chartHitRadius(12);
     var pointer = getChartPointer();
 
 /* End - own code */
@@ -237,10 +238,13 @@ function ZAGiniTrend() {
       stroke(SATheme.blue);
       strokeWeight(2);
       circle(this.mapYearToWidth(current.year), this.mapValueToHeight(current.value), 7);
-      if (dist(pointer.x, pointer.y,
-               this.mapYearToWidth(current.year),
-               this.mapValueToHeight(current.value)) < 12) {
+      // The nearest point within reach, as touch radii can overlap.
+      var pointDistance = dist(pointer.x, pointer.y,
+                               this.mapYearToWidth(current.year),
+                               this.mapValueToHeight(current.value));
+      if (pointDistance < hoveredDistance) {
         hovered = current;
+        hoveredDistance = pointDistance;
       }
       previous = current;
       /* End - own code */

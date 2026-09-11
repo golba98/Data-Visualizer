@@ -214,6 +214,8 @@ function ZAPovertyContext() {
 
   this.drawSeries = function() {
     var cursor = getChartPointer();
+    var nearest = null;
+    var nearestDistance = chartHitRadius(12);
     for (var sIdx = 0; sIdx < this.seriesNames.length; sIdx++) {
       var seriesLabel = this.seriesNames[sIdx];
       var seriesPoints = this.series[seriesLabel];
@@ -241,11 +243,18 @@ function ZAPovertyContext() {
         strokeWeight(2);
         circle(circleX, circleY, 7);
 
-        if (dist(cursor.x, cursor.y, circleX, circleY) < 12) {
-          drawChartCrosshair(circleX, circleY);
-          drawChartTooltip(String(node.year), node.value.toFixed(1) + '%', seriesLabel);
+        var pointDistance = dist(cursor.x, cursor.y, circleX, circleY);
+        if (pointDistance < nearestDistance) {
+          nearest = { x: circleX, y: circleY, node: node, series: seriesLabel };
+          nearestDistance = pointDistance;
         }
       }
+    }
+
+    // One tooltip, for the nearest point within reach across all series.
+    if (nearest) {
+      drawChartCrosshair(nearest.x, nearest.y);
+      drawChartTooltip(String(nearest.node.year), nearest.node.value.toFixed(1) + '%', nearest.series);
     }
   };
 
