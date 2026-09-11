@@ -184,6 +184,16 @@ function ZAGiniTrend() {
       return;
     }
 
+    // Below 720px two-line badges would cover the data, so each marker gets
+    // a one-line badge; they fit side by side between the two lines.
+    if (isCompactChart()) {
+      drawVerticalAnnotation(contextX, '1994 marker', '', this.layout.topMargin,
+                             this.layout.bottomMargin, SATheme.gold);
+      drawVerticalAnnotation(peakX, 'Peak: 0.65', '', this.layout.topMargin,
+                             this.layout.bottomMargin, SATheme.red);
+      return;
+    }
+
     drawVerticalAnnotation(
       contextX,
       '1994 context marker',
@@ -192,19 +202,13 @@ function ZAGiniTrend() {
       this.layout.bottomMargin,
       SATheme.gold
     );
-    // On a narrower plot the 1994 badge reaches the peak line, so the peak
-    // badge drops below it.
-    chartTextSize(10);
-    var contextBadgeWidth = textWidth('Reference point, not a causal claim') + 22;
-    var peakBadgeOffset = peakX - contextX < contextBadgeWidth + 8 ? 42 : 0;
     drawVerticalAnnotation(
       peakX,
       'Peak in this series',
       'Gini 0.65',
       this.layout.topMargin,
       this.layout.bottomMargin,
-      SATheme.red,
-      peakBadgeOffset
+      SATheme.red
     );
   };
 

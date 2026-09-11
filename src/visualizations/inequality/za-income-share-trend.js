@@ -148,10 +148,11 @@ function ZAIncomeShareTrend() {
       return;
     }
 
+    // Below 720px a two-line badge would cover the start of the line.
     drawVerticalAnnotation(
       contextX,
-      '1994 context marker',
-      'Reference point, not a causal claim',
+      isCompactChart() ? '1994 marker' : '1994 context marker',
+      isCompactChart() ? '' : 'Reference point, not a causal claim',
       this.layout.topMargin,
       this.layout.bottomMargin,
       SATheme.gold
