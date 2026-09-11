@@ -436,9 +436,31 @@
       }
     });
 
-    t.test('annotation visibility defaults to enabled', function() {
+    t.test('annotation visibility defaults to enabled and toggling redraws at once', function() {
       t.assertTrue(gallery.annotationsEnabled, 'annotations start visible');
       t.assertTrue(annotationsAreVisible(), 'annotation helper permits drawing');
+
+      var originalRender = window.requestChartRender;
+      var originalSelected = gallery.selectedVisual;
+      var renders = 0;
+
+      try {
+        window.requestChartRender = function() { renders += 1; };
+        gallery.selectedVisual = gallery.visuals[0];
+
+        gallery.toggleAnnotations();
+        t.assertTrue(!gallery.annotationsEnabled, 'toggling hides annotations');
+        t.assertEqual(renders, 1, 'hiding annotations redraws the canvas straight away');
+
+        gallery.toggleAnnotations();
+        t.assertTrue(gallery.annotationsEnabled, 'toggling again shows annotations');
+        t.assertEqual(renders, 2, 'showing annotations redraws the canvas straight away');
+      } finally {
+        window.requestChartRender = originalRender;
+        gallery.selectedVisual = originalSelected;
+        gallery.annotationsEnabled = true;
+        gallery.updateAnnotationButtons();
+      }
     });
 
     t.test('the page uses one fixed dark theme', function() {

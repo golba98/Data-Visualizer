@@ -419,9 +419,7 @@ function Gallery() {
     if (annotations && !annotations.dataset.bound) {
       annotations.dataset.bound = 'true';
       annotations.addEventListener('click', function() {
-        self.annotationsEnabled = !self.annotationsEnabled;
-        self.updateAnnotationButtons();
-        self.updateTourUI();
+        self.toggleAnnotations();
       });
     }
 
@@ -979,8 +977,7 @@ function Gallery() {
         this.annotationsEnabled ? 'Hide annotations' : 'Show annotations',
         'Show or hide contextual chart annotations',
         function() {
-          self.annotationsEnabled = !self.annotationsEnabled;
-          self.updateAnnotationButtons();
+          self.toggleAnnotations();
         }
       );
       annotBtn.dataset.annotationButton = 'true';
@@ -1018,6 +1015,16 @@ function Gallery() {
     button.title = title;
     button.addEventListener('click', callback);
     return button;
+  };
+
+  // Flips annotation visibility and redraws at once. The canvas stops looping
+  // when a chart settles, so without the redraw the change waited for a mouse move.
+  this.toggleAnnotations = function() {
+    this.annotationsEnabled = !this.annotationsEnabled;
+    this.updateAnnotationButtons();
+    if (this.selectedVisual && typeof requestChartRender === 'function') {
+      requestChartRender();
+    }
   };
 
   this.updateAnnotationButtons = function() {

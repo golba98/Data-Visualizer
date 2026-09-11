@@ -66,34 +66,35 @@ where the data came from, and a data table containing the same numbers the chart
 
 ## The charts
 
-Nineteen charts in three sections.
+Nineteen charts in three sections, named as they appear in the menu.
 
-**Official data**
+**Inequality** (official data)
 
-- **Gini trend** — national inequality over time.
+- **National inequality** — the Gini coefficient over time.
 - **Population earnings** — population share compared with average pay.
 - **Dwelling ownership** — owned, rented, and rent-free homes.
 - **Land ownership** — individual farm and agricultural land ownership.
-- **Top 10 income share** — pre-tax income concentration.
+- **Top income share** — the top 10 percent's share of pre-tax income.
 - **Top 10 concentration** — income share compared with wealth share.
 - **Poverty indicators** — poverty rates over time.
 
-**Survey data**
+**Survey**
 
 - **Pressure index** — a project pressure score out of 100.
 - **Cost pressure mix** — the main money worry.
-- **Food and transport** — monthly cost bands compared.
+- **Food & transport** — monthly cost bands compared.
 - **What gets cut** — spending cuts when money is tight.
-- **Worry and income** — work worry compared with income pressure.
+- **Worry vs. income** — work worry compared with income pressure.
 - **Pressure by status** — each employment group compared.
 
-**Archive**
+**Archive** (earlier drafts)
 
 - Population by census
-- Sex and age structure
+- Population by sex & age
+- Age group & female share
 - Youth unemployment
 - Life expectancy
-- Global temperature anomaly
+- Global temperature
 
 ## Data and method
 
@@ -152,7 +153,7 @@ The survey holds 48 real Survey App responses. Private fields — `ip_hash`, `us
 
 ## How the code is organised
 
-`index.html` loads the p5.js chart files together with `src/sketch.js`, which registers every
+`index.html` loads p5.js, the chart files, and `src/sketch.js`, which registers every
 visualisation. `src/gallery.js` controls chart titles, menu items, source notes, and sections.
 Each chart loads its CSV with `loadTable()` and draws onto a responsive canvas.
 
@@ -165,7 +166,10 @@ src/
     inequality/
     survey/
     archive/
-  survey-data.js      Survey transformations
+  helper-functions.js Shared drawing, tooltip, annotation, and export helpers
+  pie-chart.js        The PieChart object used by the census chart
+  survey-data.js      Survey row count, chart label, and source note
+  chart-insights.js   Works out each chart's main result from its data
   chart-summary.js    The plain-text result above each canvas
   topic8-testing.js   Browser test harness
 data/                 Cleaned CSVs, grouped the same way as the charts
