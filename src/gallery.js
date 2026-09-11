@@ -1201,10 +1201,31 @@ function Gallery() {
       frame.title = 'Live chart, ' + label;
       frame.src = window.location.pathname + '?embedded=1&vis=' + encodeURIComponent(id);
       frame.loading = (lazy && index === 1) ? 'lazy' : 'eager';
+      frame.addEventListener('load', function() {
+        self.fitComparisonFrame(frame);
+      });
       pane.appendChild(title);
       pane.appendChild(frame);
       panes.appendChild(pane);
     });
+  };
+
+  // On phones the panes stack in a scrolling column, so each iframe grows to
+  // fit its chart card rather than squeezing the chart into a fixed height.
+  this.fitComparisonFrame = function(frame) {
+    var frameWindow = frame.contentWindow;
+    var card = frame.contentDocument && frame.contentDocument.querySelector('.chart-card');
+    if (!card || !frameWindow.ResizeObserver) return;
+
+    var fit = function() {
+      frame.style.height = self.isMobileViewport()
+        ? Math.ceil(card.getBoundingClientRect().bottom + frameWindow.pageYOffset) + 'px'
+        : '';
+    };
+
+    // Created in the frame's realm so it is discarded along with the frame.
+    new frameWindow.ResizeObserver(fit).observe(card);
+    fit();
   };
 
   this.exitComparison = function() {
