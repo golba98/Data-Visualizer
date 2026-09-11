@@ -96,10 +96,11 @@ function ZAOwnershipComparison() {
     textStyle(NORMAL);
     chartTextSize(12);
     fill(SATheme.textMuted);
+    // Leaves room for the "10% reference" badge, which only wider charts show.
     text('The same top 10 percent income-ranked reference group is compared with latest available income and wealth shares.',
          24,
          isPhoneChart() ? 54 : 44,
-         width - 48,
+         isCompactChart() ? width - 48 : width - 230,
          isPhoneChart() ? 54 : 40);
   };
 
@@ -108,10 +109,7 @@ function ZAOwnershipComparison() {
     var left = phoneLayout ? 110 : (isCompactChart() ? 136 : 190);
     var right = width - (phoneLayout ? 36 : 48);
     var referenceX = map(10, 0, 100, left, right);
-    var referenceBottom = Math.min(
-      isPhoneChart() ? height - 78 : height - 66,
-      128 + (this.rows.length * (isCompactChart() ? 68 : 82))
-    );
+    var referenceBottom = this.getRowLayout().gridBottom;
 
     push();
     stroke(SATheme.blue);
@@ -132,14 +130,50 @@ function ZAOwnershipComparison() {
     }
   };
 
+  // Spreads the rows between the heading and the axis labels at the bottom of
+  // the canvas. This chart has no footnote, so footnoteTop is the bottom edge.
+  // When space is tight the bars get thinner, then the notes move to the tooltip.
+  this.getRowLayout = function() {
+    var isCompact = isCompactChart();
+    var top = 128;
+    var footnoteTop = height - 8;
+    var rowsBottom = footnoteTop - 26;
+    var step = fitRowStep(top, rowsBottom, this.rows.length, isCompact ? 68 : 82);
+    var bar = isCompact ? 34 : 42;
+    var detail = 24;
+    var showDetail = step >= bar + detail;
+
+    if (!showDetail && step - detail >= 16) {
+      bar = step - detail;
+      showDetail = true;
+    } else if (!showDetail) {
+      bar = Math.min(bar, step * 0.75);
+    }
+
+    var rowHeight = bar + (showDetail ? detail : 0);
+
+    return {
+      top: top,
+      step: step,
+      bar: bar,
+      showDetail: showDetail,
+      rowHeight: rowHeight,
+      rowCount: this.rows.length,
+      rowsBottom: rowsBottom,
+      gridBottom: top + (step * (this.rows.length - 1)) + rowHeight + 4,
+      footnoteTop: footnoteTop
+    };
+  };
+
   this.drawBars = function() {
     var isPhone = isPhoneChart();
     var isCompact = isCompactChart();
+    var rowLayout = this.getRowLayout();
     var leftEdge = isPhone ? 110 : (isCompact ? 136 : 190);
     var rightEdge = width - (isPhone ? 36 : 48);
-    var startY = 128;
-    var rowHeight = isCompact ? 34 : 42;
-    var rowStride = isCompact ? 68 : 82;
+    var startY = rowLayout.top;
+    var rowHeight = rowLayout.bar;
+    var rowStride = rowLayout.step;
     var plotWidth = rightEdge - leftEdge;
 
     stroke(SATheme.grid);
@@ -147,12 +181,12 @@ function ZAOwnershipComparison() {
     var stepSize = isPhone ? 50 : 25;
     for (var mark = 0; mark <= 100; mark += stepSize) {
       var gridX = map(mark, 0, 100, leftEdge, rightEdge);
-      line(gridX, startY - 18, gridX, startY + (rowStride * (this.rows.length - 1)) + rowHeight + 18);
+      line(gridX, startY - 18, gridX, rowLayout.gridBottom);
       noStroke();
       fill(SATheme.textMuted);
       chartTextSize(isPhone ? 9 : 11);
       textAlign(CENTER, TOP);
-      text(mark + '%', gridX, startY + (rowStride * (this.rows.length - 1)) + rowHeight + 24);
+      text(mark + '%', gridX, rowLayout.gridBottom + 6);
       stroke(SATheme.grid);
     }
 
@@ -180,10 +214,12 @@ function ZAOwnershipComparison() {
       chartTextSize(isPhone ? 10 : 13);
       text(item.value.toFixed(1) + '%', leftEdge + currentBarWidth + 10, yPos + (rowHeight / 2));
 
-      textStyle(NORMAL);
-      fill(SATheme.textMuted);
-      chartTextSize(isPhone ? 9 : 11);
-      text(item.note, leftEdge, yPos + rowHeight + 17);
+      if (rowLayout.showDetail) {
+        textStyle(NORMAL);
+        fill(SATheme.textMuted);
+        chartTextSize(isPhone ? 9 : 11);
+        text(item.note, leftEdge, yPos + rowHeight + 14);
+      }
     }
   };
 

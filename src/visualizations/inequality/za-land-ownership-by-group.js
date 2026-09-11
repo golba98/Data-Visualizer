@@ -68,11 +68,13 @@ function ZALandOwnershipByGroup() {
          isPhoneChart() ? 52 : 38);
   };
 
+  this.limitation = 'Limitation: this is a land-audit measure for individually owned farms/agricultural holdings, not all homes or all wealth. Colour only highlights the largest holder; it does not encode a second value.';
+
   this.drawAnnotations = function() {
     var left = isCompactChart() ? 98 : 142;
     var right = width - 54;
     var referenceX = map(50, 0, 80, left, right);
-    var bottom = Math.min(height - 64, 118 + (this.rows.length * this.getBarGap()));
+    var bottom = this.getRowLayout().gridBottom;
 
     if (isPhoneChart()) {
       drawVerticalReferenceLine(referenceX, 126, bottom, SATheme.red);
@@ -90,35 +92,64 @@ function ZALandOwnershipByGroup() {
     );
   };
 
-  this.getBarGap = function() {
-    if (!isCompactChart()) return 52;
-    if (this.rows.length < 2) return 44;
+  // Spreads the rows between the heading and the footnote. When space is
+  // tight the bars get thinner, then the hectare labels move to the tooltip.
+  this.getRowLayout = function() {
+    var isCompact = isCompactChart();
+    var top = isPhoneChart() ? 134 : 118;
+    var tickSpace = isPhoneChart() ? 8 : 28;
+    var footnoteTop = chartFootnoteTop(this.limitation, 11);
+    var rowsBottom = footnoteTop - tickSpace;
+    var step = fitRowStep(top, rowsBottom, this.rows.length, 52);
+    var bar = isCompact ? 24 : 30;
+    var detail = isCompact ? 14 : 18;
+    var showDetail = step >= bar + detail;
 
-    var available = height - 100 - 118 - 24;
-    return Math.min(52, Math.max(36, available / (this.rows.length - 1)));
+    if (!showDetail && step - detail >= 14) {
+      bar = step - detail;
+      showDetail = true;
+    } else if (!showDetail) {
+      bar = Math.min(bar, step * 0.75);
+    }
+
+    var rowHeight = bar + (showDetail ? detail : 0);
+
+    return {
+      top: top,
+      step: step,
+      bar: bar,
+      detail: detail,
+      showDetail: showDetail,
+      rowHeight: rowHeight,
+      rowCount: this.rows.length,
+      rowsBottom: rowsBottom,
+      gridBottom: top + (step * (this.rows.length - 1)) + rowHeight + 4,
+      footnoteTop: footnoteTop
+    };
   };
 
   this.drawBars = function() {
     var isCompact = isCompactChart();
+    var rowLayout = this.getRowLayout();
     var xStart = isCompact ? 98 : 142;
     var xEnd = width - 54;
-    var yStart = isPhoneChart() ? 134 : 118;
-    var barThick = isCompact ? 24 : 30;
-    var stepGap = this.getBarGap();
+    var yStart = rowLayout.top;
+    var barThick = rowLayout.bar;
+    var stepGap = rowLayout.step;
     var maxSpan = xEnd - xStart;
 
     stroke(SATheme.grid);
     strokeWeight(1);
     for (var tickVal = 0; tickVal <= 80; tickVal += 20) {
       var tickX = map(tickVal, 0, 80, xStart, xEnd);
-      line(tickX, yStart - 12, tickX, yStart + (stepGap * (this.rows.length - 1)) + barThick + 10);
+      line(tickX, yStart - 12, tickX, rowLayout.gridBottom);
       if (!isPhoneChart()) {
         noStroke();
         fill(SATheme.textMuted);
         textStyle(NORMAL);
         chartTextSize(11);
         textAlign(CENTER, TOP);
-        text(tickVal + '%', tickX, yStart + (stepGap * (this.rows.length - 1)) + barThick + 18);
+        text(tickVal + '%', tickX, rowLayout.gridBottom + 6);
       }
       stroke(SATheme.grid);
     }
@@ -148,22 +179,15 @@ function ZALandOwnershipByGroup() {
       textAlign(LEFT, CENTER);
       text(rowItem.share.toFixed(0) + '%', xStart + rowBarWidth + 8, rowY + (barThick / 2));
 
-      textStyle(NORMAL);
-      chartTextSize(isCompact ? 9 : 10);
-      fill(SATheme.textMuted);
-      text(formatThousands(rowItem.hectares) + ' ha', xStart, rowY + barThick + (isCompact ? 8 : 12));
+      if (rowLayout.showDetail) {
+        textStyle(NORMAL);
+        chartTextSize(isCompact ? 9 : 10);
+        fill(SATheme.textMuted);
+        text(formatThousands(rowItem.hectares) + ' ha', xStart, rowY + barThick + (rowLayout.detail / 2));
+      }
     }
 
-    noStroke();
-    fill(SATheme.textMuted);
-    textStyle(NORMAL);
-    chartTextSize(11);
-    textAlign(LEFT, isPhoneChart() ? TOP : BOTTOM);
-    text('Limitation: this is a land-audit measure for individually owned farms/agricultural holdings, not all homes or all wealth. Colour only highlights the largest holder; it does not encode a second value.',
-         24,
-         isPhoneChart() ? height - 62 : height - 34,
-         width - 48,
-         isPhoneChart() ? 58 : 32);
+    drawChartFootnote(this.limitation, 11);
   };
 
   this.getExportData = function() {

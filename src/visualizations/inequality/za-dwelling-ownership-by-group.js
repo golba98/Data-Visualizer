@@ -66,10 +66,11 @@ function ZADwellingOwnershipByGroup() {
     textStyle(NORMAL);
     chartTextSize(12);
     fill(SATheme.textMuted);
+    // Leaves room for the "Read as tenure" badge, which only wider charts show.
     text('Stats SA GHS 2024 table by population group of household head. Owned includes fully paid and still being paid off.',
          24,
          isPhoneChart() ? 54 : 44,
-         width - 48,
+         isCompactChart() ? width - 48 : width - 260,
          isPhoneChart() ? 56 : 42);
   };
 
@@ -85,13 +86,38 @@ function ZADwellingOwnershipByGroup() {
     );
   };
 
+  this.limitation = 'Limitation: this measures household dwelling tenure rates, not total property wealth or individual ownership totals.';
+
+  // Spreads the rows between the legend and the footnote, thinning the bars
+  // when space is tight.
+  this.getRowLayout = function() {
+    var isCompact = isCompactChart();
+    var top = isCompact ? 160 : 124;
+    var footnoteTop = chartFootnoteTop(this.limitation, 11);
+    var rowsBottom = footnoteTop - 30;
+    var step = fitRowStep(top, rowsBottom, this.rows.length, isCompact ? 56 : 70);
+    var bar = Math.min(isCompact ? 30 : 38, step * 0.75);
+
+    return {
+      top: top,
+      step: step,
+      bar: bar,
+      rowHeight: bar,
+      rowCount: this.rows.length,
+      rowsBottom: rowsBottom,
+      gridBottom: top + (step * (this.rows.length - 1)) + bar + 8,
+      footnoteTop: footnoteTop
+    };
+  };
+
   this.drawStackedBars = function() {
     var isCompact = isCompactChart();
+    var rowLayout = this.getRowLayout();
     var xStart = isCompact ? 112 : 156;
     var xEnd = width - 42;
-    var yStart = isCompact ? 160 : 124;
-    var rowHeight = isCompact ? 30 : 38;
-    var rowStep = isCompact ? 56 : 70;
+    var yStart = rowLayout.top;
+    var rowHeight = rowLayout.bar;
+    var rowStep = rowLayout.step;
     var totalBarSpan = xEnd - xStart;
 
     var tenureCategories = [
@@ -105,13 +131,13 @@ function ZADwellingOwnershipByGroup() {
     strokeWeight(1);
     for (var pct = 0; pct <= 100; pct += 25) {
       var gridLineX = map(pct, 0, 100, xStart, xEnd);
-      line(gridLineX, yStart - 12, gridLineX, yStart + (rowStep * (this.rows.length - 1)) + rowHeight + 10);
+      line(gridLineX, yStart - 12, gridLineX, rowLayout.gridBottom);
       noStroke();
       fill(SATheme.textMuted);
       textStyle(NORMAL);
       chartTextSize(11);
       textAlign(CENTER, TOP);
-      text(pct + '%', gridLineX, yStart + (rowStep * (this.rows.length - 1)) + rowHeight + 18);
+      text(pct + '%', gridLineX, rowLayout.gridBottom + 6);
       stroke(SATheme.grid);
     }
 
@@ -156,16 +182,7 @@ function ZADwellingOwnershipByGroup() {
       }
     }
 
-    noStroke();
-    fill(SATheme.textMuted);
-    textStyle(NORMAL);
-    chartTextSize(11);
-    textAlign(LEFT, isPhoneChart() ? TOP : BOTTOM);
-    text('Limitation: this measures household dwelling tenure rates, not total property wealth or individual ownership totals.',
-         24,
-         isPhoneChart() ? height - 54 : height - 30,
-         width - 48,
-         isPhoneChart() ? 46 : 28);
+    drawChartFootnote(this.limitation, 11);
   };
 
   this.drawLegend = function() {

@@ -174,7 +174,7 @@ src/
   topic8-testing.js   Browser test harness
 data/                 Cleaned CSVs, grouped the same way as the charts
 scripts/              Survey export validation and its unit tests
-tests/browser/        Playwright spec that drives the browser suite
+tests/browser/        Playwright specs: the browser suite and the phone layout checks
 ```
 
 ## Testing
@@ -188,6 +188,10 @@ npm test               # both; exits non-zero if anything fails
 `npm run test:browser` starts the dev server itself, opens `?test=1`, waits for the suite to
 finish, and fails if any test failed. Before the first run, install the browser with
 `npx playwright install chromium`.
+
+The same command also runs `tests/browser/mobile-layout.spec.mjs`, which emulates four phone
+sizes (including landscape). It checks that every story step gives its chart the free screen
+height, and that the row charts keep their rows clear of each other and of the footnote.
 
 The browser suite can also be run by hand: open `index.html?test=1` and read the console report.
 

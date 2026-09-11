@@ -186,7 +186,9 @@ function ClimateChange() {
 
     drawAxis(this.layout);
 
-    drawAxisLabels(this.xAxisLabel,
+    // On phones the colour key sits where the x-axis title would go, and the
+    // year tick labels already name the axis.
+    drawAxisLabels(isPhoneChart() ? '' : this.xAxisLabel,
                    this.yAxisLabel,
                    this.layout);
 

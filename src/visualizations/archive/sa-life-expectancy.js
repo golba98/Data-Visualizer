@@ -198,14 +198,21 @@ function SALifeExpectancy() {
     circle(this.mapYearToWidth(this.endYear), labelY, 7);
   };
 
+  // Wraps inside the plot, clear of the series labels on the right.
   this.drawInsight = function() {
+    var insight = isPhoneChart()
+      ? 'Female life expectancy stays highest throughout.'
+      : 'Female life expectancy stays highest across the full period, and all three series recover strongly after the 2000s decline.';
+
     fill(SATheme.textMuted);
     noStroke();
     chartTextSize(12);
     textAlign('left', 'top');
-    text('Female life expectancy stays highest across the full period, and all three series recover strongly after the 2000s decline.',
-         this.layout.leftMargin,
-         this.layout.topMargin + 6);
+    text(insight,
+         this.layout.leftMargin + 6,
+         this.layout.topMargin + 6,
+         this.layout.plotWidth() - 76,
+         40);
   };
   /* End - own code */
 
