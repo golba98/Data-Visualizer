@@ -103,11 +103,12 @@ function ZAPovertyContext() {
       this.setup();
     }
 
-    this.layout.topMargin = isPhoneChart() ? 180 : 154;
-
+    // The plot starts below the measured title and legend, so wrapped text on
+    // a narrow canvas pushes the plot down instead of running into it.
     this.colours = [SATheme.blue, SATheme.gold, SATheme.red];
     background(SATheme.bg);
-    this.drawTitle();
+    var legendTop = this.drawTitle() + 10;
+    this.layout.topMargin = this.drawLegend(legendTop) + (isPhoneChart() ? 20 : 26);
     drawYAxisTickLabels(this.minValue,
                         this.maxValue,
                         this.layout,
@@ -118,25 +119,22 @@ function ZAPovertyContext() {
     this.drawYearLabels();
     this.drawAnnotations();
     this.drawSeries();
-    this.drawLegend();
   };
 
+  // Returns the y below the title block.
   this.drawTitle = function() {
     fill(SATheme.text);
     noStroke();
     textStyle(BOLD);
     chartTextSize(isPhoneChart() ? 13 : 17);
-    textAlign(LEFT, TOP);
-    text('Poverty context', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
+    var y = 18 + drawWrappedText('Poverty context', 24, 18, width - 48);
 
     textStyle(NORMAL);
     chartTextSize(12);
     fill(SATheme.textMuted);
-    text('Different poverty measures are shown separately because each source uses a different definition.',
-         24,
-         isPhoneChart() ? 54 : 44,
-         width - 48,
-         isPhoneChart() ? 50 : 36);
+    y += 6;
+    return y + drawWrappedText('Different poverty measures are shown separately because each source uses a different definition.',
+                               24, y, width - 48);
   };
 
   this.drawAnnotations = function() {
@@ -152,18 +150,11 @@ function ZAPovertyContext() {
         SATheme.gold
       );
 
+      // The 2023 values are labelled at the line ends rather than repeated
+      // in a badge, which a phone has no height to spare for.
       if (upper && upper.length && food && food.length) {
-        var compactUpper = upper[upper.length - 1];
-        var compactFood = food[food.length - 1];
-        drawAnnotationBadge(
-          '2023 poverty levels',
-          'Upper 66.7% | Food 17.6%',
-          width - 190,
-          this.layout.topMargin - 38,
-          SATheme.red
-        );
-        this.drawEndpointLabel(compactUpper, -49, -13);
-        this.drawEndpointLabel(compactFood, -49, 14);
+        this.drawEndpointLabel(upper[upper.length - 1], -49, -13, SATheme.red);
+        this.drawEndpointLabel(food[food.length - 1], -49, 14, SATheme.gold);
       }
       return;
     }
@@ -199,9 +190,9 @@ function ZAPovertyContext() {
     }
   };
 
-  this.drawEndpointLabel = function(point, xOffset, yOffset) {
+  this.drawEndpointLabel = function(point, xOffset, yOffset, colour) {
     noStroke();
-    fill(30);
+    fill(colour);
     textStyle(BOLD);
     chartTextSize(10);
     textAlign(LEFT, CENTER);
@@ -258,24 +249,26 @@ function ZAPovertyContext() {
     }
   };
 
-  this.drawLegend = function() {
-    var x = this.layout.leftMargin + 10;
-    var y = 92;
-    var compact = isCompactChart();
+  // Draws the series key from top, wrapping long names, and returns the y
+  // below it.
+  this.drawLegend = function(top) {
+    var x = isPhoneChart() ? 24 : this.layout.leftMargin + 10;
+    var labelWidth = width - x - 36 - 24;
+    var y = top;
 
     textStyle(NORMAL);
-    chartTextSize(compact ? 10 : 11);
-    textAlign(LEFT, CENTER);
+    chartTextSize(isCompactChart() ? 10 : 11);
 
     for (var i = 0; i < this.seriesNames.length; i++) {
-      var rowY = y + (i * (compact ? 20 : 22));
+      var lineY = y + (textLeading() / 2);
       stroke(this.colours[i]);
       strokeWeight(3);
-      line(x, rowY, x + 28, rowY);
+      line(x, lineY, x + 28, lineY);
       noStroke();
       fill(SATheme.text);
-      text(this.seriesNames[i], x + 36, rowY);
+      y += drawWrappedText(this.seriesNames[i], x + 36, y, labelWidth) + (isCompactChart() ? 4 : 7);
     }
+    return y;
   };
   /* End - own code */
 
