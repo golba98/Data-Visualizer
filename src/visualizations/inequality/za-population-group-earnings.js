@@ -84,6 +84,53 @@ function ZAPopulationGroupEarnings() {
          isPhoneChart() ? 54 : 40);
   };
 
+  this.note = 'Note: earnings are not wealth. This chart shows labour-market earnings by official population group. Colour only highlights the highest-earning group; it does not encode a second value.';
+  this.phoneNote = 'Note: earnings are not wealth. This chart shows labour-market earnings by official population group.';
+
+  // Spreads the rows between the heading and the footnote. On phones each row
+  // stacks a label and bar for population, then for earnings.
+  this.getRowLayout = function() {
+    var phone = isPhoneChart();
+    var footnoteTop = phone
+      ? chartFootnoteTop(this.phoneNote, 9)
+      : chartFootnoteTop(this.note, 11);
+
+    if (phone) {
+      var phoneBottom = footnoteTop - 8;
+      var phoneStep = fitRowStep(104, phoneBottom, this.rows.length, 64);
+      var roomy = phoneStep >= 58;
+
+      return {
+        top: 104,
+        step: phoneStep,
+        barA: roomy ? 13 : 12,
+        labelB: roomy ? 28 : 24,
+        barB: roomy ? 41 : 36,
+        bar: 8,
+        rowHeight: roomy ? 49 : 44,
+        rowCount: this.rows.length,
+        rowsBottom: phoneBottom,
+        footnoteTop: footnoteTop
+      };
+    }
+
+    var compact = isCompactChart();
+    var bar = compact ? 16 : 20;
+    var rowsBottom = footnoteTop - 30;
+    var step = fitRowStep(118, rowsBottom, this.rows.length, compact ? 58 : 70);
+
+    return {
+      top: 118,
+      step: step,
+      bar: bar,
+      rowHeight: Math.max(bar, 14),
+      rowCount: this.rows.length,
+      rowsBottom: rowsBottom,
+      gridBottom: 118 + (step * (this.rows.length - 1)) + bar + 8,
+      footnoteTop: footnoteTop
+    };
+  };
+
   this.drawChart = function() {
     if (isPhoneChart()) {
       this.drawPhoneChart();
@@ -91,14 +138,15 @@ function ZAPopulationGroupEarnings() {
     }
 
     var compact = isCompactChart();
+    var rowLayout = this.getRowLayout();
     var leftEdge = compact ? 106 : 150;
     var rightEdge = width - (compact ? 58 : 52);
-    var startTop = 118;
-    var rowSpacing = compact ? 58 : 70;
+    var startTop = rowLayout.top;
+    var rowSpacing = rowLayout.step;
     var shareColWidth = (rightEdge - leftEdge) * (compact ? 0.25 : 0.28);
     var earningsColLeft = leftEdge + shareColWidth + (compact ? 34 : 54);
     var earningsColWidth = rightEdge - earningsColLeft;
-    var barThick = compact ? 16 : 20;
+    var barThick = rowLayout.bar;
     var maxEarningScale = 26000;
 
     noStroke();
@@ -113,11 +161,11 @@ function ZAPopulationGroupEarnings() {
     strokeWeight(1);
     for (var step = 0; step <= maxEarningScale; step += 5000) {
       var tickX = map(step, 0, maxEarningScale, earningsColLeft, earningsColLeft + earningsColWidth);
-      line(tickX, startTop - 4, tickX, startTop + (rowSpacing * (this.rows.length - 1)) + barThick + 22);
+      line(tickX, startTop - 4, tickX, rowLayout.gridBottom);
       noStroke();
       fill(SATheme.textMuted);
       textAlign(CENTER, TOP);
-      text('R' + (step / 1000) + 'k', tickX, startTop + (rowSpacing * (this.rows.length - 1)) + barThick + 28);
+      text('R' + (step / 1000) + 'k', tickX, rowLayout.gridBottom + 6);
       stroke(SATheme.grid);
     }
 
@@ -162,25 +210,17 @@ function ZAPopulationGroupEarnings() {
       }
     }
 
-    noStroke();
-    fill(SATheme.textMuted);
-    textStyle(NORMAL);
-    chartTextSize(11);
-    textAlign(LEFT, BOTTOM);
-    text('Note: earnings are not wealth. This chart shows labour-market earnings by official population group. Colour only highlights the highest-earning group; it does not encode a second value.',
-         24,
-         isPhoneChart() ? height - 58 : height - 34,
-         width - 48,
-         isPhoneChart() ? 54 : 32);
+    drawChartFootnote(this.note, 11);
   };
 
   this.drawPhoneChart = function() {
+    var rowLayout = this.getRowLayout();
     var left = 96;
     var right = width - 24;
-    var top = 104;
-    var rowGap = 64;
+    var top = rowLayout.top;
+    var rowGap = rowLayout.step;
     var barWidth = right - left;
-    var barHeight = 8;
+    var barHeight = rowLayout.bar;
     var maxEarnings = 26000;
 
     for (var i = 0; i < this.rows.length; i++) {
@@ -202,30 +242,24 @@ function ZAPopulationGroupEarnings() {
       text('Population', left, y);
       textAlign(RIGHT, TOP);
       text(row.populationShare.toFixed(1) + '%', right, y);
-      drawBar(left, y + 13, shareWidth, barHeight, SATheme.blueTint);
+      drawBar(left, y + rowLayout.barA, shareWidth, barHeight, SATheme.blueTint);
 
       noStroke();
       fill(SATheme.text);
       textAlign(LEFT, TOP);
-      text('Earnings', left, y + 28);
+      text('Earnings', left, y + rowLayout.labelB);
       textAlign(RIGHT, TOP);
-      text('R' + formatThousands(row.earnings), right, y + 28);
-      drawBar(left, y + 41, earningsWidth, barHeight, earningsColour);
+      text('R' + formatThousands(row.earnings), right, y + rowLayout.labelB);
+      drawBar(left, y + rowLayout.barB, earningsWidth, barHeight, earningsColour);
 
-      if (mouseIsOverRect(left, y + 13, shareWidth, barHeight)) {
+      if (mouseIsOverRect(left, y + rowLayout.barA, shareWidth, barHeight)) {
         drawChartTooltip(row.group, row.populationShare.toFixed(1) + '%', 'population share');
-      } else if (mouseIsOverRect(left, y + 41, earningsWidth, barHeight)) {
+      } else if (mouseIsOverRect(left, y + rowLayout.barB, earningsWidth, barHeight)) {
         drawChartTooltip(row.group, 'R' + formatThousands(row.earnings), 'mean monthly earnings');
       }
     }
 
-    noStroke();
-    fill(SATheme.textMuted);
-    textStyle(NORMAL);
-    chartTextSize(9);
-    textAlign(LEFT, TOP);
-    text('Note: earnings are not wealth. This chart shows labour-market earnings by official population group.',
-         24, isPhoneChart() ? height - 54 : height - 42, width - 48, isPhoneChart() ? 50 : 36);
+    drawChartFootnote(this.phoneNote, 9);
   };
 
   this.getExportData = function() {

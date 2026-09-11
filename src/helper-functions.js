@@ -280,6 +280,58 @@ function chartTextSize(size) {
   textSize(Math.max(CHART_MIN_TEXT_SIZE, size));
 }
 
+// Counts the lines a note wraps to across the chart's text width.
+function countWrappedLines(note, boxWidth) {
+  var words = note.split(' ');
+  var lines = 1;
+  var current = '';
+
+  for (var i = 0; i < words.length; i++) {
+    var candidate = current ? current + ' ' + words[i] : words[i];
+    if (current && textWidth(candidate) > boxWidth) {
+      lines++;
+      current = words[i];
+    } else {
+      current = candidate;
+    }
+  }
+
+  return lines;
+}
+
+// Returns the top edge of a footnote pinned to the bottom of the canvas, so
+// charts can stop their rows above it.
+function chartFootnoteTop(note, size) {
+  push();
+  textStyle(NORMAL);
+  chartTextSize(size);
+  var lineHeight = textLeading();
+  var lines = countWrappedLines(note, width - 48);
+  pop();
+
+  return height - (lines * lineHeight) - 10;
+}
+
+// Draws a muted footnote along the bottom of the canvas.
+function drawChartFootnote(note, size) {
+  var top = chartFootnoteTop(note, size);
+
+  push();
+  noStroke();
+  fill(SATheme.textMuted);
+  textStyle(NORMAL);
+  chartTextSize(size);
+  textAlign(LEFT, TOP);
+  text(note, 24, top, width - 48, height - top);
+  pop();
+}
+
+// Gap between row tops so rowCount rows fit between top and bottom.
+function fitRowStep(top, bottom, rowCount, maxStep) {
+  if (rowCount < 1) return maxStep;
+  return Math.max(0, Math.min(maxStep, (bottom - top) / rowCount));
+}
+
 
 /* End - own code */
 
