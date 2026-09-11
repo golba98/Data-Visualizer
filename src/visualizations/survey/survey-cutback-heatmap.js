@@ -108,39 +108,36 @@ function SurveyCutbackHeatmap() {
     }
 
     background(SATheme.bg);
-    this.drawTitle();
-    this.drawHeatmap();
+    this.drawHeatmap(this.drawTitle() + 30);
     this.drawLegend();
   };
 
+  // Returns the y below the title block.
   this.drawTitle = function() {
     noStroke();
     fill(SATheme.text);
-    textAlign(LEFT, TOP);
     textStyle(BOLD);
     chartTextSize(isPhoneChart() ? 13 : 17);
-    text('What people say they cut back on', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
+    var y = 18 + drawWrappedText('What people say they cut back on', 24, 18, width - 48);
 
     textStyle(NORMAL);
     chartTextSize(12);
     fill(SATheme.textMuted);
-    text(SurveyData.chartLabel,
-         24,
-         isPhoneChart() ? 54 : 44,
-         width - 48,
-         isPhoneChart() ? 46 : 32);
+    y += 6;
+    return y + drawWrappedText(SurveyData.chartLabel, 24, y, width - 48);
   };
 
-  this.drawHeatmap = function() {
+  // Draws the grid from originY (below the column headings) down to the
+  // colour key, sizing rows to fit.
+  this.drawHeatmap = function(originY) {
     var rightPadding = isPhoneChart() ? 12 : 24;
     var defaultLeft = isCompactChart() ? 92 : 148;
     var minGridSpan = this.statuses.length * 30;
     var originX = Math.min(defaultLeft, Math.max(52, width - rightPadding - minGridSpan));
 
-    var originY = isPhoneChart() ? 108 : (isCompactChart() ? 100 : 112);
-    var bottomMargin = 62;
+    var bottomMargin = 54;
     var cellW = (width - originX - rightPadding) / this.statuses.length;
-    var cellH = Math.max(30, Math.min(58, (height - originY - bottomMargin) / this.cutbacks.length));
+    var cellH = constrain((height - originY - bottomMargin) / this.cutbacks.length, 16, 58);
 
     textStyle(NORMAL);
     chartTextSize(isCompactChart() ? 10 : 12);
