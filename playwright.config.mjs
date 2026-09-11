@@ -33,6 +33,11 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] }
+    },
+    {
+      name: 'webkit',
+      testMatch: /.*comparison.*\.spec\.mjs/,
+      use: { ...devices['Desktop Safari'] }
     }
   ],
 

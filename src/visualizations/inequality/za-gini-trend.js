@@ -184,7 +184,7 @@ function ZAGiniTrend() {
       return;
     }
 
-    drawVerticalAnnotation(
+    var contextBounds = drawVerticalAnnotation(
       contextX,
       '1994 context marker',
       'Reference point, not a causal claim',
@@ -198,7 +198,9 @@ function ZAGiniTrend() {
       'Gini 0.65',
       this.layout.topMargin,
       this.layout.bottomMargin,
-      SATheme.red
+      SATheme.red,
+      0,
+      contextBounds
     );
   };
 

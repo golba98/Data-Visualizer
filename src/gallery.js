@@ -1210,17 +1210,16 @@ function Gallery() {
     });
   };
 
-  // On phones the panes stack in a scrolling column, so each iframe grows to
-  // fit its chart card rather than squeezing the chart into a fixed height.
+  // Every iframe follows its intrinsic card height. The parent comparison
+  // scrolls on desktop; the page scrolls on phones.
   this.fitComparisonFrame = function(frame) {
     var frameWindow = frame.contentWindow;
     var card = frame.contentDocument && frame.contentDocument.querySelector('.chart-card');
     if (!card || !frameWindow.ResizeObserver) return;
 
     var fit = function() {
-      frame.style.height = self.isMobileViewport()
-        ? Math.ceil(card.getBoundingClientRect().bottom + frameWindow.pageYOffset) + 'px'
-        : '';
+      var height = Math.ceil(card.getBoundingClientRect().bottom + frameWindow.pageYOffset) + 'px';
+      if (frame.style.height !== height) frame.style.height = height;
     };
 
     // Created in the frame's realm so it is discarded along with the frame.
