@@ -58,7 +58,15 @@ function SAAgeSexBubble2022() {
     stroke(SATheme.axis);
     strokeWeight(1);
 
-    for (var i = 0; i < this.data.getRowCount(); i++) {
+    // Label every step-th group, with the step set by how many labels fit
+    // across the plot, and always the last (85+) unless its neighbour is too
+    // close.
+    var rowCount = this.data.getRowCount();
+    chartTextSize(12);
+    var spacing = (width - (this.pad * 2)) / Math.max(1, rowCount - 1);
+    var labelStep = Math.max(2, Math.ceil((textWidth('00-00') + 10) / spacing));
+
+    for (var i = 0; i < rowCount; i++) {
       var ageGroup = this.data.getString(i, 'age_group');
       var x = map(midpoints[i], xMin, xMax, this.pad, width - this.pad);
       var y = map(femalePercent[i],
@@ -70,7 +78,9 @@ function SAAgeSexBubble2022() {
 
       ellipse(x, y, size, size);
 
-      if (i % 2 == 0 || ageGroup == '85+') {
+      var isLast = i === rowCount - 1;
+      var nearLast = !isLast && (rowCount - 1 - i) < labelStep;
+      if ((i % labelStep == 0 && !nearLast) || isLast) {
         fill(SATheme.text);
         noStroke();
         textAlign('center', 'bottom');
@@ -116,7 +126,7 @@ function SAAgeSexBubble2022() {
 
     fill(SATheme.text);
     noStroke();
-    chartTextSize(12);
+    chartTextSize(isPhoneChart() ? 10 : 12);
     textAlign('right', 'center');
 
     for (var value = this.yMin; value <= this.yMax; value += 5) {
@@ -139,7 +149,7 @@ function SAAgeSexBubble2022() {
          height - 12);
 
     push();
-    translate(14, height / 2);
+    translate(isPhoneChart() ? 10 : 14, height / 2);
     rotate(-PI / 2);
     text('Female %', 0, 0);
     pop();

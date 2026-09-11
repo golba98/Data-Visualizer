@@ -674,12 +674,20 @@ function drawSizeLegend(x, y, options) {
     if (diameter > largest) largest = diameter;
   }
 
+  // Each item is as wide as the larger of the biggest circle and the widest
+  // label, so labels like '5,833,515' never run into their neighbours.
+  chartTextSize(labelSize);
+  var slot = largest;
+  for (var w = 0; w < values.length; w++) {
+    slot = Math.max(slot, textWidth(formatValue(values[w])));
+  }
+
   var baseline = y + titleHeight + (largest / 2);
   var cursorX = x;
 
   for (var v = 0; v < values.length; v++) {
     var size = diameters[v];
-    var centreX = cursorX + (largest / 2);
+    var centreX = cursorX + (slot / 2);
 
     stroke(settings.stroke === undefined ? SATheme.axis : settings.stroke);
     strokeWeight(1);
@@ -692,14 +700,15 @@ function drawSizeLegend(x, y, options) {
     chartTextSize(labelSize);
     text(formatValue(values[v]), centreX, baseline + (largest / 2) + 3);
 
-    cursorX += largest + gap;
+    cursorX += slot + gap;
   }
 
+  var labelHeight = textLeading();
   pop();
 
   return {
     width: Math.max(0, cursorX - gap - x),
-    height: titleHeight + largest + labelSize + 5
+    height: titleHeight + largest + labelHeight + 3
   };
 }
 
