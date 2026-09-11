@@ -58,10 +58,15 @@ function SAAgeSexBubble2022() {
     stroke(SATheme.axis);
     strokeWeight(1);
 
-    // The last label drawn, so a label that would collide with it is skipped.
-    var lastLabel = null;
+    // Label every step-th group, with the step set by how many labels fit
+    // across the plot, and always the last (85+) unless its neighbour is too
+    // close.
+    var rowCount = this.data.getRowCount();
+    chartTextSize(12);
+    var spacing = (width - (this.pad * 2)) / Math.max(1, rowCount - 1);
+    var labelStep = Math.max(2, Math.ceil((textWidth('00-00') + 10) / spacing));
 
-    for (var i = 0; i < this.data.getRowCount(); i++) {
+    for (var i = 0; i < rowCount; i++) {
       var ageGroup = this.data.getString(i, 'age_group');
       var x = map(midpoints[i], xMin, xMax, this.pad, width - this.pad);
       var y = map(femalePercent[i],
@@ -73,27 +78,13 @@ function SAAgeSexBubble2022() {
 
       ellipse(x, y, size, size);
 
-      if (i % 2 == 0 || ageGroup == '85+') {
-        chartTextSize(isPhoneChart() ? 10 : 12);
-        var halfWidth = (textWidth(ageGroup) / 2) + 2;
-        var label = {
-          left: x - halfWidth,
-          right: x + halfWidth,
-          bottom: y - (size / 2) - 3,
-          top: y - (size / 2) - 3 - textAscent() - textDescent()
-        };
-        var collides = lastLabel
-          && label.left < lastLabel.right && label.right > lastLabel.left
-          && label.top < lastLabel.bottom && label.bottom > lastLabel.top;
-
-        if (!collides) {
-          fill(SATheme.text);
-          noStroke();
-          textAlign('center', 'bottom');
-          text(ageGroup, x, label.bottom);
-          lastLabel = label;
-        }
-
+      var isLast = i === rowCount - 1;
+      var nearLast = !isLast && (rowCount - 1 - i) < labelStep;
+      if ((i % labelStep == 0 && !nearLast) || isLast) {
+        fill(SATheme.text);
+        noStroke();
+        textAlign('center', 'bottom');
+        text(ageGroup, x, y - (size / 2) - 3);
         fill(SATheme.withAlpha(SATheme.blueRGB, 140));
         stroke(SATheme.axis);
       }
@@ -152,16 +143,13 @@ function SAAgeSexBubble2022() {
 
     fill(SATheme.text);
     noStroke();
-    chartTextSize(12);
     textAlign('center', 'center');
     text('Age group midpoint',
          width / 2,
          height - 12);
 
-    // Phones have a narrower margin, so the title sits nearer the edge to stay
-    // clear of the tick labels.
     push();
-    translate(isPhoneChart() ? 9 : 14, height / 2);
+    translate(isPhoneChart() ? 10 : 14, height / 2);
     rotate(-PI / 2);
     text('Female %', 0, 0);
     pop();

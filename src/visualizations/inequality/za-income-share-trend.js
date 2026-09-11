@@ -148,22 +148,20 @@ function ZAIncomeShareTrend() {
       return;
     }
 
+    // Below 720px a two-line badge would cover the start of the line.
     drawVerticalAnnotation(
       contextX,
-      '1994 context marker',
-      'Reference point, not a causal claim',
+      isCompactChart() ? '1994 marker' : '1994 context marker',
+      isCompactChart() ? '' : 'Reference point, not a causal claim',
       this.layout.topMargin,
       this.layout.bottomMargin,
       SATheme.gold
     );
-    drawHorizontalAnnotation(
-      referenceY,
-      '50% reference',
-      'Before-tax income share',
-      this.layout.leftMargin,
-      this.layout.rightMargin,
-      SATheme.red
-    );
+    // The badge sits at the right end, under the line: the 1994 badge
+    // occupies the top-left, and the later values are all above 50%.
+    drawHorizontalReferenceLine(referenceY, this.layout.leftMargin, this.layout.rightMargin, SATheme.red);
+    drawAnnotationBadge('50% reference', 'Before-tax income share',
+                        this.layout.rightMargin, referenceY + 6, SATheme.red);
   };
 
   this.drawLine = function() {
@@ -173,6 +171,7 @@ function ZAIncomeShareTrend() {
 
     var previous = null;
     var hovered = null;
+    var hoveredDistance = chartHitRadius(12);
     var pointer = getChartPointer();
     /* End - own code */
 
@@ -195,10 +194,13 @@ function ZAIncomeShareTrend() {
       stroke(SATheme.green);
       strokeWeight(2);
       circle(this.mapYearToWidth(current.year), this.mapValueToHeight(current.value), 7);
-      if (dist(pointer.x, pointer.y,
-               this.mapYearToWidth(current.year),
-               this.mapValueToHeight(current.value)) < 12) {
+      // The nearest point within reach, as touch radii can overlap.
+      var pointDistance = dist(pointer.x, pointer.y,
+                               this.mapYearToWidth(current.year),
+                               this.mapValueToHeight(current.value));
+      if (pointDistance < hoveredDistance) {
         hovered = current;
+        hoveredDistance = pointDistance;
       }
       previous = current;
       /* End - own code */

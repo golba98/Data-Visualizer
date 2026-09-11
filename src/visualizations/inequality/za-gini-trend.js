@@ -184,6 +184,16 @@ function ZAGiniTrend() {
       return;
     }
 
+    // Below 720px two-line badges would cover the data, so each marker gets
+    // a one-line badge; they fit side by side between the two lines.
+    if (isCompactChart()) {
+      drawVerticalAnnotation(contextX, '1994 marker', '', this.layout.topMargin,
+                             this.layout.bottomMargin, SATheme.gold);
+      drawVerticalAnnotation(peakX, 'Peak: 0.65', '', this.layout.topMargin,
+                             this.layout.bottomMargin, SATheme.red);
+      return;
+    }
+
     drawVerticalAnnotation(
       contextX,
       '1994 context marker',
@@ -209,6 +219,7 @@ function ZAGiniTrend() {
 
     var previous = null;
     var hovered = null;
+    var hoveredDistance = chartHitRadius(12);
     var pointer = getChartPointer();
 
 /* End - own code */
@@ -231,10 +242,13 @@ function ZAGiniTrend() {
       stroke(SATheme.blue);
       strokeWeight(2);
       circle(this.mapYearToWidth(current.year), this.mapValueToHeight(current.value), 7);
-      if (dist(pointer.x, pointer.y,
-               this.mapYearToWidth(current.year),
-               this.mapValueToHeight(current.value)) < 12) {
+      // The nearest point within reach, as touch radii can overlap.
+      var pointDistance = dist(pointer.x, pointer.y,
+                               this.mapYearToWidth(current.year),
+                               this.mapValueToHeight(current.value));
+      if (pointDistance < hoveredDistance) {
         hovered = current;
+        hoveredDistance = pointDistance;
       }
       previous = current;
       /* End - own code */

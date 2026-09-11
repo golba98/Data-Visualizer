@@ -152,9 +152,13 @@ function SurveyIncomeRealityGap() {
       fill(SATheme.red);
       circle(worryDotX, rowCenterY, 14);
 
-      if (dist(cursor.x, cursor.y, incomeDotX, rowCenterY) < 12) {
+      // The nearer of the two dots within reach.
+      var incomeDistance = dist(cursor.x, cursor.y, incomeDotX, rowCenterY);
+      var worryDistance = dist(cursor.x, cursor.y, worryDotX, rowCenterY);
+      var reach = chartHitRadius(12);
+      if (incomeDistance < reach && incomeDistance <= worryDistance) {
         drawChartTooltip(itemData.label, itemData.income.toFixed(2), 'income keeps up');
-      } else if (dist(cursor.x, cursor.y, worryDotX, rowCenterY) < 12) {
+      } else if (worryDistance < reach) {
         drawChartTooltip(itemData.label, itemData.worry.toFixed(2), 'work worry');
       }
 
@@ -170,7 +174,9 @@ function SurveyIncomeRealityGap() {
       text('n=' + itemData.count, chartRight + 8, rowCenterY);
     }
 
-    this.drawLegend(chartLeft, height - 24);
+    // On phones the key starts at the canvas margin, not the plot's left
+    // edge, so both items fit on a narrow canvas.
+    this.drawLegend(isPhoneChart() ? 24 : chartLeft, height - 24);
   };
 
   this.drawLegend = function(x, y) {
@@ -184,10 +190,11 @@ function SurveyIncomeRealityGap() {
     fill(SATheme.textMuted);
     text('Income keeps up', x + 10, y);
 
+    var secondX = x + 10 + textWidth('Income keeps up') + 26;
     fill(SATheme.red);
-    circle(x + 130, y, 10);
+    circle(secondX, y, 10);
     fill(SATheme.textMuted);
-    text('Work worry', x + 140, y);
+    text('Work worry', secondX + 10, y);
   };
 
   this.getShortLabel = function(label) {

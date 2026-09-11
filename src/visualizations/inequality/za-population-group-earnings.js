@@ -61,92 +61,99 @@ function ZAPopulationGroupEarnings() {
       this.setup();
     }
 
+    var layout = this.getRowLayout();
     background(SATheme.bg);
-    this.drawTitle();
-    this.drawChart();
-  };
+    this.drawHeading(true);
+    chartFootnote(isPhoneChart() ? this.phoneNote : this.note, isPhoneChart() ? 10 : 11, true);
 
-  this.drawTitle = function() {
-    fill(SATheme.text);
-    noStroke();
-    textStyle(BOLD);
-    chartTextSize(isPhoneChart() ? 13 : 17);
-    textAlign(LEFT, TOP);
-    text('Population share compared with mean earnings', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
-
-    textStyle(NORMAL);
-    chartTextSize(12);
-    fill(SATheme.textMuted);
-    text('Official population-group categories are compared with Stats SA mean monthly real earnings for 2011-2015.',
-         24,
-         isPhoneChart() ? 54 : 44,
-         width - 48,
-         isPhoneChart() ? 54 : 40);
+    if (isPhoneChart()) {
+      this.drawPhoneChart(layout);
+    } else {
+      this.drawChart(layout);
+    }
   };
 
   this.note = 'Note: earnings are not wealth. This chart shows labour-market earnings by official population group. Colour only highlights the highest-earning group; it does not encode a second value.';
   this.phoneNote = 'Note: earnings are not wealth. This chart shows labour-market earnings by official population group.';
 
-  // Spreads the rows between the heading and the footnote. On phones each row
-  // stacks a label and bar for population, then for earnings.
+  // The "highest shown mean" badge sits top-right on wide canvases.
+  this.showsBadge = function() {
+    return !isCompactChart() && annotationsAreVisible();
+  };
+
+  // Lays out (and, when draw is true, draws) the title block; returns its
+  // bottom.
+  this.drawHeading = function(draw) {
+    return chartHeading('Population share compared with mean earnings',
+                        'Official population-group categories are compared with Stats SA mean monthly real earnings for 2011-2015.',
+                        this.showsBadge() ? width - 268 : width - 48, draw);
+  };
+
+  this.phoneKey = function() {
+    return [
+      { label: 'Population share', colour: SATheme.blueTint },
+      { label: 'Mean monthly earnings (highest in red)', colour: SATheme.green }
+    ];
+  };
+
+  // Row geometry, stacked from measured text: the rows take the space between
+  // the title block and the footnote. On phones each row is a pair of slim
+  // bars under a colour key; wide canvases have one bar per column. draw()
+  // uses these numbers, and the phone layout tests check them.
   this.getRowLayout = function() {
     var phone = isPhoneChart();
-    var footnoteTop = phone
-      ? chartFootnoteTop(this.phoneNote, 9)
-      : chartFootnoteTop(this.note, 11);
+    var headingBottom = this.drawHeading(false);
+    var footnoteTop = chartFootnote(phone ? this.phoneNote : this.note, phone ? 10 : 11, false);
+    var rowCount = Math.max(1, this.rows.length);
 
     if (phone) {
-      var phoneBottom = footnoteTop - 8;
-      var phoneStep = fitRowStep(104, phoneBottom, this.rows.length, 64);
-      var roomy = phoneStep >= 58;
-
+      var pairHeight = 23;
+      var keyTop = headingBottom + 12;
+      // drawColourKey gives each item a 20px row.
+      var phoneTop = keyTop + (this.phoneKey().length * 20) + 10;
+      var phoneBottom = footnoteTop - 12;
       return {
-        top: 104,
-        step: phoneStep,
-        barA: roomy ? 13 : 12,
-        labelB: roomy ? 28 : 24,
-        barB: roomy ? 41 : 36,
-        bar: 8,
-        rowHeight: roomy ? 49 : 44,
-        rowCount: this.rows.length,
+        top: phoneTop,
+        step: rowCount > 1
+          ? constrain((phoneBottom - phoneTop - pairHeight) / (rowCount - 1), pairHeight + 6, 64)
+          : 0,
+        rowHeight: pairHeight,
+        rowCount: rowCount,
         rowsBottom: phoneBottom,
-        footnoteTop: footnoteTop
+        footnoteTop: footnoteTop,
+        keyTop: keyTop
       };
     }
 
     var compact = isCompactChart();
-    var bar = compact ? 16 : 20;
-    var rowsBottom = footnoteTop - 30;
-    var step = fitRowStep(118, rowsBottom, this.rows.length, compact ? 58 : 70);
-
+    var barThick = compact ? 16 : 20;
+    var top = headingBottom + 30;
+    var rowsBottom = footnoteTop - 12 - 34;
+    var step = rowCount > 1
+      ? constrain((rowsBottom - barThick - top) / (rowCount - 1), barThick + 8, compact ? 58 : 70)
+      : 0;
     return {
-      top: 118,
+      top: top,
       step: step,
-      bar: bar,
-      rowHeight: Math.max(bar, 14),
-      rowCount: this.rows.length,
+      rowHeight: barThick,
+      rowCount: rowCount,
       rowsBottom: rowsBottom,
-      gridBottom: 118 + (step * (this.rows.length - 1)) + bar + 8,
-      footnoteTop: footnoteTop
+      footnoteTop: footnoteTop,
+      barsBottom: top + (step * (rowCount - 1)) + barThick
     };
   };
 
-  this.drawChart = function() {
-    if (isPhoneChart()) {
-      this.drawPhoneChart();
-      return;
-    }
-
+  this.drawChart = function(layout) {
     var compact = isCompactChart();
-    var rowLayout = this.getRowLayout();
     var leftEdge = compact ? 106 : 150;
     var rightEdge = width - (compact ? 58 : 52);
-    var startTop = rowLayout.top;
-    var rowSpacing = rowLayout.step;
+    var startTop = layout.top;
+    var barThick = layout.rowHeight;
+    var rowSpacing = layout.step;
+    var barsBottom = layout.barsBottom;
     var shareColWidth = (rightEdge - leftEdge) * (compact ? 0.25 : 0.28);
     var earningsColLeft = leftEdge + shareColWidth + (compact ? 34 : 54);
     var earningsColWidth = rightEdge - earningsColLeft;
-    var barThick = rowLayout.bar;
     var maxEarningScale = 26000;
 
     noStroke();
@@ -161,11 +168,11 @@ function ZAPopulationGroupEarnings() {
     strokeWeight(1);
     for (var step = 0; step <= maxEarningScale; step += 5000) {
       var tickX = map(step, 0, maxEarningScale, earningsColLeft, earningsColLeft + earningsColWidth);
-      line(tickX, startTop - 4, tickX, rowLayout.gridBottom);
+      line(tickX, startTop - 4, tickX, barsBottom + 8);
       noStroke();
       fill(SATheme.textMuted);
       textAlign(CENTER, TOP);
-      text('R' + (step / 1000) + 'k', tickX, rowLayout.gridBottom + 6);
+      text('R' + (step / 1000) + 'k', tickX, barsBottom + 14);
       stroke(SATheme.grid);
     }
 
@@ -199,67 +206,63 @@ function ZAPopulationGroupEarnings() {
       text(entry.populationShare.toFixed(1) + '%', leftEdge + popWidth + 6, rowY + (barThick / 2));
       text('R' + formatThousands(entry.earnings), earningsColLeft + earnWidth + 6, rowY + (barThick / 2));
 
-      if (entry.group === 'White' && !isCompactChart()) {
+      if (entry.group === 'White' && this.showsBadge()) {
         drawAnnotationBadge(
           'Highest shown mean',
           'R' + formatThousands(entry.earnings),
           width - 210,
-          82,
+          18,
           SATheme.red
         );
       }
     }
-
-    drawChartFootnote(this.note, 11);
   };
 
-  this.drawPhoneChart = function() {
-    var rowLayout = this.getRowLayout();
+  // Phones: a key, then two slim bars per group with their values at the
+  // bar ends. Each bar's full-width band is its tap target.
+  this.drawPhoneChart = function(layout) {
     var left = 96;
     var right = width - 24;
-    var top = rowLayout.top;
-    var rowGap = rowLayout.step;
-    var barWidth = right - left;
-    var barHeight = rowLayout.bar;
+    var barSpan = right - left - 48;
+    var barHeight = 9;
+    var pairHeight = layout.rowHeight;
     var maxEarnings = 26000;
+
+    drawColourKey(24, layout.keyTop, this.phoneKey());
+    var rowsTop = layout.top;
+    var rowGap = layout.step;
 
     for (var i = 0; i < this.rows.length; i++) {
       var row = this.rows[i];
-      var y = top + (i * rowGap);
-      var shareWidth = map(row.populationShare, 0, 85, 0, barWidth);
-      var earningsWidth = map(row.earnings, 0, maxEarnings, 0, barWidth);
+      var y = rowsTop + (i * rowGap);
+      var shareWidth = map(row.populationShare, 0, 85, 0, barSpan);
+      var earningsWidth = map(row.earnings, 0, maxEarnings, 0, barSpan);
       var earningsColour = row.group == 'White' ? SATheme.red : SATheme.green;
 
       noStroke();
       fill(SATheme.text);
       textStyle(BOLD);
-      chartTextSize(9);
-      textAlign(RIGHT, TOP);
-      text(row.group, left - 10, y + 1);
+      chartTextSize(10);
+      textAlign(RIGHT, CENTER);
+      text(row.group, left - 10, y + (pairHeight / 2));
 
-      textStyle(NORMAL);
-      textAlign(LEFT, TOP);
-      text('Population', left, y);
-      textAlign(RIGHT, TOP);
-      text(row.populationShare.toFixed(1) + '%', right, y);
-      drawBar(left, y + rowLayout.barA, shareWidth, barHeight, SATheme.blueTint);
+      drawBar(left, y, shareWidth, barHeight, SATheme.blueTint);
+      drawBar(left, y + pairHeight - barHeight, earningsWidth, barHeight, earningsColour);
 
       noStroke();
       fill(SATheme.text);
-      textAlign(LEFT, TOP);
-      text('Earnings', left, y + rowLayout.labelB);
-      textAlign(RIGHT, TOP);
-      text('R' + formatThousands(row.earnings), right, y + rowLayout.labelB);
-      drawBar(left, y + rowLayout.barB, earningsWidth, barHeight, earningsColour);
+      textStyle(NORMAL);
+      chartTextSize(10);
+      textAlign(LEFT, CENTER);
+      text(row.populationShare.toFixed(1) + '%', left + shareWidth + 6, y + (barHeight / 2));
+      text('R' + formatThousands(row.earnings), left + earningsWidth + 6, y + pairHeight - (barHeight / 2));
 
-      if (mouseIsOverRect(left, y + rowLayout.barA, shareWidth, barHeight)) {
+      if (mouseIsOverRect(left, y - 2, right - left, pairHeight / 2 + 2)) {
         drawChartTooltip(row.group, row.populationShare.toFixed(1) + '%', 'population share');
-      } else if (mouseIsOverRect(left, y + rowLayout.barB, earningsWidth, barHeight)) {
+      } else if (mouseIsOverRect(left, y + pairHeight / 2, right - left, pairHeight / 2 + 2)) {
         drawChartTooltip(row.group, 'R' + formatThousands(row.earnings), 'mean monthly earnings');
       }
     }
-
-    drawChartFootnote(this.phoneNote, 9);
   };
 
   this.getExportData = function() {

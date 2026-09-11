@@ -48,30 +48,55 @@ function ZADwellingOwnershipByGroup() {
       this.setup();
     }
 
+    var layout = this.getRowLayout();
     background(SATheme.bg);
-    this.drawTitle();
+    this.drawHeading(true);
     this.drawAnnotations();
-    this.drawStackedBars();
-    this.drawLegend();
+    this.drawLegend(layout.legendTop);
+    chartFootnote(this.limitation, 11, true);
+    this.drawStackedBars(layout);
   };
 
-  this.drawTitle = function() {
-    fill(SATheme.text);
-    noStroke();
-    textStyle(BOLD);
-    chartTextSize(isPhoneChart() ? 13 : 17);
-    textAlign(LEFT, TOP);
-    text('Dwelling tenure by population group', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
+  this.limitation = 'Limitation: this measures household dwelling tenure rates, not total property wealth or individual ownership totals.';
 
-    textStyle(NORMAL);
-    chartTextSize(12);
-    fill(SATheme.textMuted);
-    // Leaves room for the "Read as tenure" badge, which only wider charts show.
-    text('Stats SA GHS 2024 table by population group of household head. Owned includes fully paid and still being paid off.',
-         24,
-         isPhoneChart() ? 54 : 44,
-         isCompactChart() ? width - 48 : width - 260,
-         isPhoneChart() ? 56 : 42);
+  // Lays out (and, when draw is true, draws) the title block; returns its
+  // bottom. Leaves room for the annotation badge in the top-right corner.
+  this.drawHeading = function(draw) {
+    var blockWidth = (!isCompactChart() && annotationsAreVisible()) ? width - 268 : width - 48;
+    return chartHeading('Dwelling tenure by population group',
+                        'Stats SA GHS 2024 table by population group of household head. Owned includes fully paid and still being paid off.',
+                        blockWidth, draw);
+  };
+
+  // Stacked top to bottom from measured text, so wrapped lines on a narrow
+  // canvas push the bars down instead of colliding with them, and the rows
+  // take whatever height is left above the axis labels and footnote. draw()
+  // uses these numbers, and the phone layout tests check them.
+  this.getRowLayout = function() {
+    var compact = isCompactChart();
+    var rowCount = Math.max(1, this.rows.length);
+    var legendTop = this.drawHeading(false) + 8;
+    var footnoteTop = chartFootnote(this.limitation, 11, false);
+    var top = legendTop + 14 + (compact ? 24 : 0) + 24;
+    var rowsBottom = footnoteTop - 12 - 32;
+    var available = rowsBottom - top;
+
+    // Rows keep their full size when there is room and tighten when short.
+    var rowHeight = constrain(available / rowCount * 0.6, 16, compact ? 30 : 38);
+    var step = rowCount > 1
+      ? Math.min(compact ? 56 : 70, (available - rowHeight) / (rowCount - 1))
+      : 0;
+
+    return {
+      top: top,
+      step: step,
+      rowHeight: rowHeight,
+      rowCount: rowCount,
+      rowsBottom: rowsBottom,
+      barsBottom: top + (step * (rowCount - 1)) + rowHeight,
+      legendTop: legendTop,
+      footnoteTop: footnoteTop
+    };
   };
 
   this.drawAnnotations = function() {
@@ -86,39 +111,17 @@ function ZADwellingOwnershipByGroup() {
     );
   };
 
-  this.limitation = 'Limitation: this measures household dwelling tenure rates, not total property wealth or individual ownership totals.';
-
-  // Spreads the rows between the legend and the footnote, thinning the bars
-  // when space is tight.
-  this.getRowLayout = function() {
+  // Draws the bars, and the axis below them, where layout places them.
+  this.drawStackedBars = function(layout) {
     var isCompact = isCompactChart();
-    var top = isCompact ? 160 : 124;
-    var footnoteTop = chartFootnoteTop(this.limitation, 11);
-    var rowsBottom = footnoteTop - 30;
-    var step = fitRowStep(top, rowsBottom, this.rows.length, isCompact ? 56 : 70);
-    var bar = Math.min(isCompact ? 30 : 38, step * 0.75);
-
-    return {
-      top: top,
-      step: step,
-      bar: bar,
-      rowHeight: bar,
-      rowCount: this.rows.length,
-      rowsBottom: rowsBottom,
-      gridBottom: top + (step * (this.rows.length - 1)) + bar + 8,
-      footnoteTop: footnoteTop
-    };
-  };
-
-  this.drawStackedBars = function() {
-    var isCompact = isCompactChart();
-    var rowLayout = this.getRowLayout();
     var xStart = isCompact ? 112 : 156;
     var xEnd = width - 42;
-    var yStart = rowLayout.top;
-    var rowHeight = rowLayout.bar;
-    var rowStep = rowLayout.step;
     var totalBarSpan = xEnd - xStart;
+    var rowCount = this.rows.length;
+    var rowHeight = layout.rowHeight;
+    var rowStep = layout.step;
+    var yStart = layout.top;
+    var barsBottom = layout.barsBottom;
 
     var tenureCategories = [
       { key: 'owned', title: 'Owned', fill: SATheme.green },
@@ -131,17 +134,17 @@ function ZADwellingOwnershipByGroup() {
     strokeWeight(1);
     for (var pct = 0; pct <= 100; pct += 25) {
       var gridLineX = map(pct, 0, 100, xStart, xEnd);
-      line(gridLineX, yStart - 12, gridLineX, rowLayout.gridBottom);
+      line(gridLineX, yStart - 12, gridLineX, barsBottom + 10);
       noStroke();
       fill(SATheme.textMuted);
       textStyle(NORMAL);
       chartTextSize(11);
       textAlign(CENTER, TOP);
-      text(pct + '%', gridLineX, rowLayout.gridBottom + 6);
+      text(pct + '%', gridLineX, barsBottom + 18);
       stroke(SATheme.grid);
     }
 
-    for (var rowIndex = 0; rowIndex < this.rows.length; rowIndex++) {
+    for (var rowIndex = 0; rowIndex < rowCount; rowIndex++) {
       var groupData = this.rows[rowIndex];
       var rowTop = yStart + (rowIndex * rowStep);
       var offsetX = xStart;
@@ -181,11 +184,10 @@ function ZADwellingOwnershipByGroup() {
         offsetX += blockWidth;
       }
     }
-
-    drawChartFootnote(this.limitation, 11);
   };
 
-  this.drawLegend = function() {
+  // Returns the y below the legend.
+  this.drawLegend = function(top) {
     var labels = [
       { label: 'Owned', colour: SATheme.green },
       { label: 'Rented', colour: SATheme.red },
@@ -194,7 +196,7 @@ function ZADwellingOwnershipByGroup() {
     ];
     var compact = isCompactChart();
     var startX = compact ? 24 : 42;
-    var y = compact ? 110 : 92;
+    var y = top + 7;
     var gap = compact ? (width - 48) / 2 : 126;
 
     textStyle(NORMAL);
@@ -212,6 +214,7 @@ function ZADwellingOwnershipByGroup() {
       fill(SATheme.text);
       text(labels[i].label, x + 20, itemY);
     }
+    return top + 14 + (compact ? 24 : 0);
   };
 
   this.getExportData = function() {

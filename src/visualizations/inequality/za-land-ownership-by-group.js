@@ -44,41 +44,75 @@ function ZALandOwnershipByGroup() {
       this.setup();
     }
 
+    var bars = this.getRowLayout();
     background(SATheme.bg);
-    this.drawTitle();
-    this.drawAnnotations();
-    this.drawBars();
+    chartHeading(this.title, this.subtitle, width - 48, true);
+    chartFootnote(this.limitation, 11, true);
+    this.drawAnnotations(bars);
+    this.drawBars(bars);
   };
 
-  this.drawTitle = function() {
-    fill(SATheme.text);
-    noStroke();
-    textStyle(BOLD);
-    chartTextSize(isPhoneChart() ? 13 : 17);
-    textAlign(LEFT, TOP);
-    text('Agricultural land ownership by population group', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
-
-    textStyle(NORMAL);
-    chartTextSize(12);
-    fill(SATheme.textMuted);
-    text('2017 Land Audit shares for farms and agricultural holdings owned by individual landowners.',
-         24,
-         isPhoneChart() ? 54 : 44,
-         width - 48,
-         isPhoneChart() ? 52 : 38);
-  };
-
+  this.title = 'Agricultural land ownership by population group';
+  this.subtitle = '2017 Land Audit shares for farms and agricultural holdings owned by individual landowners.';
   this.limitation = 'Limitation: this is a land-audit measure for individually owned farms/agricultural holdings, not all homes or all wealth. Colour only highlights the largest holder; it does not encode a second value.';
 
-  this.drawAnnotations = function() {
-    var left = isCompactChart() ? 98 : 142;
-    var right = width - 54;
-    var referenceX = map(50, 0, 80, left, right);
-    var bottom = this.getRowLayout().gridBottom;
+  // Row geometry, stacked from measured text: the rows take the space between
+  // the title block (plus a row for the annotation badge) and the footnote.
+  // With room, each bar keeps its hectares label underneath; when space is
+  // short the labels are left to the tooltip and data table and the bars
+  // tighten to fit. draw() uses these numbers, and the phone layout tests
+  // check them.
+  this.getRowLayout = function() {
+    var isCompact = isCompactChart();
+    var badgeRow = isPhoneChart() ? 34 : 50;
+    var top = chartHeading(this.title, this.subtitle, width - 48, false)
+      + (annotationsAreVisible() ? badgeRow : 22);
+    var footnoteTop = chartFootnote(this.limitation, 11, false);
+    var labelGap = isCompact ? 8 : 12;
+    var labelHeight = isCompact ? 12 : 13;
+    var axisSpace = isPhoneChart() ? 0 : 26;
+    var rowsBottom = footnoteTop - 12 - axisSpace;
+    var rowCount = Math.max(1, this.rows.length);
+    var available = rowsBottom - top;
+    var barThick = isCompact ? 24 : 30;
+    var rowContent = barThick + labelGap + labelHeight;
+    var showHectares = available >= rowCount * rowContent + (rowCount - 1) * 8;
+
+    if (!showHectares) {
+      barThick = constrain(available / rowCount * 0.65, 12, barThick);
+      rowContent = barThick;
+    }
+
+    var stepGap = rowCount > 1
+      ? Math.min(Math.max(52, rowContent + 8), (available - rowContent) / (rowCount - 1))
+      : 0;
+    var barsBottom = top + (stepGap * (rowCount - 1)) + barThick;
+
+    return {
+      top: top,
+      step: stepGap,
+      rowHeight: rowContent,
+      rowCount: rowCount,
+      rowsBottom: rowsBottom,
+      footnoteTop: footnoteTop,
+      xStart: isCompact ? 98 : 142,
+      xEnd: width - 54,
+      yStart: top,
+      barThick: barThick,
+      labelGap: labelGap,
+      stepGap: stepGap,
+      showHectares: showHectares,
+      barsBottom: barsBottom,
+      contentBottom: barsBottom + (rowContent - barThick)
+    };
+  };
+
+  this.drawAnnotations = function(bars) {
+    var referenceX = map(50, 0, 80, bars.xStart, bars.xEnd);
 
     if (isPhoneChart()) {
-      drawVerticalReferenceLine(referenceX, 126, bottom, SATheme.red);
-      drawAnnotationBadge('50% reference', '', width - 150, 94, SATheme.red);
+      drawVerticalReferenceLine(referenceX, bars.yStart - 12, bars.barsBottom + 10, SATheme.red);
+      drawAnnotationBadge('50% reference', '', width - 150, bars.yStart - 30, SATheme.red);
       return;
     }
 
@@ -86,70 +120,32 @@ function ZALandOwnershipByGroup() {
       referenceX,
       '50% reference',
       'Displayed ownership share',
-      106,
-      bottom,
+      bars.yStart - 48,
+      bars.barsBottom + 10,
       SATheme.red
     );
   };
 
-  // Spreads the rows between the heading and the footnote. When space is
-  // tight the bars get thinner, then the hectare labels move to the tooltip.
-  this.getRowLayout = function() {
+  this.drawBars = function(bars) {
     var isCompact = isCompactChart();
-    var top = isPhoneChart() ? 134 : 118;
-    var tickSpace = isPhoneChart() ? 8 : 28;
-    var footnoteTop = chartFootnoteTop(this.limitation, 11);
-    var rowsBottom = footnoteTop - tickSpace;
-    var step = fitRowStep(top, rowsBottom, this.rows.length, 52);
-    var bar = isCompact ? 24 : 30;
-    var detail = isCompact ? 14 : 18;
-    var showDetail = step >= bar + detail;
-
-    if (!showDetail && step - detail >= 14) {
-      bar = step - detail;
-      showDetail = true;
-    } else if (!showDetail) {
-      bar = Math.min(bar, step * 0.75);
-    }
-
-    var rowHeight = bar + (showDetail ? detail : 0);
-
-    return {
-      top: top,
-      step: step,
-      bar: bar,
-      detail: detail,
-      showDetail: showDetail,
-      rowHeight: rowHeight,
-      rowCount: this.rows.length,
-      rowsBottom: rowsBottom,
-      gridBottom: top + (step * (this.rows.length - 1)) + rowHeight + 4,
-      footnoteTop: footnoteTop
-    };
-  };
-
-  this.drawBars = function() {
-    var isCompact = isCompactChart();
-    var rowLayout = this.getRowLayout();
-    var xStart = isCompact ? 98 : 142;
-    var xEnd = width - 54;
-    var yStart = rowLayout.top;
-    var barThick = rowLayout.bar;
-    var stepGap = rowLayout.step;
-    var maxSpan = xEnd - xStart;
+    var xStart = bars.xStart;
+    var yStart = bars.yStart;
+    var barThick = bars.barThick;
+    var stepGap = bars.stepGap;
+    var maxSpan = bars.xEnd - xStart;
 
     stroke(SATheme.grid);
     strokeWeight(1);
     for (var tickVal = 0; tickVal <= 80; tickVal += 20) {
-      var tickX = map(tickVal, 0, 80, xStart, xEnd);
-      line(tickX, yStart - 12, tickX, rowLayout.gridBottom);
+      var tickX = map(tickVal, 0, 80, xStart, bars.xEnd);
+      line(tickX, yStart - 12, tickX, bars.barsBottom + 10);
       if (!isPhoneChart()) {
         noStroke();
         fill(SATheme.textMuted);
         textStyle(NORMAL);
         chartTextSize(11);
         textAlign(CENTER, TOP);
-        text(tickVal + '%', tickX, rowLayout.gridBottom + 6);
+        text(tickVal + '%', tickX, bars.contentBottom + 10);
       }
       stroke(SATheme.grid);
     }
@@ -179,15 +175,14 @@ function ZALandOwnershipByGroup() {
       textAlign(LEFT, CENTER);
       text(rowItem.share.toFixed(0) + '%', xStart + rowBarWidth + 8, rowY + (barThick / 2));
 
-      if (rowLayout.showDetail) {
+      if (bars.showHectares) {
         textStyle(NORMAL);
         chartTextSize(isCompact ? 9 : 10);
         fill(SATheme.textMuted);
-        text(formatThousands(rowItem.hectares) + ' ha', xStart, rowY + barThick + (rowLayout.detail / 2));
+        textAlign(LEFT, TOP);
+        text(formatThousands(rowItem.hectares) + ' ha', xStart, rowY + barThick + bars.labelGap);
       }
     }
-
-    drawChartFootnote(this.limitation, 11);
   };
 
   this.getExportData = function() {

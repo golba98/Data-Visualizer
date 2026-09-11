@@ -151,52 +151,75 @@ function SurveyPressureIndex() {
     }
 
     background(SATheme.bg);
-    this.drawTitle();
-    this.drawGauge();
-    this.drawComponentBars();
+    var layout = this.getLayout(this.drawTitle() + 8);
+    this.drawGauge(layout);
+    this.drawComponentBars(layout);
   };
 
-
+  // Returns the y below the title block.
   this.drawTitle = function() {
     noStroke();
     fill(SATheme.text);
-    textAlign(LEFT, TOP);
     textStyle(BOLD);
     chartTextSize(isPhoneChart() ? 13 : 17);
-    text('How pressured are people feeling?', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
+    var y = 18 + drawWrappedText('How pressured are people feeling?', 24, 18, width - 48);
 
     textStyle(NORMAL);
     chartTextSize(12);
     fill(SATheme.textMuted);
-    text(SurveyData.chartLabel,
-         24,
-         isPhoneChart() ? 54 : 44,
-         width - 48,
-         isPhoneChart() ? 50 : 36);
+    y += 6;
+    return y + drawWrappedText(SurveyData.chartLabel, 24, y, width - 48);
   };
 
-  this.gaugeCenterY = function() {
-    return isCompactChart() ? Math.min(height * 0.43, 218) : height * 0.56;
-  };
-
-  this.gaugeRadius = function() {
+  // Places the gauge and the component rows below top. Wide or landscape
+  // canvases put the gauge beside the rows; portrait canvases stack them and
+  // size the gauge to the height the rows leave. Each row is a label above
+  // its bar, so rows are never closer than ROW_MIN or labels sit on bars.
+  this.getLayout = function(top) {
+    var ROW_MIN = 32;
     var compact = isCompactChart();
-    var radius = compact
-        ? Math.min(width * 0.24, height * 0.21, 116)
-        : Math.min(width * 0.22, height * 0.28, 150);
-    return Math.max(compact ? 72 : 96, radius);
+    var sideBySide = !compact || (width >= 400 && width >= height * 1.25);
+    var rowCount = Math.max(1, this.components.length);
+    var bottom = height - 16;
+    var layout = {
+      sideBySide: sideBySide,
+      stroke: compact ? 14 : 18,
+      numberSize: sideBySide ? (compact ? 36 : 46) : 30,
+      numberOffset: sideBySide ? (compact ? 26 : 34) : 22,
+      captionOffset: sideBySide ? (compact ? 54 : 70) : 44
+    };
+    var belowCentre = layout.captionOffset + 10;
+
+    if (sideBySide) {
+      var available = bottom - top;
+      layout.radius = Math.max(40, Math.min((width * 0.52 - 24) / 2 - layout.stroke, available - belowCentre - layout.stroke, 150));
+      var gaugeHeight = layout.radius + (layout.stroke / 2) + belowCentre;
+      layout.centreX = width * 0.34;
+      layout.centreY = top + ((available - gaugeHeight) / 2) + (layout.stroke / 2) + layout.radius;
+      layout.barsX = width * 0.58;
+      layout.barWidth = width * 0.32;
+      layout.rowGap = constrain(available / rowCount, ROW_MIN, 38);
+      layout.firstRowY = top + ((available - (layout.rowGap * rowCount)) / 2) + 17;
+    } else {
+      layout.rowGap = ROW_MIN;
+      var gaugeSpace = bottom - top - (rowCount * layout.rowGap) - belowCentre - layout.stroke;
+      layout.radius = constrain(gaugeSpace, 44, Math.min(width * 0.24, 116));
+      layout.centreX = width / 2;
+      layout.centreY = top + (layout.stroke / 2) + layout.radius;
+      var rowsTop = layout.centreY + belowCentre;
+      layout.rowGap = constrain((bottom - rowsTop) / rowCount, ROW_MIN, 38);
+      layout.barsX = 28;
+      layout.barWidth = width - 56;
+      layout.firstRowY = rowsTop + 17;
+    }
+    return layout;
   };
 
-  this.gaugeBottom = function() {
-    return this.gaugeCenterY() + (isCompactChart() ? 66 : 84);
-  };
-
-  this.drawGauge = function() {
-    var isCompact = isCompactChart();
-    var gaugeOriginX = isCompact ? (width / 2) : (width * 0.34);
-    var gaugeOriginY = this.gaugeCenterY();
-    var dialRadius = this.gaugeRadius();
-    var strokeThick = isCompact ? 14 : 18;
+  this.drawGauge = function(layout) {
+    var gaugeOriginX = layout.centreX;
+    var gaugeOriginY = layout.centreY;
+    var dialRadius = layout.radius;
+    var strokeThick = layout.stroke;
 
     noFill();
     strokeWeight(strokeThick);
@@ -224,30 +247,21 @@ function SurveyPressureIndex() {
 
     textAlign(CENTER, CENTER);
     textStyle(BOLD);
-    chartTextSize(isCompact ? 36 : 46);
+    chartTextSize(layout.numberSize);
     fill(SATheme.text);
-    text(this.index, gaugeOriginX, gaugeOriginY + (isCompact ? 26 : 34));
+    text(this.index, gaugeOriginX, gaugeOriginY + layout.numberOffset);
 
     textStyle(NORMAL);
-    chartTextSize(isCompact ? 11 : 13);
+    chartTextSize(isCompactChart() ? 11 : 13);
     fill(SATheme.textMuted);
-    text('out of 100', gaugeOriginX, gaugeOriginY + (isCompact ? 54 : 70));
+    text('out of 100', gaugeOriginX, gaugeOriginY + layout.captionOffset);
   };
 
-  this.drawComponentBars = function() {
+  this.drawComponentBars = function(layout) {
     var compact = isCompactChart();
-    var startX = compact ? 28 : width * 0.58;
-    var barWidth = compact ? width - 56 : width * 0.32;
+    var startX = layout.barsX;
+    var barWidth = layout.barWidth;
     var barHeight = compact ? 10 : 12;
-
-    var rows = this.components.length;
-    var startY = 118;
-    var rowGap = 38;
-    if (compact) {
-      var available = height - 26 - this.gaugeBottom();
-      rowGap = Math.max(22, Math.min(30, available / rows));
-      startY = this.gaugeBottom() + rowGap;
-    }
 
     textAlign(LEFT, CENTER);
     chartTextSize(compact ? 11 : 12);
@@ -255,7 +269,7 @@ function SurveyPressureIndex() {
 
     for (var i = 0; i < this.components.length; i++) {
       var component = this.components[i];
-      var y = startY + (i * rowGap);
+      var y = layout.firstRowY + (i * layout.rowGap);
 
       fill(SATheme.text);
       noStroke();
@@ -266,7 +280,8 @@ function SurveyPressureIndex() {
       fill(component.colour);
       rect(startX, y + 3, barWidth * component.value, barHeight);
 
-      if (mouseIsOverRect(startX, y + 3, barWidth * component.value, barHeight)) {
+      // The whole row, label included, is the tap target.
+      if (mouseIsOverRect(startX, y - 17, barWidth, layout.rowGap)) {
         drawChartTooltip(component.label, Math.round(component.value * 100) + '%', 'component score');
       }
 

@@ -280,56 +280,74 @@ function chartTextSize(size) {
   textSize(Math.max(CHART_MIN_TEXT_SIZE, size));
 }
 
-// Counts the lines a note wraps to across the chart's text width.
-function countWrappedLines(note, boxWidth) {
-  var words = note.split(' ');
-  var lines = 1;
-  var current = '';
+// Counts the lines text(str, x, y, maxWidth) wraps str onto at the current
+// text size, using p5's own word-wrapping rule.
+function countWrappedLines(str, maxWidth) {
+  var paragraphs = String(str).split('\n');
+  var count = 0;
 
-  for (var i = 0; i < words.length; i++) {
-    var candidate = current ? current + ' ' + words[i] : words[i];
-    if (current && textWidth(candidate) > boxWidth) {
-      lines++;
-      current = words[i];
-    } else {
-      current = candidate;
+  for (var p = 0; p < paragraphs.length; p++) {
+    var words = paragraphs[p].split(' ');
+    var line = '';
+    count += 1;
+    for (var i = 0; i < words.length; i++) {
+      var candidate = line + words[i] + ' ';
+      if (textWidth(candidate) > maxWidth && line.length > 0) {
+        count += 1;
+        line = words[i] + ' ';
+      } else {
+        line = candidate;
+      }
     }
   }
-
-  return lines;
+  return count;
 }
 
-// Returns the top edge of a footnote pinned to the bottom of the canvas, so
-// charts can stop their rows above it.
-function chartFootnoteTop(note, size) {
+function wrappedTextHeight(str, maxWidth) {
+  return countWrappedLines(str, maxWidth) * textLeading();
+}
+
+// Draws str wrapped to maxWidth with its first line's top at y and returns
+// the height it used, so the next block can be stacked below it. Unlike a
+// fixed text box, no line is ever dropped when the text wraps further than
+// expected on a narrow canvas.
+function drawWrappedText(str, x, y, maxWidth) {
+  textAlign(LEFT, TOP);
+  text(str, x, y, maxWidth);
+  return wrappedTextHeight(str, maxWidth);
+}
+
+// Lays out a chart's title and subtitle from the top-left and returns the y
+// below them, drawing them only when draw is true. Measuring and drawing
+// share this code, so a chart's getRowLayout() and draw() cannot disagree.
+function chartHeading(title, subtitle, blockWidth, draw) {
   push();
-  textStyle(NORMAL);
-  chartTextSize(size);
-  var lineHeight = textLeading();
-  var lines = countWrappedLines(note, width - 48);
-  pop();
+  noStroke();
+  fill(SATheme.text);
+  textStyle(BOLD);
+  chartTextSize(isPhoneChart() ? 13 : 17);
+  var y = 18 + (draw ? drawWrappedText(title, 24, 18, blockWidth) : wrappedTextHeight(title, blockWidth)) + 6;
 
-  return height - (lines * lineHeight) - 10;
+  textStyle(NORMAL);
+  chartTextSize(12);
+  fill(SATheme.textMuted);
+  y += draw ? drawWrappedText(subtitle, 24, y, blockWidth) : wrappedTextHeight(subtitle, blockWidth);
+  pop();
+  return y;
 }
 
-// Draws a muted footnote along the bottom of the canvas.
-function drawChartFootnote(note, size) {
-  var top = chartFootnoteTop(note, size);
-
+// Lays out a muted note against the bottom edge and returns its top, drawing
+// it only when draw is true.
+function chartFootnote(note, size, draw) {
   push();
   noStroke();
   fill(SATheme.textMuted);
   textStyle(NORMAL);
   chartTextSize(size);
-  textAlign(LEFT, TOP);
-  text(note, 24, top, width - 48, height - top);
+  var top = height - 14 - wrappedTextHeight(note, width - 48);
+  if (draw) drawWrappedText(note, 24, top, width - 48);
   pop();
-}
-
-// Gap between row tops so rowCount rows fit between top and bottom.
-function fitRowStep(top, bottom, rowCount, maxStep) {
-  if (rowCount < 1) return maxStep;
-  return Math.max(0, Math.min(maxStep, (bottom - top) / rowCount));
+  return top;
 }
 
 
@@ -467,6 +485,23 @@ function drawYAxisTickLabels(min, max, layout, mapFunction,
       line(layout.leftMargin, y, layout.rightMargin, y);
     }
   }
+}
+
+// Labels years from startYear, about every `step` years, plus the final
+// year. The step widens until neighbouring labels have room, and a regular
+// label that would crowd the final one is left out.
+function drawYearTickLabels(startYear, endYear, step, layout, mapFunction) {
+  var clearance = textWidth(String(endYear)) + 8;
+  var pixelsPerYear = Math.abs(mapFunction(startYear + 1) - mapFunction(startYear)) || 1;
+  var labelStep = Math.max(1, step, Math.ceil(clearance / pixelsPerYear));
+  var endX = mapFunction(endYear);
+
+  for (var year = startYear; year < endYear; year += labelStep) {
+    if (endX - mapFunction(year) >= clearance) {
+      drawXAxisTickLabel(year, layout, mapFunction);
+    }
+  }
+  drawXAxisTickLabel(endYear, layout, mapFunction);
 }
 
 function drawXAxisTickLabel(value, layout, mapFunction) {
@@ -683,17 +718,20 @@ function drawSizeLegend(x, y, options) {
 
   var diameters = [];
   var largest = 0;
-  var widestLabel = 0;
-  chartTextSize(labelSize);
   for (var i = 0; i < values.length; i++) {
     var diameter = Math.max(6, diameterFor(values[i]));
     diameters.push(diameter);
     if (diameter > largest) largest = diameter;
-    widestLabel = Math.max(widestLabel, textWidth(formatValue(values[i])));
   }
 
-  // Each slot fits its circle and its label, so labels never run together.
-  var slot = Math.max(largest, widestLabel);
+  // Each item is as wide as the larger of the biggest circle and the widest
+  // label, so labels like '5,833,515' never run into their neighbours.
+  chartTextSize(labelSize);
+  var slot = largest;
+  for (var w = 0; w < values.length; w++) {
+    slot = Math.max(slot, textWidth(formatValue(values[w])));
+  }
+
   var baseline = y + titleHeight + (largest / 2);
   var cursorX = x;
 
@@ -715,11 +753,12 @@ function drawSizeLegend(x, y, options) {
     cursorX += slot + gap;
   }
 
+  var labelHeight = textLeading();
   pop();
 
   return {
     width: Math.max(0, cursorX - gap - x),
-    height: titleHeight + largest + labelSize + 5
+    height: titleHeight + largest + labelHeight + 3
   };
 }
 
@@ -836,8 +875,31 @@ function drawColourRampKey(x, y, options) {
   return { width: cursorX - x, height: swatchHeight };
 }
 
+// A fingertip covers far more than a mouse pointer, so on touch screens
+// small marks answer to a finger-sized target.
+var TOUCH_HIT_RADIUS = 22;
+var TOUCH_MIN_HIT_SIZE = 28;
+
+function usesCoarsePointer() {
+  return typeof window !== 'undefined' && !!window.matchMedia
+      && window.matchMedia('(pointer: coarse)').matches;
+}
+
+// The distance from a point mark within which it counts as hit.
+function chartHitRadius(mouseRadius) {
+  return usesCoarsePointer() ? Math.max(mouseRadius, TOUCH_HIT_RADIUS) : mouseRadius;
+}
+
 function mouseIsOverRect(x, y, w, h) {
   var pointer = getChartPointer();
+  if (usesCoarsePointer()) {
+    var growX = Math.max(0, (TOUCH_MIN_HIT_SIZE - w) / 2);
+    var growY = Math.max(0, (TOUCH_MIN_HIT_SIZE - h) / 2);
+    x -= growX;
+    w += growX * 2;
+    y -= growY;
+    h += growY * 2;
+  }
   return pointer.x >= x && pointer.x <= x + w
       && pointer.y >= y && pointer.y <= y + h;
 }

@@ -117,6 +117,12 @@ button {
   min-height: 240px;
 }
 
+/* The story card has one row; the phone layout's grid-row: 2 for the chart
+   would put it in an implicit row sized to the canvas, stuck at 240px. */
+.main-content.tour-active .chart-card > .chart-container {
+  grid-row: 1;
+}
+
 .app-shell.story-mode {
   grid-template-columns: minmax(0, 1fr);
   height: 100dvh;
@@ -748,7 +754,7 @@ button {
   max-width: 340px;
 }
 
-@media (min-width: 821px) and (max-height: 700px) {
+@media (min-width: 821px) and (min-height: 521px) and (max-height: 700px) {
   .main-content.tour-active {
     grid-template-rows: auto minmax(0, 1fr) auto;
   }
@@ -1255,7 +1261,11 @@ summary:focus-visible,
   }
 }
 
-@media (max-width: 820px) {
+/* Phones, and any screen too short for the fixed-height desktop layout: a
+   phone in landscape can be wider than 820px, and fitting the chart into
+   its 360px height left the chart 0px tall. Keep in sync with
+   Gallery.isMobileViewport(). */
+@media (max-width: 820px), (max-height: 520px) {
   html,
   body {
     height: auto;
@@ -1596,15 +1606,27 @@ summary:focus-visible,
     width: 100%;
   }
 
+  /* Phone panes stack in a scrolling column, so the embedded chart keeps its
+     own height instead of sharing the iframe's; gallery.js then grows the
+     iframe to fit. Fitting the chart into the iframe left it 0-20px tall
+     once the wrapped header buttons took their share. */
+  .embedded-chart .app-shell,
   .embedded-chart .main-content,
   .embedded-chart .chart-view,
   .embedded-chart .chart-layout,
   .embedded-chart .chart-card {
-    height: 100%;
+    height: auto;
   }
 
+  .embedded-chart .main-content {
+    overflow: visible;
+  }
+
+  /* Width-based only: a height-based size would feed back into the iframe
+     height that is measured from it. */
   .embedded-chart .chart-container {
-    height: calc(100% - 145px);
+    height: clamp(360px, 125vw, 480px);
+    min-height: 320px;
   }
 }
 
@@ -1623,14 +1645,76 @@ summary:focus-visible,
   }
 }
 
-@media (max-width: 820px) and (max-height: 520px) {
-  .main-content.tour-active {
-    --story-chart-floor: 300px;
+/* Landscape phones. The chart page scrolls, so the chart keeps a readable
+   height (charts are laid out for 280px and up) rather than shrinking to
+   fit the short screen. */
+@media (max-height: 520px) {
+  .chart-container {
+    height: clamp(280px, calc(100dvh - 64px), 420px);
+    min-height: 280px;
   }
 
-  .chart-container {
-    height: clamp(300px, 68dvh, 360px);
-    min-height: 300px;
+  /* The story cannot scroll the chart into view without hiding the
+     buttons, so its text and buttons sit beside the chart instead. The
+     definite height lets the chart column's 100% resolve to the screen
+     rather than fall back to the canvas's own size. */
+  .main-content.tour-active {
+    grid-template-columns: minmax(11rem, 36%) minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) auto;
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  /* The source goes under the text too, so the chart has the full height. */
+  .main-content.tour-active .tour-view {
+    grid-column: 1;
+    grid-row: 1;
+    overflow-y: auto;
+  }
+
+  .main-content.tour-active .chart-view {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    min-height: 0;
+  }
+
+  .main-content.tour-active .tour-footer {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  /* The buttons stay visible at the bottom of the text column; on the
+     shortest screens the story text scrolls above them. */
+  .main-content.tour-active .tour-actions {
+    background: var(--bg-card);
+    bottom: 0;
+    padding-block: 0.4rem 0.1rem;
+    position: sticky;
+  }
+
+  .story-mode .tour-actions button {
+    font-size: 0.72rem;
+    min-width: 44px;
+    padding: 0 0.55rem;
+  }
+
+  .story-mode .tour-footer .tour-source {
+    font-size: 0.7rem;
+  }
+
+  .main-content.tour-active .chart-view,
+  .main-content.tour-active .chart-layout,
+  .main-content.tour-active .chart-card {
+    height: 100%;
+    min-height: 0;
+  }
+
+  /* The column sets the chart's height here, not the portrait story's
+     380px floor, which would overflow a short screen. */
+  .main-content.tour-active .chart-card > .chart-container,
+  .story-mode .chart-container {
+    height: 100%;
+    min-height: 0;
   }
 
   .story-mode .tour-narrative #tour-narrative {
