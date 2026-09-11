@@ -1,23 +1,5 @@
 import { expect, test } from '@playwright/test';
-
-// Collects the diagnostics that are only visible inside the browser, so a
-// failure reported from Node still explains what the page was doing.
-function watchPage(page) {
-  const consoleErrors = [];
-  const pageErrors = [];
-
-  page.on('console', (message) => {
-    if (message.type() === 'error') {
-      consoleErrors.push(message.text());
-    }
-  });
-
-  page.on('pageerror', (error) => {
-    pageErrors.push(error.stack || error.message || String(error));
-  });
-
-  return { consoleErrors, pageErrors };
-}
+import { watchPage } from './support/watch-page.mjs';
 
 // Waits for the signal published by src/topic8-testing.js under ?test=1.
 async function waitForSuite(page) {

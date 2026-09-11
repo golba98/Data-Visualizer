@@ -174,20 +174,42 @@ src/
   topic8-testing.js   Browser test harness
 data/                 Cleaned CSVs, grouped the same way as the charts
 scripts/              Survey export validation and its unit tests
-tests/browser/        Playwright spec that drives the browser suite
+tests/browser/        Playwright specs: the browser suite, chart sizes, and phones
 ```
 
 ## Testing
 
 ```bash
 npm run test:unit      # 31 data preprocessing tests (node --test)
-npm run test:browser   # the browser suite, driven by Playwright in Chromium
+npm run test:browser   # every Playwright spec below, desktop and phones
 npm test               # both; exits non-zero if anything fails
 ```
 
-`npm run test:browser` starts the dev server itself, opens `?test=1`, waits for the suite to
-finish, and fails if any test failed. Before the first run, install the browser with
-`npx playwright install chromium`.
+`npm run test:browser` starts the dev server itself and runs:
+
+| Spec | Runs on | Checks |
+|---|---|---|
+| `topic8-suite.spec.mjs` | Desktop Chrome | Opens `?test=1` and fails if any in-page test failed |
+| `chart-sizes.spec.mjs` | Desktop Chrome | Every chart at every size the layouts can give it (260-390px wide by 360-480px tall, 400-800px by 280-380px, and desktop): all canvas text drawn, inside the canvas, without overlaps |
+| `mobile-charts.spec.mjs` | 8 phones | Every chart: layout, canvas size, canvas text, annotations, controls, PNG/CSV downloads, About panel and data table, touch tooltips, rotation |
+| `mobile-sections.spec.mjs` | 8 phones | Overview cards and Back, the navigation drawer, every guided story step, comparison pickers |
+| `mobile-comparison.spec.mjs` | 8 phones | Both comparison panes show their chart at full height |
+
+The phones are iPhone SE (3rd gen), iPhone 15, iPhone 15 Pro Max and iPhone 15 in landscape on WebKit (the
+engine every iOS browser uses), and Galaxy S9+, Galaxy S24, Pixel 7 and Pixel 7 in landscape on
+Chromium. Each spec's layout checks fail on sideways scrolling, tap targets under 44px, clipped
+text and a canvas shown at a different size from the one it was drawn at. The canvas text checks
+wrap p5's text renderer to find overlapping, off-canvas and silently dropped text.
+
+Before the first run, install the browsers with `npx playwright install chromium webkit`. WebKit
+needs Ubuntu's libraries; on other Linux distributions run the suite in Playwright's image:
+
+```bash
+podman run --rm --network host --userns=keep-id --security-opt label=disable \
+  -v "$PWD":/work -w /work mcr.microsoft.com/playwright:v1.63.0-noble npx playwright test
+```
+
+Add `--project=iphone-15` (or any name in `playwright.config.mjs`) to run one device.
 
 The browser suite can also be run by hand: open `index.html?test=1` and read the console report.
 

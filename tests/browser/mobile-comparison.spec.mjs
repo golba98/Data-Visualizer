@@ -1,13 +1,5 @@
 import { expect, test } from '@playwright/test';
 
-// A phone-sized viewport, where the comparison panes stack in one column.
-test.use({
-  viewport: { width: 390, height: 664 },
-  deviceScaleFactor: 3,
-  isMobile: true,
-  hasTouch: true
-});
-
 const PAIR = ['za-gini-trend', 'za-dwelling-ownership-by-group'];
 
 test.describe('comparison view on a phone', () => {
