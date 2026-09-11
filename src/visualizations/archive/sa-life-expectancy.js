@@ -119,6 +119,10 @@ function SALifeExpectancy() {
       this.setup();
     }
 
+    // The insight sits above the plot, wrapped to the canvas, and the plot
+    // starts below it.
+    this.layout.topMargin = this.drawInsight() + 16;
+
     drawYAxisTickLabels(this.minLife,
                         this.maxLife,
                         this.layout,
@@ -133,7 +137,6 @@ function SALifeExpectancy() {
 
     this.drawYearLabels();
     this.drawSeriesLines();
-    this.drawInsight();
   };
 
   this.drawYearLabels = function() {
@@ -198,14 +201,13 @@ function SALifeExpectancy() {
     circle(this.mapYearToWidth(this.endYear), labelY, 7);
   };
 
+  // Returns the y below the insight.
   this.drawInsight = function() {
     fill(SATheme.textMuted);
     noStroke();
     chartTextSize(12);
-    textAlign('left', 'top');
-    text('Female life expectancy stays highest across the full period, and all three series recover strongly after the 2000s decline.',
-         this.layout.leftMargin,
-         this.layout.topMargin + 6);
+    return 18 + drawWrappedText('Female life expectancy stays highest across the full period, and all three series recover strongly after the 2000s decline.',
+                                24, 18, width - 48);
   };
   /* End - own code */
 
