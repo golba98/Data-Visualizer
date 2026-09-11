@@ -857,6 +857,7 @@ button {
 }
 
 .embedded-chart .main-content {
+  grid-template-rows: minmax(0, 1fr);
   height: 100vh;
   overflow: hidden;
   padding: 0;
@@ -881,8 +882,8 @@ button {
 }
 
 .embedded-chart .chart-container {
+  height: 100%;
   min-height: 0;
-  height: calc(100% - 86px);
 }
 
 .embedded-chart .chart-source {
@@ -1596,15 +1597,27 @@ summary:focus-visible,
     width: 100%;
   }
 
+  /* Phone panes stack in a scrolling column, so the embedded chart keeps its
+     own height instead of sharing the iframe's; gallery.js then grows the
+     iframe to fit. Fitting the chart into the iframe left it 0-20px tall
+     once the wrapped header buttons took their share. */
+  .embedded-chart .app-shell,
   .embedded-chart .main-content,
   .embedded-chart .chart-view,
   .embedded-chart .chart-layout,
   .embedded-chart .chart-card {
-    height: 100%;
+    height: auto;
   }
 
+  .embedded-chart .main-content {
+    overflow: visible;
+  }
+
+  /* Width-based only: a height-based size would feed back into the iframe
+     height that is measured from it. */
   .embedded-chart .chart-container {
-    height: calc(100% - 145px);
+    height: clamp(360px, 125vw, 480px);
+    min-height: 320px;
   }
 }
 
