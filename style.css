@@ -117,6 +117,12 @@ button {
   min-height: 240px;
 }
 
+/* The story card has one row; the phone layout's grid-row: 2 for the chart
+   would put it in an implicit row sized to the canvas, stuck at 240px. */
+.main-content.tour-active .chart-card > .chart-container {
+  grid-row: 1;
+}
+
 .app-shell.story-mode {
   grid-template-columns: minmax(0, 1fr);
   height: 100dvh;
@@ -1644,27 +1650,50 @@ summary:focus-visible,
 
   /* The story cannot scroll the chart into view without hiding the
      buttons, so its text and buttons sit beside the chart instead. */
+  /* A definite height, so the chart column's 100% resolves to the screen
+     rather than falling back to the canvas's own size. */
   .main-content.tour-active {
-    grid-template-columns: minmax(11rem, 32%) minmax(0, 1fr);
+    grid-template-columns: minmax(11rem, 36%) minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr) auto;
+    height: 100dvh;
     overflow: hidden;
   }
 
+  /* The source goes under the text too, so the chart has the full height. */
   .main-content.tour-active .tour-view {
     grid-column: 1;
-    grid-row: 1 / span 2;
+    grid-row: 1;
     overflow-y: auto;
   }
 
   .main-content.tour-active .chart-view {
     grid-column: 2;
-    grid-row: 1;
+    grid-row: 1 / span 2;
     min-height: 0;
   }
 
   .main-content.tour-active .tour-footer {
-    grid-column: 2;
+    grid-column: 1;
     grid-row: 2;
+  }
+
+  /* The buttons stay visible at the bottom of the text column; on the
+     shortest screens the story text scrolls above them. */
+  .main-content.tour-active .tour-actions {
+    background: var(--bg-card);
+    bottom: 0;
+    padding-block: 0.4rem 0.1rem;
+    position: sticky;
+  }
+
+  .story-mode .tour-actions button {
+    font-size: 0.72rem;
+    min-width: 44px;
+    padding: 0 0.55rem;
+  }
+
+  .story-mode .tour-footer .tour-source {
+    font-size: 0.7rem;
   }
 
   .main-content.tour-active .chart-view,
