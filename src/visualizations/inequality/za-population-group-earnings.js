@@ -61,67 +61,96 @@ function ZAPopulationGroupEarnings() {
       this.setup();
     }
 
-    // Stacked from measured text: the rows take the space between the title
-    // block and the footnote.
+    var layout = this.getRowLayout();
     background(SATheme.bg);
-    var top = this.drawTitle();
-    var bottom = this.drawFootnote();
+    this.drawHeading(true);
+    chartFootnote(isPhoneChart() ? this.phoneNote : this.note, isPhoneChart() ? 10 : 11, true);
 
     if (isPhoneChart()) {
-      this.drawPhoneChart(top + 12, bottom - 12);
+      this.drawPhoneChart(layout);
     } else {
-      this.drawChart(top + 30, bottom - 12);
+      this.drawChart(layout);
     }
   };
+
+  this.note = 'Note: earnings are not wealth. This chart shows labour-market earnings by official population group. Colour only highlights the highest-earning group; it does not encode a second value.';
+  this.phoneNote = 'Note: earnings are not wealth. This chart shows labour-market earnings by official population group.';
 
   // The "highest shown mean" badge sits top-right on wide canvases.
   this.showsBadge = function() {
     return !isCompactChart() && annotationsAreVisible();
   };
 
-  // Returns the y below the title block.
-  this.drawTitle = function() {
-    var blockWidth = this.showsBadge() ? width - 268 : width - 48;
-    fill(SATheme.text);
-    noStroke();
-    textStyle(BOLD);
-    chartTextSize(isPhoneChart() ? 13 : 17);
-    var y = 18 + drawWrappedText('Population share compared with mean earnings', 24, 18, blockWidth);
-
-    textStyle(NORMAL);
-    chartTextSize(12);
-    fill(SATheme.textMuted);
-    y += 6;
-    return y + drawWrappedText('Official population-group categories are compared with Stats SA mean monthly real earnings for 2011-2015.',
-                               24, y, blockWidth);
+  // Lays out (and, when draw is true, draws) the title block; returns its
+  // bottom.
+  this.drawHeading = function(draw) {
+    return chartHeading('Population share compared with mean earnings',
+                        'Official population-group categories are compared with Stats SA mean monthly real earnings for 2011-2015.',
+                        this.showsBadge() ? width - 268 : width - 48, draw);
   };
 
-  // Draws the note against the bottom edge and returns its top.
-  this.drawFootnote = function() {
-    var note = isPhoneChart()
-      ? 'Note: earnings are not wealth. This chart shows labour-market earnings by official population group.'
-      : 'Note: earnings are not wealth. This chart shows labour-market earnings by official population group. Colour only highlights the highest-earning group; it does not encode a second value.';
-    noStroke();
-    fill(SATheme.textMuted);
-    textStyle(NORMAL);
-    chartTextSize(isPhoneChart() ? 10 : 11);
-    var top = height - 14 - wrappedTextHeight(note, width - 48);
-    drawWrappedText(note, 24, top, width - 48);
-    return top;
+  this.phoneKey = function() {
+    return [
+      { label: 'Population share', colour: SATheme.blueTint },
+      { label: 'Mean monthly earnings (highest in red)', colour: SATheme.green }
+    ];
   };
 
-  this.drawChart = function(top, bottom) {
+  // Row geometry, stacked from measured text: the rows take the space between
+  // the title block and the footnote. On phones each row is a pair of slim
+  // bars under a colour key; wide canvases have one bar per column. draw()
+  // uses these numbers, and the phone layout tests check them.
+  this.getRowLayout = function() {
+    var phone = isPhoneChart();
+    var headingBottom = this.drawHeading(false);
+    var footnoteTop = chartFootnote(phone ? this.phoneNote : this.note, phone ? 10 : 11, false);
+    var rowCount = Math.max(1, this.rows.length);
+
+    if (phone) {
+      var pairHeight = 23;
+      var keyTop = headingBottom + 12;
+      // drawColourKey gives each item a 20px row.
+      var phoneTop = keyTop + (this.phoneKey().length * 20) + 10;
+      var phoneBottom = footnoteTop - 12;
+      return {
+        top: phoneTop,
+        step: rowCount > 1
+          ? constrain((phoneBottom - phoneTop - pairHeight) / (rowCount - 1), pairHeight + 6, 64)
+          : 0,
+        rowHeight: pairHeight,
+        rowCount: rowCount,
+        rowsBottom: phoneBottom,
+        footnoteTop: footnoteTop,
+        keyTop: keyTop
+      };
+    }
+
+    var compact = isCompactChart();
+    var barThick = compact ? 16 : 20;
+    var top = headingBottom + 30;
+    var rowsBottom = footnoteTop - 12 - 34;
+    var step = rowCount > 1
+      ? constrain((rowsBottom - barThick - top) / (rowCount - 1), barThick + 8, compact ? 58 : 70)
+      : 0;
+    return {
+      top: top,
+      step: step,
+      rowHeight: barThick,
+      rowCount: rowCount,
+      rowsBottom: rowsBottom,
+      footnoteTop: footnoteTop,
+      barsBottom: top + (step * (rowCount - 1)) + barThick
+    };
+  };
+
+  this.drawChart = function(layout) {
     var compact = isCompactChart();
     var leftEdge = compact ? 106 : 150;
     var rightEdge = width - (compact ? 58 : 52);
-    var startTop = top;
-    var barThick = compact ? 16 : 20;
-    var axisSpace = 34;
-    var rowCount = Math.max(1, this.rows.length);
-    var rowSpacing = rowCount > 1
-      ? constrain((bottom - axisSpace - barThick - startTop) / (rowCount - 1), barThick + 8, compact ? 58 : 70)
-      : 0;
-    var barsBottom = startTop + (rowSpacing * (rowCount - 1)) + barThick;
+    var startTop = layout.top;
+    var barThick = layout.rowHeight;
+    var rowSpacing = layout.step;
+    var barsBottom = layout.barsBottom;
     var shareColWidth = (rightEdge - leftEdge) * (compact ? 0.25 : 0.28);
     var earningsColLeft = leftEdge + shareColWidth + (compact ? 34 : 54);
     var earningsColWidth = rightEdge - earningsColLeft;
@@ -191,23 +220,17 @@ function ZAPopulationGroupEarnings() {
 
   // Phones: a key, then two slim bars per group with their values at the
   // bar ends. Each bar's full-width band is its tap target.
-  this.drawPhoneChart = function(top, bottom) {
+  this.drawPhoneChart = function(layout) {
     var left = 96;
     var right = width - 24;
     var barSpan = right - left - 48;
     var barHeight = 9;
-    var pairHeight = 23;
+    var pairHeight = layout.rowHeight;
     var maxEarnings = 26000;
 
-    var key = drawColourKey(24, top, [
-      { label: 'Population share', colour: SATheme.blueTint },
-      { label: 'Mean monthly earnings (highest in red)', colour: SATheme.green }
-    ]);
-    var rowsTop = top + key.height + 10;
-    var rowCount = Math.max(1, this.rows.length);
-    var rowGap = rowCount > 1
-      ? constrain((bottom - rowsTop - pairHeight) / (rowCount - 1), pairHeight + 6, 64)
-      : 0;
+    drawColourKey(24, layout.keyTop, this.phoneKey());
+    var rowsTop = layout.top;
+    var rowGap = layout.step;
 
     for (var i = 0; i < this.rows.length; i++) {
       var row = this.rows[i];

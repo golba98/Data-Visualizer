@@ -7,6 +7,10 @@ const BASE_URL = `http://${HOST}:${PORT}`;
 
 const isCI = !!process.env.CI;
 
+// Specs that run once per phone project. mobile-layout.spec.mjs sets its own
+// phone viewports, so it runs once, in the desktop project.
+const PHONE_SPECS = /mobile-(charts|sections|comparison)\.spec\.mjs/;
+
 export default defineConfig({
   testDir: './tests/browser',
 
@@ -33,7 +37,7 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      testIgnore: /mobile-.*\.spec\.mjs/,
+      testIgnore: PHONE_SPECS,
       use: { ...devices['Desktop Chrome'] }
     },
     // Every iOS browser runs on WebKit and Android Chrome/Samsung Internet on
@@ -52,7 +56,7 @@ export default defineConfig({
       ['pixel-7-landscape', 'Pixel 7 landscape']
     ].map(([name, device]) => ({
       name,
-      testMatch: /mobile-.*\.spec\.mjs/,
+      testMatch: PHONE_SPECS,
       use: { ...devices[device] }
     }))
   ],

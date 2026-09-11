@@ -205,8 +205,10 @@ function SurveyFoodTransportBurden() {
     fill(SATheme.text);
     text('Transport cost', gridLeft + (gridW / 2), height - 20);
 
+    // Compact charts sit the axis title nearer the edge, clear of the widest
+    // food band label.
     push();
-    translate(24, gridTop + (gridH / 2));
+    translate(isCompact ? 12 : 24, gridTop + (gridH / 2));
     rotate(-HALF_PI);
     text('Food cost', 0, 0);
     pop();

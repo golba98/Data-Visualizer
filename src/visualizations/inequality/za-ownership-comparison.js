@@ -79,9 +79,9 @@ function ZAOwnershipComparison() {
     this.rows[1].colour = SATheme.green;
     this.rows[2].colour = SATheme.red;
 
-    // The rows take the space below the measured title block.
+    var bars = this.getRowLayout();
     background(SATheme.bg);
-    var bars = this.getBarLayout(this.drawTitle() + 36, height - 12);
+    this.drawHeading(true);
     this.drawAnnotations(bars);
     this.drawBars(bars);
   };
@@ -91,35 +91,31 @@ function ZAOwnershipComparison() {
     return !isCompactChart() && annotationsAreVisible();
   };
 
-  // Returns the y below the title block.
-  this.drawTitle = function() {
-    var blockWidth = this.showsBadge() ? width - 248 : width - 48;
-    fill(SATheme.text);
-    noStroke();
-    textStyle(BOLD);
-    chartTextSize(isPhoneChart() ? 13 : 17);
-    var y = 18 + drawWrappedText('Population size compared with resource share', 24, 18, blockWidth);
-
-    textStyle(NORMAL);
-    chartTextSize(12);
-    fill(SATheme.textMuted);
-    y += 6;
-    return y + drawWrappedText('The same top 10 percent income-ranked reference group is compared with latest available income and wealth shares.',
-                               24, y, blockWidth);
+  // Lays out (and, when draw is true, draws) the title block; returns its
+  // bottom.
+  this.drawHeading = function(draw) {
+    return chartHeading('Population size compared with resource share',
+                        'The same top 10 percent income-ranked reference group is compared with latest available income and wealth shares.',
+                        this.showsBadge() ? width - 248 : width - 48, draw);
   };
 
-  // Row geometry between top and bottom. With room, each bar keeps its
-  // source note underneath; when space is short the notes are left to the
-  // tooltip and the rows tighten to fit.
-  this.getBarLayout = function(top, bottom) {
+  // Row geometry below the measured title block. With room, each bar keeps
+  // its source note underneath; when space is short the notes are left to
+  // the tooltip and the rows tighten to fit. draw() uses these numbers, and
+  // the phone layout tests check them. The chart has no footnote, so the
+  // bottom margin stands in for it.
+  this.getRowLayout = function() {
     var isPhone = isPhoneChart();
     var isCompact = isCompactChart();
     var axisSpace = 40;
+    var top = this.drawHeading(false) + 36;
+    var footnoteTop = height - 12;
+    var rowsBottom = footnoteTop - axisSpace;
     var rowCount = Math.max(1, this.rows.length);
-    var available = bottom - axisSpace - top;
+    var available = rowsBottom - top;
     var rowHeight = isCompact ? 34 : 42;
     var noteSpace = 26;
-    var showNotes = available >= rowCount * (rowHeight + noteSpace);
+    var showNotes = available >= (rowCount * (rowHeight + noteSpace)) + ((rowCount - 1) * 6);
 
     if (!showNotes) {
       rowHeight = constrain(available / rowCount * 0.7, 16, rowHeight);
@@ -129,16 +125,21 @@ function ZAOwnershipComparison() {
     var rowStride = rowCount > 1
       ? Math.min(isCompact ? 68 : 82, (available - rowHeight - noteSpace) / (rowCount - 1))
       : 0;
-    rowStride = Math.max(rowStride, rowHeight + noteSpace + 6);
 
     return {
+      top: top,
+      step: rowStride,
+      rowHeight: rowHeight + noteSpace,
+      rowCount: rowCount,
+      rowsBottom: rowsBottom,
+      footnoteTop: footnoteTop,
       leftEdge: isPhone ? 110 : (isCompact ? 136 : 190),
       rightEdge: width - (isPhone ? 36 : 48),
       startY: top,
-      rowHeight: rowHeight,
+      barHeight: rowHeight,
       rowStride: rowStride,
       showNotes: showNotes,
-      rowsBottom: top + (rowStride * (rowCount - 1)) + rowHeight + noteSpace
+      contentBottom: top + (rowStride * (rowCount - 1)) + rowHeight + noteSpace
     };
   };
 
@@ -149,7 +150,7 @@ function ZAOwnershipComparison() {
     stroke(SATheme.blue);
     strokeWeight(1.5);
     drawingContext.setLineDash([5, 4]);
-    line(referenceX, bars.startY - 18, referenceX, bars.rowsBottom);
+    line(referenceX, bars.startY - 18, referenceX, bars.contentBottom);
     drawingContext.setLineDash([]);
     pop();
 
@@ -170,7 +171,7 @@ function ZAOwnershipComparison() {
     var leftEdge = bars.leftEdge;
     var rightEdge = bars.rightEdge;
     var startY = bars.startY;
-    var rowHeight = bars.rowHeight;
+    var rowHeight = bars.barHeight;
     var rowStride = bars.rowStride;
     var plotWidth = rightEdge - leftEdge;
 
@@ -179,12 +180,12 @@ function ZAOwnershipComparison() {
     var stepSize = isPhone ? 50 : 25;
     for (var mark = 0; mark <= 100; mark += stepSize) {
       var gridX = map(mark, 0, 100, leftEdge, rightEdge);
-      line(gridX, startY - 18, gridX, bars.rowsBottom);
+      line(gridX, startY - 18, gridX, bars.contentBottom);
       noStroke();
       fill(SATheme.textMuted);
       chartTextSize(isPhone ? 9 : 11);
       textAlign(CENTER, TOP);
-      text(mark + '%', gridX, bars.rowsBottom + 8);
+      text(mark + '%', gridX, bars.contentBottom + 8);
       stroke(SATheme.grid);
     }
 

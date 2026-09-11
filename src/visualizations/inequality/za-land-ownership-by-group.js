@@ -44,55 +44,36 @@ function ZALandOwnershipByGroup() {
       this.setup();
     }
 
-    // Stacked from measured text: the bars take the space between the title
-    // block (plus a row for the annotation badge) and the footnote.
+    var bars = this.getRowLayout();
     background(SATheme.bg);
-    var badgeRow = isPhoneChart() ? 34 : 50;
-    var top = this.drawTitle() + (annotationsAreVisible() ? badgeRow : 22);
-    var bottom = this.drawFootnote() - 12;
-    var bars = this.getBarLayout(top, bottom);
+    chartHeading(this.title, this.subtitle, width - 48, true);
+    chartFootnote(this.limitation, 11, true);
     this.drawAnnotations(bars);
     this.drawBars(bars);
   };
 
-  // Returns the y below the title block.
-  this.drawTitle = function() {
-    fill(SATheme.text);
-    noStroke();
-    textStyle(BOLD);
-    chartTextSize(isPhoneChart() ? 13 : 17);
-    var y = 18 + drawWrappedText('Agricultural land ownership by population group', 24, 18, width - 48);
+  this.title = 'Agricultural land ownership by population group';
+  this.subtitle = '2017 Land Audit shares for farms and agricultural holdings owned by individual landowners.';
+  this.limitation = 'Limitation: this is a land-audit measure for individually owned farms/agricultural holdings, not all homes or all wealth. Colour only highlights the largest holder; it does not encode a second value.';
 
-    textStyle(NORMAL);
-    chartTextSize(12);
-    fill(SATheme.textMuted);
-    y += 6;
-    return y + drawWrappedText('2017 Land Audit shares for farms and agricultural holdings owned by individual landowners.',
-                               24, y, width - 48);
-  };
-
-  // Draws the limitation note against the bottom edge and returns its top.
-  this.drawFootnote = function() {
-    var note = 'Limitation: this is a land-audit measure for individually owned farms/agricultural holdings, not all homes or all wealth. Colour only highlights the largest holder; it does not encode a second value.';
-    noStroke();
-    fill(SATheme.textMuted);
-    textStyle(NORMAL);
-    chartTextSize(11);
-    var top = height - 14 - wrappedTextHeight(note, width - 48);
-    drawWrappedText(note, 24, top, width - 48);
-    return top;
-  };
-
-  // Row geometry for bars between top and bottom. With room, each bar keeps
-  // its hectares label underneath; when space is short the labels are left
-  // to the tooltip and data table and the bars tighten to fit.
-  this.getBarLayout = function(top, bottom) {
+  // Row geometry, stacked from measured text: the rows take the space between
+  // the title block (plus a row for the annotation badge) and the footnote.
+  // With room, each bar keeps its hectares label underneath; when space is
+  // short the labels are left to the tooltip and data table and the bars
+  // tighten to fit. draw() uses these numbers, and the phone layout tests
+  // check them.
+  this.getRowLayout = function() {
     var isCompact = isCompactChart();
+    var badgeRow = isPhoneChart() ? 34 : 50;
+    var top = chartHeading(this.title, this.subtitle, width - 48, false)
+      + (annotationsAreVisible() ? badgeRow : 22);
+    var footnoteTop = chartFootnote(this.limitation, 11, false);
     var labelGap = isCompact ? 8 : 12;
     var labelHeight = isCompact ? 12 : 13;
     var axisSpace = isPhoneChart() ? 0 : 26;
+    var rowsBottom = footnoteTop - 12 - axisSpace;
     var rowCount = Math.max(1, this.rows.length);
-    var available = bottom - axisSpace - top;
+    var available = rowsBottom - top;
     var barThick = isCompact ? 24 : 30;
     var rowContent = barThick + labelGap + labelHeight;
     var showHectares = available >= rowCount * rowContent + (rowCount - 1) * 8;
@@ -108,6 +89,12 @@ function ZALandOwnershipByGroup() {
     var barsBottom = top + (stepGap * (rowCount - 1)) + barThick;
 
     return {
+      top: top,
+      step: stepGap,
+      rowHeight: rowContent,
+      rowCount: rowCount,
+      rowsBottom: rowsBottom,
+      footnoteTop: footnoteTop,
       xStart: isCompact ? 98 : 142,
       xEnd: width - 54,
       yStart: top,

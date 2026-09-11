@@ -317,6 +317,39 @@ function drawWrappedText(str, x, y, maxWidth) {
   return wrappedTextHeight(str, maxWidth);
 }
 
+// Lays out a chart's title and subtitle from the top-left and returns the y
+// below them, drawing them only when draw is true. Measuring and drawing
+// share this code, so a chart's getRowLayout() and draw() cannot disagree.
+function chartHeading(title, subtitle, blockWidth, draw) {
+  push();
+  noStroke();
+  fill(SATheme.text);
+  textStyle(BOLD);
+  chartTextSize(isPhoneChart() ? 13 : 17);
+  var y = 18 + (draw ? drawWrappedText(title, 24, 18, blockWidth) : wrappedTextHeight(title, blockWidth)) + 6;
+
+  textStyle(NORMAL);
+  chartTextSize(12);
+  fill(SATheme.textMuted);
+  y += draw ? drawWrappedText(subtitle, 24, y, blockWidth) : wrappedTextHeight(subtitle, blockWidth);
+  pop();
+  return y;
+}
+
+// Lays out a muted note against the bottom edge and returns its top, drawing
+// it only when draw is true.
+function chartFootnote(note, size, draw) {
+  push();
+  noStroke();
+  fill(SATheme.textMuted);
+  textStyle(NORMAL);
+  chartTextSize(size);
+  var top = height - 14 - wrappedTextHeight(note, width - 48);
+  if (draw) drawWrappedText(note, 24, top, width - 48);
+  pop();
+  return top;
+}
+
 
 /* End - own code */
 

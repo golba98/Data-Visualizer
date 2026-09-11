@@ -194,10 +194,11 @@ npm test               # both; exits non-zero if anything fails
 | `mobile-charts.spec.mjs` | 8 phones | Every chart: layout, canvas size, canvas text, annotations, controls, PNG/CSV downloads, About panel and data table, touch tooltips, rotation |
 | `mobile-sections.spec.mjs` | 8 phones | Overview cards and Back, the navigation drawer, every guided story step, comparison pickers |
 | `mobile-comparison.spec.mjs` | 8 phones | Both comparison panes show their chart at full height |
+| `mobile-layout.spec.mjs` | 4 phone sizes (sets its own) | Every story step fills the screen and gives its chart at least 380px (300px in landscape); the row charts' `getRowLayout()` keeps rows clear of each other and of the footnote |
 
-The phones are iPhone SE (3rd gen), iPhone 15, iPhone 15 Pro Max and iPhone 15 in landscape on WebKit (the
-engine every iOS browser uses), and Galaxy S9+, Galaxy S24, Pixel 7 and Pixel 7 in landscape on
-Chromium. Each spec's layout checks fail on sideways scrolling, tap targets under 44px, clipped
+The 8 phones are iPhone SE (3rd gen), iPhone 15, iPhone 15 Pro Max and iPhone 15 in landscape
+on WebKit (the engine every iOS browser uses), and Galaxy S9+, Galaxy S24, Pixel 7 and Pixel 7 in
+landscape on Chromium. Each spec's layout checks fail on sideways scrolling, tap targets under 44px, clipped
 text and a canvas shown at a different size from the one it was drawn at. The canvas text checks
 wrap p5's text renderer to find overlapping, off-canvas and silently dropped text.
 
