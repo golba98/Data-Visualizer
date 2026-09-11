@@ -280,6 +280,43 @@ function chartTextSize(size) {
   textSize(Math.max(CHART_MIN_TEXT_SIZE, size));
 }
 
+// Counts the lines text(str, x, y, maxWidth) wraps str onto at the current
+// text size, using p5's own word-wrapping rule.
+function countWrappedLines(str, maxWidth) {
+  var paragraphs = String(str).split('\n');
+  var count = 0;
+
+  for (var p = 0; p < paragraphs.length; p++) {
+    var words = paragraphs[p].split(' ');
+    var line = '';
+    count += 1;
+    for (var i = 0; i < words.length; i++) {
+      var candidate = line + words[i] + ' ';
+      if (textWidth(candidate) > maxWidth && line.length > 0) {
+        count += 1;
+        line = words[i] + ' ';
+      } else {
+        line = candidate;
+      }
+    }
+  }
+  return count;
+}
+
+function wrappedTextHeight(str, maxWidth) {
+  return countWrappedLines(str, maxWidth) * textLeading();
+}
+
+// Draws str wrapped to maxWidth with its first line's top at y and returns
+// the height it used, so the next block can be stacked below it. Unlike a
+// fixed text box, no line is ever dropped when the text wraps further than
+// expected on a narrow canvas.
+function drawWrappedText(str, x, y, maxWidth) {
+  textAlign(LEFT, TOP);
+  text(str, x, y, maxWidth);
+  return wrappedTextHeight(str, maxWidth);
+}
+
 
 /* End - own code */
 
