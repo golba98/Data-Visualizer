@@ -8,16 +8,18 @@ var chartLoopStartedAt = 0;
 
 /* Start - own code */
 
-// Finds the best canvas size
+// Finds the best canvas size. Once the container is visible, use its exact
+// dimensions: minimums larger than the box make CSS scale the canvas and blur
+// or squash everything drawn into it.
 function getChartCanvasSize() {
   var container = document.getElementById('chart-container');
-  var targetWidth = 0;
-  var targetHeight = 0;
+  var targetWidth;
+  var targetHeight;
 
   if (container && container.clientWidth > 0) {
     targetWidth = container.clientWidth;
   } else if (typeof windowWidth !== 'undefined') {
-    targetWidth = windowWidth < 820 ? (windowWidth - 40) : (windowWidth - 320);
+    targetWidth = Math.max(280, windowWidth < 820 ? (windowWidth - 40) : (windowWidth - 320));
   } else {
     targetWidth = 800;
   }
@@ -25,15 +27,29 @@ function getChartCanvasSize() {
   if (container && container.clientHeight > 0) {
     targetHeight = container.clientHeight;
   } else if (typeof windowHeight !== 'undefined') {
-    targetHeight = windowHeight - 140;
+    targetHeight = Math.max(240, windowHeight - 140);
   } else {
     targetHeight = 500;
   }
 
   return {
-    width: Math.max(280, Math.floor(targetWidth)),
-    height: Math.max(240, Math.floor(targetHeight))
+    width: Math.floor(targetWidth),
+    height: Math.floor(targetHeight)
   };
+}
+
+// Grid tracks can settle after the first frame, especially inside comparison
+// iframes. Keep the p5 drawing surface matched to the box it is actually shown
+// in instead of relying only on top-level window resize events.
+function watchChartContainer() {
+  var container = document.getElementById('chart-container');
+  if (!container || typeof ResizeObserver === 'undefined') return;
+
+  new ResizeObserver(function() {
+    if (container.clientWidth !== width || container.clientHeight !== height) {
+      queueChartResize();
+    }
+  }).observe(container);
 }
 
 // Resizes and redraws the chart
@@ -148,6 +164,7 @@ function setup() {
   var size = getChartCanvasSize();
   chartCanvas = createCanvas(size.width, size.height);
   chartCanvas.parent('chart-container');
+  watchChartContainer();
 
   if (typeof DataProvenance !== 'undefined') {
     DataProvenance.load();

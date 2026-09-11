@@ -857,6 +857,7 @@ button {
 }
 
 .embedded-chart .main-content {
+  grid-template-rows: minmax(0, 1fr);
   height: 100vh;
   overflow: hidden;
   padding: 0;
@@ -881,8 +882,8 @@ button {
 }
 
 .embedded-chart .chart-container {
+  height: 100%;
   min-height: 0;
-  height: calc(100% - 86px);
 }
 
 .embedded-chart .chart-source {
