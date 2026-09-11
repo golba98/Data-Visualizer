@@ -583,16 +583,28 @@ function annotationsAreVisible() {
       || gallery.annotationsEnabled !== false;
 }
 
-function drawAnnotationBadge(label, detail, x, y, colour) {
+function drawAnnotationBadge(label, detail, x, y, colour, occupiedBounds) {
   if (!annotationsAreVisible()) return;
 
   var main = String(label || '');
   var secondary = detail ? String(detail) : '';
+  push();
   chartTextSize(11);
-  var boxWidth = Math.max(textWidth(main), secondary ? textWidth(secondary) : 0) + 22;
+  textStyle(BOLD);
+  var mainWidth = textWidth(main);
+  textStyle(NORMAL);
+  chartTextSize(10);
+  var boxWidth = Math.max(mainWidth, secondary ? textWidth(secondary) : 0) + 22;
+  pop();
   var boxHeight = secondary ? 36 : 24;
   var boxX = Math.max(6, Math.min(x, width - boxWidth - 6));
   var boxY = Math.max(6, Math.min(y, height - boxHeight - 6));
+  if (occupiedBounds && boxX < occupiedBounds.x + occupiedBounds.width + 6
+      && boxX + boxWidth + 6 > occupiedBounds.x
+      && boxY < occupiedBounds.y + occupiedBounds.height + 6
+      && boxY + boxHeight + 6 > occupiedBounds.y) {
+    boxY = occupiedBounds.y + occupiedBounds.height + 6;
+  }
 
   push();
   stroke(colour || color(255, 255, 255, 160));
@@ -603,6 +615,7 @@ function drawAnnotationBadge(label, detail, x, y, colour) {
   fill(255, 255, 255);
   textAlign(LEFT, TOP);
   textStyle(BOLD);
+  chartTextSize(11);
   text(main, boxX + 10, boxY + 6);
   if (secondary) {
     textStyle(NORMAL);
@@ -611,6 +624,7 @@ function drawAnnotationBadge(label, detail, x, y, colour) {
     text(secondary, boxX + 10, boxY + 20);
   }
   pop();
+  return { x: boxX, y: boxY, width: boxWidth, height: boxHeight };
 }
 
 function drawVerticalReferenceLine(x, top, bottom, colour) {
@@ -625,11 +639,11 @@ function drawVerticalReferenceLine(x, top, bottom, colour) {
   pop();
 }
 
-function drawVerticalAnnotation(x, label, detail, top, bottom, colour, badgeYOffset) {
+function drawVerticalAnnotation(x, label, detail, top, bottom, colour, badgeYOffset, occupiedBounds) {
   if (!annotationsAreVisible()) return;
 
   drawVerticalReferenceLine(x, top, bottom, colour);
-  drawAnnotationBadge(label, detail, x + 7, top + 4 + (badgeYOffset || 0), colour);
+  return drawAnnotationBadge(label, detail, x + 7, top + 4 + (badgeYOffset || 0), colour, occupiedBounds);
 }
 
 function drawHorizontalReferenceLine(y, left, right, colour) {

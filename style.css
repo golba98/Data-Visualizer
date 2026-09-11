@@ -564,6 +564,8 @@ button {
 }
 
 .comparison-view {
+  min-height: 0;
+  overflow-y: auto;
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   background: var(--bg-card);
@@ -843,7 +845,7 @@ button {
 
 .embedded-chart .app-shell {
   display: block;
-  height: 100vh;
+  height: auto;
 }
 
 .embedded-chart .sidebar,
@@ -858,15 +860,15 @@ button {
 
 .embedded-chart .main-content {
   grid-template-rows: minmax(0, 1fr);
-  height: 100vh;
-  overflow: hidden;
+  height: auto;
+  overflow: visible;
   padding: 0;
 }
 
 .embedded-chart .chart-view,
 .embedded-chart .chart-layout,
 .embedded-chart .chart-card {
-  height: 100%;
+  height: auto;
 }
 
 .embedded-chart .chart-card {
@@ -882,7 +884,8 @@ button {
 }
 
 .embedded-chart .chart-container {
-  height: 100%;
+  /* Independent of iframe height, which follows the complete card. */
+  height: clamp(360px, 62.5vw, 520px);
   min-height: 0;
 }
 
@@ -1579,6 +1582,10 @@ summary:focus-visible,
 
   .comparison-panes {
     grid-template-columns: 1fr;
+  }
+
+  .comparison-view {
+    overflow: visible;
   }
 
   .comparison-pane iframe {
