@@ -309,7 +309,10 @@ function sliceRowNumbers (row, start=0, end) {
     end = row.arr.length;
   }
 
+  // Template loop. var added so i is not a global.
+  /* Start - own code */
   for (var i = start; i < end; i++) {
+  /* End - own code */
     rowData.push(row.getNum(i));
   }
 

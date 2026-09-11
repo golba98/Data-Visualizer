@@ -17,22 +17,28 @@ function ZAPovertyContext() {
   ];
   this.colours = [SATheme.blue, SATheme.gold, SATheme.red];
   /* End - own code */
-  // Template: axis labels and layout object.
+  // Template: axis labels and layout object. Changed values are marked.
   this.xAxisLabel = 'year';
   this.yAxisLabel = '%';
 
+  /* Start - own code */
   var marginSize = 42;
   var rightPadding = 70;
   var bottomPadding = 84;
+  /* End - own code */
 
   this.layout = {
     marginSize: marginSize,
+    /* Start - own code */
     rightPadding: rightPadding,
     bottomPadding: bottomPadding,
+    /* End - own code */
     leftMargin: marginSize * 2,
+    /* Start - own code */
     rightMargin: width - rightPadding,
     topMargin: 154,
     bottomMargin: height - bottomPadding,
+    /* End - own code */
     pad: 5,
     plotWidth: function() {
       return this.rightMargin - this.leftMargin;
@@ -41,8 +47,10 @@ function ZAPovertyContext() {
       return this.bottomMargin - this.topMargin;
     },
     grid: true,
+    /* Start - own code */
     numXTickLabels: 5,
     numYTickLabels: 8
+    /* End - own code */
   };
 
   // Based on the template's preload().

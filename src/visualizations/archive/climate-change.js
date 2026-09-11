@@ -1,11 +1,17 @@
 // Draws the temperature anomaly trend
 function ClimateChange() {
 
+  // Template: the menu name, changed.
+  /* Start - own code */
   this.name = 'Global temperature anomaly';
+  /* End - own code */
   this.id = 'climate-change';
 
   this.xAxisLabel = 'year';
+  // Template: the y-axis label, changed.
+  /* Start - own code */
   this.yAxisLabel = '°C';
+  /* End - own code */
 
   var marginSize = 35;
 
@@ -271,7 +277,10 @@ function ClimateChange() {
                this.layout.rightMargin);
   };
 
+  // Template: mapTemperatureToHeight(), renamed.
+  /* Start - own code */
   this.mapValueToHeight = function(value) {
+  /* End - own code */
     return map(value,
                this.minTemperature,
                this.maxTemperature,

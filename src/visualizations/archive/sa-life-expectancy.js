@@ -8,9 +8,11 @@ function SALifeExpectancy() {
   this.id = 'sa-life-expectancy';
 
 /* End - own code */
-  // Template: axis labels and layout object.
+  // Template: axis labels and layout object. Changed values are marked.
   this.xAxisLabel = 'year';
+  /* Start - own code */
   this.yAxisLabel = 'years';
+  /* End - own code */
 
   var marginSize = 35;
 
@@ -30,8 +32,10 @@ function SALifeExpectancy() {
       return this.bottomMargin - this.topMargin;
     },
 
+    /* Start - own code */
     grid: true,
     numXTickLabels: 9,
+    /* End - own code */
     numYTickLabels: 8,
   };
 /* Start - own code */
