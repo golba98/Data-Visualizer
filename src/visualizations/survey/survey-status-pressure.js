@@ -70,38 +70,40 @@ function SurveyStatusPressure() {
       this.countPressures();
     }
 
+    // The bars take the space between the measured title and the legend.
     this.colours = SATheme.pressure;
     background(SATheme.bg);
-    this.drawTitle();
-    this.drawStackedBars();
-    this.drawLegend();
+    var top = this.drawTitle() + 14;
+    var legendTop = this.drawLegend();
+    this.drawStackedBars(top, legendTop - 14);
   };
 
+  // Returns the y below the title block.
   this.drawTitle = function() {
     noStroke();
     fill(SATheme.text);
-    textAlign(LEFT, TOP);
     textStyle(BOLD);
     chartTextSize(isPhoneChart() ? 13 : 17);
-    text('Who feels which pressure most?', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
+    var y = 18 + drawWrappedText('Who feels which pressure most?', 24, 18, width - 48);
 
     textStyle(NORMAL);
     chartTextSize(12);
     fill(SATheme.textMuted);
-    text(SurveyData.chartLabel,
-         24,
-         isPhoneChart() ? 54 : 44,
-         width - 48,
-         isPhoneChart() ? 46 : 32);
+    y += 6;
+    return y + drawWrappedText(SurveyData.chartLabel, 24, y, width - 48);
   };
 
-  this.drawStackedBars = function() {
+  this.drawStackedBars = function(top, bottom) {
     var isCompact = isCompactChart();
     var barLeft = isCompact ? 118 : 174;
     var barRight = width - (isCompact ? 46 : 56);
-    var originY = 112;
-    var barHeight = isCompact ? 28 : 34;
-    var rowStride = isCompact ? 42 : 54;
+    var originY = top;
+    var rowCount = Math.max(1, this.statuses.length);
+    var available = bottom - top;
+    var barHeight = constrain(available / rowCount * 0.68, 16, isCompact ? 28 : 34);
+    var rowStride = rowCount > 1
+      ? Math.min(isCompact ? 42 : 54, (available - barHeight) / (rowCount - 1))
+      : 0;
     var fullWidth = barRight - barLeft;
 
     for (var s = 0; s < this.statuses.length; s++) {
@@ -155,22 +157,30 @@ function SurveyStatusPressure() {
     }
   };
 
+  // Draws the key against the bottom edge, in as many columns as its
+  // measured items fit, and returns its top.
   this.drawLegend = function() {
     var compact = isCompactChart();
-    var columns = compact ? 3 : 4;
-    var itemWidth = compact ? (width - 48) / columns : 118;
-    var startX = 28;
-    var startY = height - (compact ? 66 : 52);
-
-    chartTextSize(11);
+    var rowHeight = 20;
+    chartTextSize(compact ? 10 : 11);
     textStyle(NORMAL);
+    var widest = 0;
+    for (var n = 0; n < this.pressures.length; n++) {
+      widest = Math.max(widest, textWidth(this.pressures[n]));
+    }
+    var itemWidth = 18 + widest + 16;
+    var columns = Math.max(1, Math.min(this.pressures.length, Math.floor((width - 52) / itemWidth)));
+    var rows = Math.ceil(this.pressures.length / columns);
+    var top = height - 12 - (rows * rowHeight);
+    var startX = 28;
+
     textAlign(LEFT, CENTER);
     noStroke();
 
     for (var i = 0; i < this.pressures.length; i++) {
       var pressure = this.pressures[i];
       var x = startX + ((i % columns) * itemWidth);
-      var y = startY + (Math.floor(i / columns) * 20);
+      var y = top + (rowHeight / 2) + (Math.floor(i / columns) * rowHeight);
 
       fill(this.colours[pressure]);
       stroke(SATheme.axis);
@@ -178,9 +188,9 @@ function SurveyStatusPressure() {
       rect(x, y - 7, 14, 14);
       noStroke();
       fill(SATheme.text);
-      chartTextSize(compact ? 9 : 11);
       text(pressure, x + 18, y);
     }
+    return top;
   };
 
   this.getShortStatus = function(status) {
