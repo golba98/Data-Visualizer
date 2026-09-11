@@ -17,15 +17,19 @@ function ZAIncomeShareTrend() {
   var bottomPadding = 84;
   /* End - own code */
 
-  // Template: layout object.
+  // Template: layout object. Changed values are marked.
   this.layout = {
     marginSize: marginSize,
+    /* Start - own code */
     rightPadding: rightPadding,
     bottomPadding: bottomPadding,
+    /* End - own code */
     leftMargin: marginSize * 2,
+    /* Start - own code */
     rightMargin: width - rightPadding,
     topMargin: 118,
     bottomMargin: height - bottomPadding,
+    /* End - own code */
     pad: 5,
     plotWidth: function() {
       return this.rightMargin - this.leftMargin;
@@ -34,8 +38,10 @@ function ZAIncomeShareTrend() {
       return this.bottomMargin - this.topMargin;
     },
     grid: true,
+    /* Start - own code */
     numXTickLabels: 6,
     numYTickLabels: 7
+    /* End - own code */
   };
 
   // Based on the template's preload().

@@ -21,15 +21,19 @@ function ZAGiniTrend() {
   var bottomPadding = 84;
 
 /* End - own code */
-  // Template: layout object.
+  // Template: layout object. Changed values are marked.
   this.layout = {
     marginSize: marginSize,
+    /* Start - own code */
     rightPadding: rightPadding,
     bottomPadding: bottomPadding,
+    /* End - own code */
     leftMargin: marginSize * 2,
+    /* Start - own code */
     rightMargin: width - rightPadding,
     topMargin: 118,
     bottomMargin: height - bottomPadding,
+    /* End - own code */
     pad: 5,
     plotWidth: function() {
       return this.rightMargin - this.leftMargin;
@@ -38,8 +42,10 @@ function ZAGiniTrend() {
       return this.bottomMargin - this.topMargin;
     },
     grid: true,
+    /* Start - own code */
     numXTickLabels: 6,
     numYTickLabels: 5
+    /* End - own code */
   };
 /* Start - own code */
 
