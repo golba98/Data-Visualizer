@@ -487,6 +487,23 @@ function drawYAxisTickLabels(min, max, layout, mapFunction,
   }
 }
 
+// Labels years from startYear, about every `step` years, plus the final
+// year. The step widens until neighbouring labels have room, and a regular
+// label that would crowd the final one is left out.
+function drawYearTickLabels(startYear, endYear, step, layout, mapFunction) {
+  var clearance = textWidth(String(endYear)) + 8;
+  var pixelsPerYear = Math.abs(mapFunction(startYear + 1) - mapFunction(startYear)) || 1;
+  var labelStep = Math.max(1, step, Math.ceil(clearance / pixelsPerYear));
+  var endX = mapFunction(endYear);
+
+  for (var year = startYear; year < endYear; year += labelStep) {
+    if (endX - mapFunction(year) >= clearance) {
+      drawXAxisTickLabel(year, layout, mapFunction);
+    }
+  }
+  drawXAxisTickLabel(endYear, layout, mapFunction);
+}
+
 function drawXAxisTickLabel(value, layout, mapFunction) {
   var x = mapFunction(value);
   var textCol = typeof SATheme !== 'undefined' ? SATheme.textMuted : 160;

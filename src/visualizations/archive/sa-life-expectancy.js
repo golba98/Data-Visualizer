@@ -141,15 +141,9 @@ function SALifeExpectancy() {
 
   this.drawYearLabels = function() {
     var totalYears = this.endYear - this.startYear;
-    var xLabelSkip = ceil(totalYears / this.layout.numXTickLabels);
-
-    for (var year = this.startYear; year < this.endYear; year += xLabelSkip) {
-      drawXAxisTickLabel(year, this.layout, this.mapYearToWidth.bind(this));
-    }
-
-    drawXAxisTickLabel(this.endYear,
-                       this.layout,
-                       this.mapYearToWidth.bind(this));
+    drawYearTickLabels(this.startYear, this.endYear,
+                       ceil(totalYears / this.layout.numXTickLabels),
+                       this.layout, this.mapYearToWidth.bind(this));
   };
 
   this.drawSeriesLines = function() {

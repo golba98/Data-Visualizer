@@ -96,13 +96,9 @@ function SAYouthUnemployment() {
                    this.layout);
 
     var numYears = this.endYear - this.startYear;
-    var xLabelSkip = ceil(numYears / this.layout.numXTickLabels);
-
-    for (var year = this.startYear; year < this.endYear; year += xLabelSkip) {
-      drawXAxisTickLabel(year, this.layout, this.mapYearToWidth.bind(this));
-    }
-    drawXAxisTickLabel(this.endYear, this.layout,
-                       this.mapYearToWidth.bind(this));
+    drawYearTickLabels(this.startYear, this.endYear,
+                       ceil(numYears / this.layout.numXTickLabels),
+                       this.layout, this.mapYearToWidth.bind(this));
 
     this.drawLegend();
 
