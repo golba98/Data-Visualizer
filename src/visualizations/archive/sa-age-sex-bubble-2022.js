@@ -58,6 +58,9 @@ function SAAgeSexBubble2022() {
     stroke(SATheme.axis);
     strokeWeight(1);
 
+    // The last label drawn, so a label that would collide with it is skipped.
+    var lastLabel = null;
+
     for (var i = 0; i < this.data.getRowCount(); i++) {
       var ageGroup = this.data.getString(i, 'age_group');
       var x = map(midpoints[i], xMin, xMax, this.pad, width - this.pad);
@@ -71,10 +74,26 @@ function SAAgeSexBubble2022() {
       ellipse(x, y, size, size);
 
       if (i % 2 == 0 || ageGroup == '85+') {
-        fill(SATheme.text);
-        noStroke();
-        textAlign('center', 'bottom');
-        text(ageGroup, x, y - (size / 2) - 3);
+        chartTextSize(isPhoneChart() ? 10 : 12);
+        var halfWidth = (textWidth(ageGroup) / 2) + 2;
+        var label = {
+          left: x - halfWidth,
+          right: x + halfWidth,
+          bottom: y - (size / 2) - 3,
+          top: y - (size / 2) - 3 - textAscent() - textDescent()
+        };
+        var collides = lastLabel
+          && label.left < lastLabel.right && label.right > lastLabel.left
+          && label.top < lastLabel.bottom && label.bottom > lastLabel.top;
+
+        if (!collides) {
+          fill(SATheme.text);
+          noStroke();
+          textAlign('center', 'bottom');
+          text(ageGroup, x, label.bottom);
+          lastLabel = label;
+        }
+
         fill(SATheme.withAlpha(SATheme.blueRGB, 140));
         stroke(SATheme.axis);
       }
@@ -116,7 +135,7 @@ function SAAgeSexBubble2022() {
 
     fill(SATheme.text);
     noStroke();
-    chartTextSize(12);
+    chartTextSize(isPhoneChart() ? 10 : 12);
     textAlign('right', 'center');
 
     for (var value = this.yMin; value <= this.yMax; value += 5) {
@@ -133,13 +152,16 @@ function SAAgeSexBubble2022() {
 
     fill(SATheme.text);
     noStroke();
+    chartTextSize(12);
     textAlign('center', 'center');
     text('Age group midpoint',
          width / 2,
          height - 12);
 
+    // Phones have a narrower margin, so the title sits nearer the edge to stay
+    // clear of the tick labels.
     push();
-    translate(14, height / 2);
+    translate(isPhoneChart() ? 9 : 14, height / 2);
     rotate(-PI / 2);
     text('Female %', 0, 0);
     pop();

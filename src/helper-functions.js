@@ -683,18 +683,23 @@ function drawSizeLegend(x, y, options) {
 
   var diameters = [];
   var largest = 0;
+  var widestLabel = 0;
+  chartTextSize(labelSize);
   for (var i = 0; i < values.length; i++) {
     var diameter = Math.max(6, diameterFor(values[i]));
     diameters.push(diameter);
     if (diameter > largest) largest = diameter;
+    widestLabel = Math.max(widestLabel, textWidth(formatValue(values[i])));
   }
 
+  // Each slot fits its circle and its label, so labels never run together.
+  var slot = Math.max(largest, widestLabel);
   var baseline = y + titleHeight + (largest / 2);
   var cursorX = x;
 
   for (var v = 0; v < values.length; v++) {
     var size = diameters[v];
-    var centreX = cursorX + (largest / 2);
+    var centreX = cursorX + (slot / 2);
 
     stroke(settings.stroke === undefined ? SATheme.axis : settings.stroke);
     strokeWeight(1);
@@ -707,7 +712,7 @@ function drawSizeLegend(x, y, options) {
     chartTextSize(labelSize);
     text(formatValue(values[v]), centreX, baseline + (largest / 2) + 3);
 
-    cursorX += largest + gap;
+    cursorX += slot + gap;
   }
 
   pop();
