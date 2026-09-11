@@ -192,13 +192,19 @@ function ZAGiniTrend() {
       this.layout.bottomMargin,
       SATheme.gold
     );
+    // On a narrower plot the 1994 badge reaches the peak line, so the peak
+    // badge drops below it.
+    chartTextSize(10);
+    var contextBadgeWidth = textWidth('Reference point, not a causal claim') + 22;
+    var peakBadgeOffset = peakX - contextX < contextBadgeWidth + 8 ? 42 : 0;
     drawVerticalAnnotation(
       peakX,
       'Peak in this series',
       'Gini 0.65',
       this.layout.topMargin,
       this.layout.bottomMargin,
-      SATheme.red
+      SATheme.red,
+      peakBadgeOffset
     );
   };
 

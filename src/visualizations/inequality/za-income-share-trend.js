@@ -156,14 +156,11 @@ function ZAIncomeShareTrend() {
       this.layout.bottomMargin,
       SATheme.gold
     );
-    drawHorizontalAnnotation(
-      referenceY,
-      '50% reference',
-      'Before-tax income share',
-      this.layout.leftMargin,
-      this.layout.rightMargin,
-      SATheme.red
-    );
+    // The badge sits at the right end, under the line: the 1994 badge
+    // occupies the top-left, and the later values are all above 50%.
+    drawHorizontalReferenceLine(referenceY, this.layout.leftMargin, this.layout.rightMargin, SATheme.red);
+    drawAnnotationBadge('50% reference', 'Before-tax income share',
+                        this.layout.rightMargin, referenceY + 6, SATheme.red);
   };
 
   this.drawLine = function() {
