@@ -94,6 +94,14 @@ function ZADwellingOwnershipByGroup() {
     var rowStep = isCompact ? 56 : 70;
     var totalBarSpan = xEnd - xStart;
 
+    // On a short phone canvas, tighten the rows so the axis labels end above
+    // the footnote, which is pinned 54px from the bottom.
+    if (isPhoneChart()) {
+      var axisLabelSpace = 40;
+      var fittedStep = (height - 54 - axisLabelSpace - yStart - rowHeight) / (this.rows.length - 1);
+      rowStep = constrain(fittedStep, rowHeight + 8, rowStep);
+    }
+
     var tenureCategories = [
       { key: 'owned', title: 'Owned', fill: SATheme.green },
       { key: 'rented', title: 'Rented', fill: SATheme.red },
