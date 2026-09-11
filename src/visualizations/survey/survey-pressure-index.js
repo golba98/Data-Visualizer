@@ -178,7 +178,7 @@ function SurveyPressureIndex() {
   this.getLayout = function(top) {
     var ROW_MIN = 32;
     var compact = isCompactChart();
-    var sideBySide = !compact || (width >= 420 && width >= height * 1.25);
+    var sideBySide = !compact || (width >= 400 && width >= height * 1.25);
     var rowCount = Math.max(1, this.components.length);
     var bottom = height - 16;
     var layout = {
