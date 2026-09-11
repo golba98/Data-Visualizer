@@ -342,6 +342,7 @@ function Gallery() {
   this.showTourStep = function(index, fromHash) {
     if (this.isTourTransitioning || index < 0 || index >= this.tourSteps.length) return;
     var step = this.tourSteps[index];
+    var wasInTour = this.isTourActive;
     this.isTourTransitioning = true;
     this.isTourActive = true;
     this.tourIndex = index;
@@ -355,7 +356,7 @@ function Gallery() {
     this.updateAnnotationButtons();
     this.updateTourUI();
 
-    if (!fromHash && !this.isEmbedded) this.updateHash('tour/' + step.id);
+    if (!fromHash && !this.isEmbedded) this.updateHash('tour/' + step.id, wasInTour);
     if (this.tourResizeFrame != null) cancelAnimationFrame(this.tourResizeFrame);
     this.tourResizeFrame = requestAnimationFrame(function() {
       if (typeof resizeChartCanvas === 'function') resizeChartCanvas();
@@ -878,6 +879,7 @@ function Gallery() {
 
   this.showView = function(visibleId) {
     var viewIds = ['overview', 'chart-view', 'comparison-view'];
+    this.isComparison = visibleId === 'comparison-view';
 
     for (var i = 0; i < viewIds.length; i++) {
       var view = document.getElementById(viewIds[i]);
@@ -1047,9 +1049,25 @@ function Gallery() {
     return this.findVisIndex(preferred) != null ? preferred : this.visuals[0].id;
   };
 
-  this.updateHash = function(value) {
+  // Moving to another view adds a history entry, so a phone's back gesture
+  // returns to the previous view instead of leaving the site. Changes within
+  // a view (the next story step, a comparison picker) and the first route on
+  // page load replace the entry instead.
+  this.updateHash = function(value, replace) {
     if (window.location.hash === '#' + value) return;
-    window.history.replaceState(null, '', window.location.pathname + window.location.search + '#' + value);
+    var url = window.location.pathname + window.location.search + '#' + value;
+    if (replace || !this.historyReady) {
+      window.history.replaceState(null, '', url);
+    } else {
+      window.history.pushState(null, '', url);
+    }
+    this.routedHash = window.location.hash;
+  };
+
+  // Called once the page has shown its first view; later views add history.
+  this.finishInitialRoute = function() {
+    this.routedHash = window.location.hash;
+    this.historyReady = true;
   };
 
   this.parseHash = function() {
@@ -1070,6 +1088,7 @@ function Gallery() {
     if (this.isEmbedded) return;
     if (this.findVisIndex(leftId) == null || this.findVisIndex(rightId) == null) return;
 
+    var wasComparing = this.isComparison;
     this.isComparison = true;
     this.isTourActive = false;
     this.setTourLayoutActive(false);
@@ -1081,7 +1100,7 @@ function Gallery() {
     this.renderComparisonControls(leftId, rightId);
     this.renderComparisonSummary(leftId, rightId);
     this.renderComparisonPanes(leftId, rightId);
-    if (!fromHash) this.updateHash('compare/' + leftId + '/' + rightId);
+    if (!fromHash) this.updateHash('compare/' + leftId + '/' + rightId, wasComparing);
     this.scrollMobileViewToTop();
   };
 
@@ -1266,7 +1285,11 @@ function Gallery() {
         }
       });
     }
-    window.addEventListener('hashchange', function() {
+    // Back/forward between pushed entries fires popstate, and hashchange in
+    // some engines as well, so route once per hash.
+    var routeFromHash = function() {
+      if (window.location.hash === self.routedHash) return;
+      self.routedHash = window.location.hash;
       var route = self.parseHash();
       if (!route) return;
       if (route.type === 'overview') self.showOverview();
@@ -1275,7 +1298,9 @@ function Gallery() {
       }), true);
       else if (route.type === 'compare') self.openComparison(route.left, route.right, true);
       else self.selectVisual(route.id, true);
-    });
+    };
+    window.addEventListener('hashchange', routeFromHash);
+    window.addEventListener('popstate', routeFromHash);
   };
 
   /* End - own code */

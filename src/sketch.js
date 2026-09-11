@@ -220,6 +220,8 @@ function setup() {
     gallery.showOverview();
   }
 
+  gallery.finishInitialRoute();
+
   if (mobileParam === '1') {
     gallery.openMobileMenu();
   }
