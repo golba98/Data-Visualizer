@@ -10,6 +10,7 @@ can be followed without reading a single axis.
 **Contents**
 
 - [Quick start](#quick-start)
+- [Cloudflare Pages](#cloudflare-pages)
 - [Using the site](#using-the-site)
 - [The charts](#the-charts)
 - [Data and method](#data-and-method)
@@ -44,6 +45,15 @@ npm run data:survey -- --input raw_export.csv
 # Same, but drop bad rows instead of stopping at the first one
 npm run data:survey -- --input raw.csv --lenient
 ```
+
+## Cloudflare Pages
+
+The site is deployed as a static Vite project on Cloudflare Pages.
+
+- Install dependencies: `npm install`
+- Start local development: `npm run dev`
+- Production build command: `npm run build`
+- Build output directory: `dist`
 
 ## Using the site
 
