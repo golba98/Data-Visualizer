@@ -170,7 +170,9 @@ function SurveyIncomeRealityGap() {
       text('n=' + itemData.count, chartRight + 8, rowCenterY);
     }
 
-    this.drawLegend(chartLeft, height - 24);
+    // On phones the key starts at the canvas margin, not the plot's left
+    // edge, so both items fit on a narrow canvas.
+    this.drawLegend(isPhoneChart() ? 24 : chartLeft, height - 24);
   };
 
   this.drawLegend = function(x, y) {
@@ -184,10 +186,11 @@ function SurveyIncomeRealityGap() {
     fill(SATheme.textMuted);
     text('Income keeps up', x + 10, y);
 
+    var secondX = x + 10 + textWidth('Income keeps up') + 26;
     fill(SATheme.red);
-    circle(x + 130, y, 10);
+    circle(secondX, y, 10);
     fill(SATheme.textMuted);
-    text('Work worry', x + 140, y);
+    text('Work worry', secondX + 10, y);
   };
 
   this.getShortLabel = function(label) {
