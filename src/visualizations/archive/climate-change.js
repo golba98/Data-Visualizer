@@ -186,10 +186,6 @@ function ClimateChange() {
 
     drawAxis(this.layout);
 
-    drawAxisLabels(this.xAxisLabel,
-                   this.yAxisLabel,
-                   this.layout);
-
     stroke(SATheme.axis);
     strokeWeight(1);
     line(this.layout.leftMargin,
@@ -248,7 +244,14 @@ function ClimateChange() {
       previous = current;
     }
 
-    this.drawColourKey();
+    // The colour key shares the band below the plot with the x-axis title;
+    // where the key reaches the middle, the year tick labels are enough.
+    var keyRight = this.layout.leftMargin + this.drawColourKey().width;
+    textSize(12);
+    var titleLeft = (this.layout.plotWidth() / 2) + this.layout.leftMargin - (textWidth(this.xAxisLabel) / 2);
+    drawAxisLabels(keyRight + 8 > titleLeft ? '' : this.xAxisLabel,
+                   this.yAxisLabel,
+                   this.layout);
 
     this.frameCount++;
   };
@@ -258,7 +261,7 @@ function ClimateChange() {
   this.drawColourKey = function() {
     var self = this;
 
-    drawColourRampKey(this.layout.leftMargin, this.layout.bottomMargin + 34, {
+    return drawColourRampKey(this.layout.leftMargin, this.layout.bottomMargin + 34, {
       title: isPhoneChart() ? 'Column' : 'Column colour = anomaly',
       lowValue: this.minTemperature,
       highValue: this.maxTemperature,
