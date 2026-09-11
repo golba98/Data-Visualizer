@@ -38,26 +38,47 @@ function SurveyPressureWaffle() {
     this.buildWaffle();
   };
 
-  this.waffleSize = function() {
-    var dim = this.legendBelow
-      ? Math.min(width - 56, height * 0.44, 320)
-      : Math.min(width * 0.42, height * 0.58, 380);
+  // Lays out the grid and its legend below the measured title. Landscape
+  // canvases put the legend beside the grid; portrait ones put it below, in
+  // two columns when two fit. The grid is the largest square left over.
+  this.getLayout = function() {
+    var top = this.titleBottom() + 16;
+    var bottom = height - 14;
+    var count = this.categories.length;
+    var layout = { beside: width >= 420 && width >= height * 1.2 };
 
-    return Math.max(180, Math.floor(dim));
-  };
-
-  this.waffleX = function(dim) {
-    if (this.legendBelow) {
-      return Math.floor((width - dim) / 2);
+    chartTextSize(layout.beside ? 12 : 11);
+    textStyle(BOLD);
+    var nameWidth = 0;
+    for (var i = 0; i < count; i++) {
+      nameWidth = Math.max(nameWidth, textWidth(this.categories[i]));
     }
-    return Math.max(28, Math.floor(width * 0.10));
-  };
+    textStyle(NORMAL);
+    layout.valueOffset = 22 + nameWidth + 12;
+    var itemWidth = layout.valueOffset + textWidth('11 (22.9%)') + 16;
 
-  this.waffleY = function(dim) {
-    if (this.legendBelow) {
-      return 92;
+    if (layout.beside) {
+      layout.rowGap = constrain((bottom - top) / count, 20, 34);
+      var side = Math.min(bottom - top, width - 48 - 30 - itemWidth, 380);
+      layout.side = Math.max(100, Math.floor(side));
+      layout.x = Math.max(24, Math.floor((width - layout.side - 30 - itemWidth) / 2));
+      layout.y = Math.floor(top + ((bottom - top - layout.side) / 2));
+      layout.legendX = layout.x + layout.side + 30;
+      layout.legendY = top + ((bottom - top - (layout.rowGap * (count - 1))) / 2);
+      layout.columns = 1;
+    } else {
+      layout.columns = (width - 48) >= itemWidth * 2 ? 2 : 1;
+      layout.rowGap = 22;
+      layout.itemWidth = (width - 48) / layout.columns;
+      var legendHeight = Math.ceil(count / layout.columns) * layout.rowGap;
+      var squareSide = Math.min(width - 56, bottom - top - legendHeight - 16, 320);
+      layout.side = Math.max(100, Math.floor(squareSide));
+      layout.x = Math.floor((width - layout.side) / 2);
+      layout.y = top;
+      layout.legendX = 24;
+      layout.legendY = layout.y + layout.side + 16 + (layout.rowGap / 2);
     }
-    return Math.max(92, Math.floor((height - dim) / 2));
+    return layout;
   };
 
   this.buildWaffle = function() {
@@ -68,17 +89,13 @@ function SurveyPressureWaffle() {
     this.layoutWidth = width;
     this.layoutHeight = height;
     this.colours = SATheme.pressure;
-    this.legendBelow = isCompactChart();
-
-    var sideLength = this.waffleSize();
-    var posX = this.waffleX(sideLength);
-    var posY = this.waffleY(sideLength);
+    this.layout = this.getLayout();
 
     this.waffle = new Waffle(
-      posX,
-      posY,
-      sideLength,
-      sideLength,
+      this.layout.x,
+      this.layout.y,
+      this.layout.side,
+      this.layout.side,
       this.boxesAcross,
       this.boxesDown,
       this.table,
@@ -107,42 +124,45 @@ function SurveyPressureWaffle() {
     }
   };
 
+  this.titleText = 'What people worry about most';
+
+  // Measures the title block without drawing it, for the layout.
+  this.titleBottom = function() {
+    textStyle(BOLD);
+    chartTextSize(isPhoneChart() ? 13 : 16);
+    var y = 18 + wrappedTextHeight(this.titleText, width - 48) + 6;
+    textStyle(NORMAL);
+    chartTextSize(12);
+    return y + wrappedTextHeight(SurveyData.chartLabel, width - 48);
+  };
+
   this.drawTitle = function() {
     noStroke();
     fill(SATheme.text);
-    textAlign(LEFT, TOP);
     chartTextSize(isPhoneChart() ? 13 : 16);
     textStyle(BOLD);
-    text('What people worry about most', 24, 18, width - 48, isPhoneChart() ? 44 : 36);
+    var y = 18 + drawWrappedText(this.titleText, 24, 18, width - 48) + 6;
 
     textStyle(NORMAL);
     fill(SATheme.textMuted);
     chartTextSize(12);
-    var subtitle = SurveyData.chartLabel;
-    text(subtitle, 24, isPhoneChart() ? 54 : 42, width - 48, isPhoneChart() ? 48 : 34);
+    drawWrappedText(SurveyData.chartLabel, 24, y, width - 48);
   };
 
   this.drawLegend = function() {
-    var startX = this.legendBelow ? 26 : this.waffle.x + this.waffle.width + 30;
-    var y = this.legendBelow ? this.waffle.y + this.waffle.height + 30 : this.waffle.y + 4;
+    var layout = this.layout;
     var total = this.representedTotal();
-    var itemWidth = this.legendBelow ? Math.max(150, Math.floor((width - 52) / 2)) : 116;
-    var valueOffset = this.legendBelow ? 78 : 102;
 
     textAlign(LEFT, CENTER);
-    chartTextSize(this.legendBelow ? 11 : 12);
+    chartTextSize(layout.beside ? 12 : 11);
     noStroke();
 
     for (var i = 0; i < this.categories.length; i++) {
       var category = this.categories[i];
       var count = this.waffle.counts[category] || 0;
       var percent = total > 0 ? ((count / total) * 100).toFixed(1) : '0.0';
-      var itemX = this.legendBelow
-          ? startX + ((i % 2) * itemWidth)
-          : startX;
-      var itemY = this.legendBelow
-          ? y + (Math.floor(i / 2) * 26)
-          : y + (i * 34);
+      var itemX = layout.legendX + ((i % layout.columns) * (layout.itemWidth || 0));
+      var itemY = layout.legendY + (Math.floor(i / layout.columns) * layout.rowGap);
 
       fill(this.colours[category]);
       stroke(SATheme.axis);
@@ -156,7 +176,7 @@ function SurveyPressureWaffle() {
 
       fill(SATheme.textMuted);
       textStyle(NORMAL);
-      text(count + ' (' + percent + '%)', itemX + valueOffset, itemY);
+      text(count + ' (' + percent + '%)', itemX + layout.valueOffset, itemY);
     }
   };
 
