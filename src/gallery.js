@@ -603,8 +603,9 @@ function Gallery() {
     container.appendChild(list);
   };
 
+  // Matches the phone layout's media query in style.css.
   this.isMobileViewport = function() {
-    return !!window.matchMedia && window.matchMedia('(max-width: 820px)').matches;
+    return !!window.matchMedia && window.matchMedia('(max-width: 820px), (max-height: 520px)').matches;
   };
 
   this.mobileMenuIsOpen = function() {

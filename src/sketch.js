@@ -8,32 +8,45 @@ var chartLoopStartedAt = 0;
 
 /* Start - own code */
 
-// Finds the best canvas size
+// Finds the best canvas size. A visible container's size is used exactly:
+// a canvas bigger than its container is scaled down by CSS and unreadable.
+// The minimums only apply to the estimate used while the container is hidden.
 function getChartCanvasSize() {
   var container = document.getElementById('chart-container');
-  var targetWidth = 0;
-  var targetHeight = 0;
+  var width;
+  var height;
 
   if (container && container.clientWidth > 0) {
-    targetWidth = container.clientWidth;
+    width = container.clientWidth;
   } else if (typeof windowWidth !== 'undefined') {
-    targetWidth = windowWidth < 820 ? (windowWidth - 40) : (windowWidth - 320);
+    width = Math.max(280, windowWidth < 820 ? (windowWidth - 40) : (windowWidth - 320));
   } else {
-    targetWidth = 800;
+    width = 800;
   }
 
   if (container && container.clientHeight > 0) {
-    targetHeight = container.clientHeight;
+    height = container.clientHeight;
   } else if (typeof windowHeight !== 'undefined') {
-    targetHeight = windowHeight - 140;
+    height = Math.max(240, windowHeight - 140);
   } else {
-    targetHeight = 500;
+    height = 500;
   }
 
-  return {
-    width: Math.max(280, Math.floor(targetWidth)),
-    height: Math.max(240, Math.floor(targetHeight))
-  };
+  return { width: Math.floor(width), height: Math.floor(height) };
+}
+
+// Resizes the canvas whenever its container changes size. Window resize
+// events alone are not enough: after a rotation WebKit can still report the
+// old container width on the next frame, leaving the chart cut off.
+function watchChartContainer() {
+  var container = document.getElementById('chart-container');
+  if (!container || typeof ResizeObserver === 'undefined') return;
+
+  new ResizeObserver(function() {
+    if (container.clientWidth !== width || container.clientHeight !== height) {
+      queueChartResize();
+    }
+  }).observe(container);
 }
 
 // Resizes and redraws the chart
@@ -148,6 +161,7 @@ function setup() {
   var size = getChartCanvasSize();
   chartCanvas = createCanvas(size.width, size.height);
   chartCanvas.parent('chart-container');
+  watchChartContainer();
 
   if (typeof DataProvenance !== 'undefined') {
     DataProvenance.load();
