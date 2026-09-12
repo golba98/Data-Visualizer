@@ -1273,6 +1273,12 @@
 
       t.assertEqual(chart.startSlider.value(), chart.minYear, 'start returns to the first year');
       t.assertEqual(chart.endSlider.value(), chart.maxYear, 'end returns to the last year');
+      if (chart.startInput) {
+        t.assertEqual(parseInt(chart.startInput.value, 10), chart.minYear, 'startInput returns to first year');
+      }
+      if (chart.endInput) {
+        t.assertEqual(parseInt(chart.endInput.value, 10), chart.maxYear, 'endInput returns to last year');
+      }
     });
 
     t.test('the comparison default pair is a valid, non-archived selection', function() {

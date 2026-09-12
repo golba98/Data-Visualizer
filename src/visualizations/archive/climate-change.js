@@ -89,9 +89,17 @@ function ClimateChange() {
                                     this.minYear,
                                     1);
     this.startSlider.parent(this.startLabel);
-    this.startValue = document.createElement('span');
-    this.startValue.className = 'control-value';
-    this.startLabel.appendChild(this.startValue);
+
+    var self = this;
+
+    this.startInput = document.createElement('input');
+    this.startInput.type = 'number';
+    this.startInput.min = this.minYear;
+    this.startInput.max = this.maxYear - 1;
+    this.startInput.value = this.minYear;
+    this.startInput.className = 'year-number-input';
+    this.startInput.setAttribute('aria-label', 'Start year');
+    this.startLabel.appendChild(this.startInput);
 
     this.endLabel = document.createElement('label');
     this.endLabel.textContent = 'End';
@@ -102,9 +110,58 @@ function ClimateChange() {
                                   this.maxYear,
                                   1);
     this.endSlider.parent(this.endLabel);
-    this.endValue = document.createElement('span');
-    this.endValue.className = 'control-value';
-    this.endLabel.appendChild(this.endValue);
+
+    this.endInput = document.createElement('input');
+    this.endInput.type = 'number';
+    this.endInput.min = this.minYear + 1;
+    this.endInput.max = this.maxYear;
+    this.endInput.value = this.maxYear;
+    this.endInput.className = 'year-number-input';
+    this.endInput.setAttribute('aria-label', 'End year');
+    this.endLabel.appendChild(this.endInput);
+
+    // Synchronise slider -> input and input -> slider
+    this.startSlider.input(function() {
+      var val = self.startSlider.value();
+      if (val >= self.endSlider.value()) {
+        val = self.endSlider.value() - 1;
+        self.startSlider.value(val);
+      }
+      self.startInput.value = val;
+      self.restartAnimation();
+      if (typeof redraw === 'function') redraw();
+    });
+
+    this.endSlider.input(function() {
+      var val = self.endSlider.value();
+      if (val <= self.startSlider.value()) {
+        val = self.startSlider.value() + 1;
+        self.endSlider.value(val);
+      }
+      self.endInput.value = val;
+      self.restartAnimation();
+      if (typeof redraw === 'function') redraw();
+    });
+
+    this.startInput.addEventListener('change', function() {
+      var val = parseInt(self.startInput.value, 10);
+      if (isNaN(val) || val < self.minYear) val = self.minYear;
+      if (val >= self.endSlider.value()) val = self.endSlider.value() - 1;
+      self.startInput.value = val;
+      self.startSlider.value(val);
+      self.restartAnimation();
+      if (typeof redraw === 'function') redraw();
+    });
+
+    this.endInput.addEventListener('change', function() {
+      var val = parseInt(self.endInput.value, 10);
+      if (isNaN(val) || val > self.maxYear) val = self.maxYear;
+      if (val <= self.startSlider.value()) val = self.startSlider.value() + 1;
+      self.endInput.value = val;
+      self.endSlider.value(val);
+      self.restartAnimation();
+      if (typeof redraw === 'function') redraw();
+    });
   };
   /* End - own code */
 
@@ -117,6 +174,8 @@ function ClimateChange() {
 
     this.startSlider.value(this.minYear);
     this.endSlider.value(this.maxYear);
+    if (this.startInput) this.startInput.value = this.minYear;
+    if (this.endInput) this.endInput.value = this.maxYear;
     this.startYear = this.minYear;
     this.endYear = this.maxYear;
     this.restartAnimation();
@@ -149,6 +208,14 @@ function ClimateChange() {
       this.endSlider.remove();
       this.endSlider = null;
     }
+    if (this.startInput) {
+      this.startInput.remove();
+      this.startInput = null;
+    }
+    if (this.endInput) {
+      this.endInput.remove();
+      this.endInput = null;
+    }
     if (this.startLabel) {
       this.startLabel.remove();
       this.startLabel = null;
@@ -175,8 +242,12 @@ function ClimateChange() {
     }
     this.startYear = this.startSlider.value();
     this.endYear = this.endSlider.value();
-    this.startValue.textContent = this.startYear;
-    this.endValue.textContent = this.endYear;
+    if (this.startInput && document.activeElement !== this.startInput) {
+      this.startInput.value = this.startYear;
+    }
+    if (this.endInput && document.activeElement !== this.endInput) {
+      this.endInput.value = this.endYear;
+    }
 
     drawYAxisTickLabels(this.minTemperature,
                         this.maxTemperature,
