@@ -917,14 +917,19 @@ button {
   background: var(--bg-surface);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-sm);
+  box-sizing: border-box;
   color: var(--text-primary);
   font-family: var(--font-mono);
-  font-size: 0.85rem;
-  padding: 0.2rem 0.4rem;
-  width: 5.2ch;
+  font-size: 0.9rem;
+  font-weight: 500;
+  height: 2rem;
+  min-width: 4.6rem;
+  width: 4.6rem;
+  padding: 0.2rem 0.5rem;
   text-align: center;
   appearance: textfield;
   -moz-appearance: textfield;
+  flex-shrink: 0;
 }
 
 .year-number-input::-webkit-outer-spin-button,
@@ -1578,6 +1583,14 @@ summary:focus-visible,
     max-width: 100%;
     min-height: 44px;
     width: min(13rem, 70vw);
+  }
+
+  .year-number-input {
+    height: 2.2rem;
+    min-width: 5rem;
+    width: 5rem;
+    font-size: 0.95rem;
+    margin-top: 0.2rem;
   }
 
   .chart-controls select {
