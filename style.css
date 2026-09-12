@@ -913,6 +913,31 @@ button {
   width: 8rem;
 }
 
+.year-number-input {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  padding: 0.2rem 0.4rem;
+  width: 5.2ch;
+  text-align: center;
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.year-number-input::-webkit-outer-spin-button,
+.year-number-input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.year-number-input:focus {
+  border-color: var(--border-focus);
+  outline: none;
+}
+
 .control-value {
   color: var(--muted-text);
   min-width: 4ch;
